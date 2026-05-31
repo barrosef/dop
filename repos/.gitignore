@@ -1,0 +1,5 @@
+# Os componentes em repos/ são repositórios git INDEPENDENTES.
+# O meta-repo raiz não os versiona.
+/dop-cli/
+/dop-api/
+/dop-app/

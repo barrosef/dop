@@ -1,0 +1,35 @@
+# docker-compose EXCLUSIVO do DOP — ambiente LOCAL (sem deploy em nuvem / sem CI-CD).
+# Esqueleto inicial: serviços, portas, imagens e env serão finalizados quando as stacks
+# de dop-api e dop-app estiverem definidas.
+name: dop
+
+services:
+  dop-api:
+    build:
+      context: ../repos/dop-api
+      dockerfile: ../../infra/dop-api.Dockerfile
+    # ports: ["8787:8787"]        # TODO: porta da API
+    # env_file: [./.env]
+    # depends_on: [db]
+    profiles: ["full"]
+
+  dop-app:
+    build:
+      context: ../repos/dop-app
+      dockerfile: ../../infra/dop-app.Dockerfile
+    # ports: ["5180:80"]          # TODO: porta do frontend (nginx)
+    # depends_on: [dop-api]
+    profiles: ["full"]
+
+  # Persistência do próprio DOP (placeholder — decisão técnica D4 em aberto).
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_DB: dop
+  #     POSTGRES_USER: dop
+  #     POSTGRES_PASSWORD: dop
+  #   volumes: ["dop-db:/var/lib/postgresql/data"]
+  #   profiles: ["full"]
+
+# volumes:
+#   dop-db:
