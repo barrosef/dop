@@ -11,10 +11,28 @@ como repositórios independentes em `repos/`.
 dop/
 ├── docs/                 # docs de PRODUTO 1.0 (PRD, specs, prompt Replit, decisões)
 ├── infra/                # stack LOCAL do DOP (docker-compose + Dockerfiles)
-└── repos/                # componentes (repos git independentes; ignorados por este meta-repo)
+└── repos/                # componentes como SUBMODULES git (repos independentes, fixados por commit)
     ├── dop-cli/          # CLI Python — congelada em v0.5.0, instalável e funcional
     ├── dop-api/          # núcleo + API HTTP (Python) — onde a lógica migra da CLI
     └── dop-app/          # frontend (React/Vite) — construído pelo Replit + Claude
+```
+
+## Clonar
+
+Os componentes são **submodules git** (cada um fixado num commit específico). Clone
+com `--recursive`:
+
+```bash
+git clone --recursive git@github.com:Digital-Business-One/dop.git
+# ou, após um clone simples:
+git submodule update --init --recursive
+```
+
+Para atualizar um componente ao último commit do seu `main` e fixar o novo ponteiro:
+
+```bash
+git -C repos/<componente> pull origin main
+git add repos/<componente> && git commit -m "chore: bump <componente>"
 ```
 
 ## Componentes

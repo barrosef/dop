@@ -1,0 +1,9 @@
+[submodule "repos/dop-cli"]
+	path = repos/dop-cli
+	url = git@github.com:Digital-Business-One/dop-cli.git
+[submodule "repos/dop-api"]
+	path = repos/dop-api
+	url = git@github.com:Digital-Business-One/dop-api.git
+[submodule "repos/dop-app"]
+	path = repos/dop-app
+	url = git@github.com:Digital-Business-One/dop-app.git
