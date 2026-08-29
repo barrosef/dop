@@ -15,6 +15,16 @@ convenção de desambiguação está registrada.
 | **Projeto** | Nível 2. Onde vivem repositórios e o espaço do task manager, consumidos das integrações da conta dona |
 | **Integração** | O vínculo configurado entre uma conta e um provedor externo — git ou task manager |
 | **Card** | Item de trabalho vindo do task manager. Tem tipo dinâmico, definido pelo provedor |
+| **Demanda** | Um card em execução na plataforma: sandbox, threads, spec, eventos. Card é a origem; demanda é o trabalho |
+| **Sandbox** | O ambiente isolado de uma demanda: microVM com agente(s), workspace e Docker interno. Fronteira de segurança |
+| **Subagente** | Agente especialista lançado dentro da demanda, no mesmo sandbox, com ficha própria (propósito, ferramentas, modelo, orçamento) |
+| **Thread** | Timeline de conversa com um agente da demanda. Uma por agente; consultável pelos irmãos |
+| **Achado** | Resultado estruturado publicado por um agente ao concluir uma investigação. Vira evento, dossiê e memória |
+| **Pacote de contexto** | A bagagem montada por demanda: spec + regras + índice dos repos envolvidos + memórias relevantes |
+| **Crítico** | Instância independente que revisa diff × spec antes do humano. Modelo forte, contexto limpo |
+| **Pacote de evidência** | O que acompanha o PR: aceitação, testes, parecer do crítico, links do trace |
+| **Fila de merge** | Fila por repositório que reaplica cada PR sobre a main atual e re-verifica antes de mergear, um por vez |
+| **Caixa de atenção** | Fila única, entre todas as demandas da conta ativa, dos itens que exigem decisão humana. Não é o chat: leva ao chat certo |
 
 ## Desambiguações obrigatórias
 
