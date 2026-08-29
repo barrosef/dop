@@ -3,7 +3,7 @@
 > **Status:** Aprovado para implementação
 > **Data:** 2026-08-26
 > **Escopo:** meta-repositório `dop`, repositório `dop-cli`, novo repositório `dop-cmd`
-> **Não-escopo:** arquitetura do `dop-core`/`dop-api`, revisão do PRD 1.0, adoção de specs
+> **Não-escopo:** qualquer decisão sobre a plataforma DOP, que é outro projeto
 
 ## 1. Contexto e motivação
 
@@ -13,50 +13,36 @@ O repositório `dop-cli` contém hoje **duas coisas sobrepostas**:
    diretamente e responde pelo ambiente: operações git, PRs multi-plataforma, runtime
    docker-compose, testes e2e/AAA, relatórios Allure e máquina de estado por demanda.
    É usada diariamente em workspaces reais.
-2. O **nome reservado para a CLI definitiva** do DOP 1.0, que segundo o PRD deixa de
-   acessar a workspace e passa a ser cliente da plataforma.
+2. O **nome `dop-cli`**, que pertence ao projeto da plataforma DOP e precisa estar
+   livre para ele.
 
-Manter as duas identidades no mesmo repositório impede que a CLI definitiva seja
+Manter as duas identidades no mesmo repositório impede que a CLI da plataforma seja
 construída sem colocar em risco a ferramenta em produção, e torna ambígua qualquer
 conversa sobre "o dop-cli".
 
-A separação resolve isso dando **um nome a cada papel**:
+A separação resolve isso devolvendo cada nome ao seu projeto:
 
-- **`dop-cmd`** — responde pelo ambiente. É o que existe e funciona hoje.
-- **`dop-cli`** — a CLI definitiva do produto, cliente da plataforma. Nasce vazia.
+- **`dop-cmd`** — a ferramenta que responde pelo ambiente. **Projeto próprio**, com
+  ciclo de vida independente.
+- **`dop-cli`** — o nome volta a ficar disponível para a plataforma DOP.
+
+> **Os dois projetos são distintos.** O `dop-cmd` originou a ideia da plataforma, mas
+> não é seu ancestral técnico nem referência de desenho. Nada nesta spec decide coisa
+> alguma sobre a plataforma, e a plataforma não herda nada daqui.
 
 O nome `dop-cmd` é mais apropriado para o primeiro papel: *comando* de ambiente, não
 *interface de linha de comando de um cliente*.
-
-### 1.1 Relação com a arquitetura da plataforma
-
-Em paralelo a esta separação, a arquitetura do DOP 1.0 foi redirecionada: a plataforma
-passa a ter um núcleo gRPC (`dop-core`), com o `dop-api` assumindo o papel de **BFF**
-multiprotocolo (REST para o frontend, gRPC para a CLI), persistência em banco e
-implantação em cluster.
-
-Essa rodada de arquitetura **não faz parte desta spec** e será registrada em ADR
-própria. Ela tem, porém, uma consequência que reforça a decisão aqui tomada:
-
-> **O `dop-cmd` deixa de ser a base de código a partir da qual o núcleo seria extraído
-> e passa a ser referência conceitual** — o acervo de conhecimento operacional validado
-> em produção que informa o desenho do `dop-core`, sem ser herdado linha a linha.
-
-Isso torna a separação mais necessária, não menos: o `dop-cmd` precisa continuar
-estável e disponível como referência e como ferramenta, enquanto a plataforma é
-desenhada do zero.
 
 ## 2. Decisões
 
 | # | Decisão | Justificativa |
 |---|---|---|
 | D-1 | `dop-cmd` nasce **limpo**, com o código copiado do `main` do `dop-cli` em commit inicial único | A história de decisão continua acessível no `dop-cli`; um começo limpo evita arrastar tags e branches que já não descrevem o novo papel |
-| D-2 | `dop-cli` é **esvaziado** e reduzido ao esqueleto do cliente definitivo | Libera o nome para o papel do 1.0 sem perder a história, que permanece no próprio repositório |
+| D-2 | `dop-cli` é **esvaziado**, ficando só com um marcador | Devolve o nome ao outro projeto sem perder a história, que permanece no próprio repositório |
 | D-3 | Distribuição `dop-cmd`; **pacote `dop` e executável `dop` inalterados** | Zero ruptura para os workspaces em uso e zero refactor de imports. Ver risco R-1 |
 | D-4 | Versão permanece **0.7.1** | É o mesmo código; só a distribuição foi rebatizada. Reiniciar a numeração criaria uma regressão aparente |
 | D-5 | **Toda a documentação** (ADRs, PRDs da era CLI, referências, arquitetura, specs e plans) acompanha o código para o `dop-cmd` | São o registro de decisão daquela implementação; separá-los do código torna ambos menos úteis |
 | D-6 | `dop-cmd` mora em `repos/dop-cmd`, mas **não é submodule** do meta-repo | Faz parte do projeto e convive com os demais componentes na mesma árvore, sem ser rastreado pelo meta-repo, que agrega apenas os componentes do produto 1.0 |
-| D-7 | `dop-core` **não é criado nesta rodada** | Depende da rodada de arquitetura; criar o repositório antes de decidir seu conteúdo produziria README desatualizado |
 
 ## 3. Topologia final
 
@@ -69,7 +55,7 @@ desenhada do zero.
 └── repos/
     ├── dop-cmd/             NOVO — repo git independente, remote próprio.
     │                        NÃO é submodule. Motor operacional (v0.7.1).
-    ├── dop-cli/             submodule — esvaziado → esqueleto da CLI definitiva
+    ├── dop-cli/             submodule — esvaziado; nome devolvido à plataforma
     ├── dop-api/             submodule — inalterado
     └── dop-app/             submodule — inalterado
 ```
@@ -91,7 +77,7 @@ preservar as preferências de sessão, sem entrar no commit.
 | Arquivo | Mudança |
 |---|---|
 | `pyproject.toml` | `name = "dop"` → `name = "dop-cmd"`. `version`, `[tool.setuptools.packages.find]` e `[project.scripts] dop = "dop.cli:main"` permanecem intactos |
-| `README.md` | Título e URL de instalação apontam para `dop-cmd.git`; parágrafo novo explicando a divisão `dop-cmd` × `dop-cli` e o papel de referência conceitual para a plataforma |
+| `README.md` | Título e URL de instalação apontam para `dop-cmd.git`; parágrafo novo explicando que `dop-cmd` é projeto próprio e que o nome `dop-cli` pertence a outro projeto |
 | `docs/adr/0015-separacao-dop-cmd-e-dop-cli.md` | ADR novo registrando esta decisão |
 | `docs/adr/README.md` | Linha de índice para a ADR 0015 + nota de rodapé esclarecendo que o "ADR-16" citado em `docs/workspace-migration-adr16.md` e nas specs de superpowers é documento **do lado da workspace**, fora deste índice |
 
@@ -106,17 +92,12 @@ camadas de teste da workspace Optum, que nunca entrou no índice. A nova ADR rec
 ## 5. Componente B — `dop-cli`
 
 Um commit removendo `src/`, `tests/`, `docs/` e `pyproject.toml`, e reescrevendo o
-`README.md` no molde dos esqueletos de `dop-api` e `dop-app`:
-
-- o que é: a **CLI definitiva do DOP**, cliente da plataforma, porta de entrada do
-  Claude;
-- status: 🚧 em construção (1.0 MVP);
-- ponteiro explícito de que a implementação anterior vive em `dop-cmd` e continua
-  acessível na história deste repositório (tags `v0.1.0`, `v0.5.0`, commit `19fa56a`).
+`README.md` para um marcador curto: o repositório está reservado para a CLI da
+plataforma DOP, ainda não tem implementação, e a ferramenta que antes vivia aqui
+mudou-se para o projeto `dop-cmd`.
 
 O repositório fica com **`README.md` e `.gitignore`**, nada mais. Sem `pyproject.toml`:
-o nome do executável e o protocolo de comunicação com a plataforma são decisões da
-rodada de arquitetura.
+o conteúdo do `dop-cli` é assunto do projeto da plataforma, não desta spec.
 
 **Nada de trabalho se perde:** as duas branches locais
 (`feat/runtime-orchestrator-abstraction`, `fix/allure-aggregation-headed-x11`) já estão
@@ -137,9 +118,8 @@ O README da raiz documenta a obtenção do componente não-submodule:
 git clone git@github.com:Digital-Business-One/dop-cmd.git repos/dop-cmd
 ```
 
-O PRD 1.0 (`docs/prd/dop-1.0-mvp/`) **não é reescrito** nesta rodada — recebe apenas
-uma nota curta de nomenclatura. Sua revisão de conteúdo pertence à rodada de
-arquitetura.
+A documentação da plataforma DOP (`docs/prd/`, `docs/superpowers/`) **não é tocada**:
+pertence a outro projeto.
 
 ## 7. Verificação
 
@@ -155,7 +135,7 @@ arquitetura.
 
 ## 8. Consequências e riscos assumidos
 
-- **R-1 — Colisão no comando `dop`.** `dop-cmd` e a futura CLI definitiva disputam o
+- **R-1 — Colisão no comando `dop`.** `dop-cmd` e a futura CLI da plataforma disputam o
   mesmo executável e **não poderão coexistir no mesmo ambiente Python**. É uma escolha
   consciente, feita para não quebrar os workspaces em uso. Quando a CLI 1.0 assumir o
   nome, será em ambiente separado ou com o `dop-cmd` já aposentado.
@@ -168,9 +148,9 @@ arquitetura.
 
 ## 9. Fora de escopo
 
-- Criação do repositório `dop-core` e definição da arquitetura núcleo/BFF.
-- Revisão do PRD 1.0 à luz dos 20 prompts de ajuste e da adoção de specs.
-- Revisão do modelo de etapas da demanda.
+- **Tudo o que diz respeito à plataforma DOP** — arquitetura, componentes, contrato,
+  identidade, modelo de trabalho. É outro projeto, com specs próprias.
+- O conteúdo futuro do repositório `dop-cli`.
 - Qualquer alteração funcional no código do `dop-cmd`.
 
 ## 10. Ordem de execução

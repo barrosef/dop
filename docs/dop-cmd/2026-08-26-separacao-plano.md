@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extrair a ferramenta operacional em uso do repositório `dop-cli` para um repositório novo `dop-cmd`, deixando o `dop-cli` como esqueleto da CLI definitiva do DOP 1.0.
+**Goal:** Extrair a ferramenta operacional em uso do repositório `dop-cli` para um repositório novo `dop-cmd`, devolvendo o nome `dop-cli` ao projeto da plataforma DOP.
 
 **Architecture:** Três repositórios são tocados. O `dop-cmd` nasce limpo com uma cópia dos arquivos versionados do `main` do `dop-cli`, mudando apenas a identidade da distribuição. O `dop-cli` é reduzido a `README.md` + `.gitignore`. O meta-repositório passa a documentar o `dop-cmd` como componente não-submodule, ignorado pelo git.
 
 **Tech Stack:** Python 3.11+ (setuptools), git, `gh` CLI, pytest.
 
-**Spec:** [`docs/superpowers/specs/2026-08-26-separacao-dop-cmd-dop-cli-design.md`](../specs/2026-08-26-separacao-dop-cmd-dop-cli-design.md)
+**Spec:** [`2026-08-26-separacao-design.md`](2026-08-26-separacao-design.md)
 
 ## Nota sobre método
 
@@ -182,15 +182,13 @@ Ferramenta operacional do DOP: **responde pelo ambiente**. Acessa a workspace
 diretamente e executa operações git, PRs multi-plataforma, runtime docker-compose,
 testes e2e/AAA e relatórios Allure.
 
-> **`dop-cmd` × `dop-cli`.** Este repositório é a ferramenta em uso hoje — estável,
-> instalável e mantida. O repositório `dop-cli` foi reservado para a **CLI definitiva**
-> do DOP 1.0, que não acessa a workspace e conversa com a plataforma. Enquanto a
-> plataforma é construída, o `dop-cmd` segue como ferramenta de trabalho e como
-> **referência conceitual** do domínio: o que o DOP faz, validado em produção.
+> **Projeto próprio.** Esta ferramenta viveu até agosto de 2026 no repositório
+> `dop-cli`. O nome foi devolvido a outro projeto, e ela passou a ter repositório e
+> ciclo de vida independentes.
 >
 > A distribuição chama-se `dop-cmd`, mas o pacote Python e o executável continuam
-> sendo `dop`. Por isso `dop-cmd` e a futura `dop-cli` **não podem ser instalados no
-> mesmo ambiente Python**.
+> sendo `dop`. Por isso ela **não pode coexistir** com qualquer outro pacote que
+> instale o comando `dop` no mesmo ambiente Python.
 
 ## Install
 
@@ -216,11 +214,11 @@ Criar `docs/adr/0015-separacao-dop-cmd-e-dop-cli.md` com o conteúdo abaixo. O f
 segue as ADRs existentes (MADR: Contexto / Decisão / Consequências).
 
 ```markdown
-# ADR-0015 — Separação `dop-cmd` (ferramenta de ambiente) e `dop-cli` (CLI definitiva)
+# ADR-0015 — Separação `dop-cmd` (ferramenta de ambiente) e `dop-cli` (nome da plataforma)
 
 - **Status:** Aceito
 - **Data:** 2026-08-26
-- **Spec:** `docs/superpowers/specs/2026-08-26-separacao-dop-cmd-dop-cli-design.md` (meta-repositório `dop`)
+- **Spec:** `docs/dop-cmd/2026-08-26-separacao-design.md` (meta-repositório `dop`)
 
 ## Contexto
 
@@ -228,24 +226,22 @@ O repositório `dop-cli` acumulava **dois papéis sobrepostos**:
 
 1. A **ferramenta operacional em uso** (v0.7.1) — esta base de código, que acessa a
    workspace diretamente e responde pelo ambiente.
-2. O **nome reservado para a CLI definitiva** do DOP 1.0, que segundo o PRD deixa de
-   acessar a workspace e passa a ser cliente da plataforma.
+2. O **nome `dop-cli`**, que pertence ao projeto da plataforma DOP.
 
-Com os dois papéis no mesmo repositório, construir a CLI definitiva significava mexer
+Com os dois papéis no mesmo repositório, construir a CLI da plataforma significava mexer
 no repositório de uma ferramenta em produção, e qualquer conversa sobre "o dop-cli"
 era ambígua.
 
-Em paralelo, a arquitetura do 1.0 foi redirecionada para uma plataforma com núcleo
-gRPC (`dop-core`) e BFF multiprotocolo (`dop-api`), com persistência em banco. Isso
-mudou o papel desta base de código: **ela deixa de ser o ancestral do qual o núcleo
-seria extraído e passa a ser referência conceitual** — o acervo de conhecimento
-operacional validado que informa o desenho da plataforma.
+Esta base de código e a plataforma DOP são **projetos distintos**. Esta ferramenta
+originou a ideia daquela, mas não é seu ancestral técnico: a plataforma não herda
+código, modelo nem decisão daqui. Manter os dois no mesmo repositório sugeria o
+contrário.
 
 ## Decisão
 
 1. **Mover** esta implementação para um repositório próprio, `dop-cmd`. O nome é mais
    apropriado ao papel: *comando de ambiente*, não interface de um cliente.
-2. **Esvaziar** o `dop-cli`, que passa a ser o esqueleto da CLI definitiva.
+2. **Esvaziar** o `dop-cli`, devolvendo o nome ao projeto da plataforma.
 3. **Nascer limpo:** o `dop-cmd` recebe os arquivos do `main` do `dop-cli` num commit
    inicial único. A história de decisão permanece acessível no `dop-cli` (tags
    `v0.1.0`, `v0.5.0` e commit `19fa56a`).
@@ -258,7 +254,7 @@ operacional validado que informa o desenho da plataforma.
 
 ## Consequências
 
-- ➕ A CLI definitiva pode ser construída do zero sem colocar em risco a ferramenta em
+- ➕ A CLI da plataforma pode ser construída do zero sem colocar em risco a ferramenta em
   produção.
 - ➕ Cada nome passa a designar um papel só; some a ambiguidade de "o dop-cli".
 - ➕ Zero ruptura operacional: `dop <subcomando>` continua funcionando como antes.
@@ -276,7 +272,7 @@ Em `docs/adr/README.md`, adicionar a linha da 0015 ao final da tabela, logo apó
 linha da 0014:
 
 ```markdown
-| [0015](0015-separacao-dop-cmd-e-dop-cli.md) | Separação `dop-cmd` (ferramenta de ambiente) e `dop-cli` (CLI definitiva) | Aceito |
+| [0015](0015-separacao-dop-cmd-e-dop-cli.md) | Separação `dop-cmd` (ferramenta de ambiente) e `dop-cli` (nome da plataforma) | Aceito |
 ```
 
 E acrescentar, ao bloco de citação "Nota de proveniência" que já existe no topo do
@@ -444,21 +440,14 @@ git status --short | head
 Substituir o arquivo inteiro por:
 
 ```markdown
-# dop-cli — CLI definitiva do DOP
+# dop-cli
 
-Porta de entrada do **Claude** para a plataforma DOP. **Não acessa a workspace
-diretamente**: traduz cada comando `dop ...` em chamadas à plataforma, que executa as
-operações e detém o estado.
-
-- **Papel:** cliente da plataforma. Nunca tem capacidade que a plataforma não tenha.
-- **Protocolo e stack:** a definir na rodada de arquitetura (núcleo `dop-core` + BFF
-  `dop-api`).
-- **Ergonomia:** requisito do Dev; implementação do Claude.
+Repositório reservado para a **CLI da plataforma DOP**. Sem implementação por enquanto.
 
 ## Implementação anterior
 
-Até agosto de 2026 este repositório continha a **ferramenta operacional em uso**
-(v0.7.1) — a CLI que acessa a workspace diretamente. Ela foi movida para
+Até agosto de 2026 este repositório continha uma ferramenta de linha de comando que
+acessa a workspace diretamente (v0.7.1). Ela é um **projeto próprio** e mudou-se para
 **[`dop-cmd`](https://github.com/Digital-Business-One/dop-cmd)**, onde segue instalável
 e mantida:
 
@@ -468,12 +457,7 @@ pip install git+ssh://git@github.com/Digital-Business-One/dop-cmd.git
 
 O código anterior permanece acessível na história **deste** repositório: tags `v0.1.0`
 e `v0.5.0`, e o commit `19fa56a` (último estado antes do esvaziamento). Os ADRs e a
-documentação daquela implementação viajaram junto com o código, e vivem em
-`dop-cmd/docs/`.
-
-Ver a decisão em `ADR-0015` (`dop-cmd/docs/adr/0015-separacao-dop-cmd-e-dop-cli.md`).
-
-Status: 🚧 em construção (1.0 MVP).
+documentação daquela ferramenta viajaram junto com o código.
 ```
 
 - [ ] **Step 4: Conferir que só sobraram dois arquivos**
@@ -498,8 +482,7 @@ git commit -q -F - <<'MSG'
 chore!: esvazia o dop-cli; implementação migra para dop-cmd
 
 A ferramenta operacional (v0.7.1) foi movida para o repositório dop-cmd.
-Este repositório passa a ser o esqueleto da CLI definitiva do 1.0, cliente
-da plataforma. A história e as tags v0.1.0/v0.5.0 permanecem aqui; o último
+Este repositório fica reservado para a CLI da plataforma DOP. A história e as tags v0.1.0/v0.5.0 permanecem aqui; o último
 estado da implementação anterior é o commit 19fa56a.
 
 Ver ADR-0015 em dop-cmd/docs/adr/.
@@ -571,7 +554,7 @@ Substituir o bloco das linhas 14–17 por:
 ```
 └── repos/                # componentes do produto
     ├── dop-cmd/          # ferramenta operacional em uso (v0.7.1) — NÃO é submodule
-    ├── dop-cli/          # CLI definitiva do 1.0 (submodule) — em construção
+    ├── dop-cli/          # reservado para a CLI da plataforma DOP (submodule)
     ├── dop-api/          # API do produto (submodule) — em construção
     └── dop-app/          # frontend (React/Vite) (submodule) — construído pelo Replit + Claude
 ```
@@ -597,18 +580,15 @@ mantendo `dop-api` e `dop-app` inalterados:
 ```markdown
 - **dop-cmd** (`repos/dop-cmd`) — a **ferramenta operacional em uso** (v0.7.1). Acessa
   a workspace diretamente e responde pelo ambiente: git/PR multi-plataforma, runtime
-  docker-compose, e2e/AAA e Allure. Permanece instalável e mantida durante toda a
-  construção do 1.0, e serve de **referência conceitual** para a plataforma.
+  docker-compose, e2e/AAA e Allure. Permanece instalável e mantida.
   **Não é submodule** — ver [Clonar](#clonar).
+  **Projeto próprio**, independente da plataforma.
   Instalação: `pip install 'git+ssh://git@github.com/Digital-Business-One/dop-cmd.git'`.
-- **dop-cli** (`repos/dop-cli`) — a **CLI definitiva** do 1.0, cliente da plataforma e
-  porta de entrada do Claude. Não acessa a workspace. Em construção.
+- **dop-cli** (`repos/dop-cli`) — reservado para a CLI da plataforma DOP. Em construção.
 ```
 
-> Nota para quem executa: a descrição de `dop-api` ("núcleo do produto + API HTTP,
-> única fonte de verdade") ficará desatualizada quando ele virar BFF sobre o
-> `dop-core`. **Não a altere aqui** — está fora do escopo desta spec e pertence à
-> rodada de arquitetura.
+> Nota para quem executa: as descrições de `dop-api` e `dop-app` pertencem ao projeto
+> da plataforma DOP. **Não as altere aqui** — estão fora do escopo desta spec.
 
 - [ ] **Step 5: Corrigir o ponteiro de docs internos**
 
@@ -631,7 +611,7 @@ Substituir as duas linhas por:
 
 ```markdown
 - ✅ `dop-cmd` v0.7.1 — ferramenta operacional em uso, instalável e mantida.
-- 🚧 `dop-cli`, `dop-api` e `dop-app` — em construção para o **1.0 (MVP)**.
+- 🚧 `dop-cli`, `dop-api` e `dop-app` — componentes da plataforma DOP, em construção.
 ```
 
 - [ ] **Step 7: Fixar o ponteiro do submodule e conferir**
