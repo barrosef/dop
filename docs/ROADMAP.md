@@ -62,5 +62,5 @@ Levantadas na revisão do SP-0, cada uma exigindo decisão própria e provável 
 | P-4 | **Plano de controle × plano de execução** — Cloud Run não sustenta sessão longa de terminal | SP-5 |
 | P-5 | **Custo da renomeação** *workspace → projeto* em código, rotas, i18n, mocks e documentação | Execução; vira tarefa de plano |
 | P-6 | **Recuperação de organização órfã não verificada** — sem domínio provado, não há evidência disponível para reivindicar posse | SP-0 identidade |
-| P-7 | **Evoluir o ModelRouter** — a ADR-0011 é rascunho; a tabela tarefa→modelo será calibrada com telemetria real (F-7) | ADR-0011 |
+| P-7 | **Calibrar o ModelRouter** — a tabela tarefa→(modelo, effort) da ADR-0011 nasce como palpite informado; calibra com telemetria real (F-7) e com os campos de cache dos eventos de custo | ADR-0011/0012 |
 | P-8 | **Formato dos critérios executáveis da spec** — a ADR-0007 fixa a exigência; a sintaxe pertence ao núcleo do SP-4 | SP-4 núcleo |

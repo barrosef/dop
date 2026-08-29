@@ -38,6 +38,11 @@ SUOPT-1315
   projeto (ADR-0009).
 - Timelines brutas **não** são injetadas em contexto alheio — não escala e amplia
   injeção.
+- **Intervenção do operador** numa thread (instrução vinda da caixa de atenção) entra
+  como mensagem `system` no meio da conversa — preserva o prefixo cacheado (ADR-0012).
+- **Higiene de thread de investigação:** publicado o achado, os resultados brutos de
+  ferramenta (dumps, logs) são limpos do transcript por context editing; o achado é o
+  registro durável.
 
 ## 3. Caixa de atenção
 

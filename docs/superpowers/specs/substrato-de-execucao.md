@@ -105,6 +105,12 @@ events(session) → stream            // ações, perguntas, custo (→ ADR-0006
 Primeiro adaptador: Claude Agent SDK. A ficha (propósito, ferramentas, modelo,
 orçamento) vem da ADR-0010; o modelo, do router (ADR-0011).
 
+A porta expõe os botões de economia (ADR-0012), preenchidos pela ficha: **modelo**,
+**effort**, **orçamento** (task budget — o agente vê o teto e se ritma) e **política de
+cache** (layout de prefixo estável; intervenção do operador via mensagem `system`
+mid-conversation, nunca editando o topo do prompt). O stream de eventos reporta
+`cache_read`/`cache_creation` para a telemetria da ADR-0011.
+
 ## 8. Riscos
 
 | # | |

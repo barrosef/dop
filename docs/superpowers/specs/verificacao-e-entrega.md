@@ -33,7 +33,7 @@ falhando** — falha persistente vira bloqueio com pergunta, nunca PR quebrado.
 ## 3. O crítico
 
 - Instância independente com contexto limpo (não herda a conversa de quem implementou);
-  modelo **forte** — não se economiza no freio (ADR-0011).
+  modelo **forte**, effort **máximo** — não se economiza no freio (ADR-0011/0012).
 - Recebe: diff completo, spec, resultados de aceitação, achados da demanda.
 - Emite parecer estruturado: `aprova | aprova com ressalvas | reprova (motivos)`.
   Reprova volta ao agente com o parecer; aprova segue ao PR com o parecer anexado.

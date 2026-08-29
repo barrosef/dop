@@ -19,3 +19,4 @@ descartada, ou quando alguém daqui a seis meses vai perguntar "por que assim?".
 | [0009](0009-contexto-como-subsistema.md) | Contexto é subsistema: base de conhecimento e pacote por demanda | Aceita |
 | [0010](0010-multi-agente-por-demanda.md) | Multi-agente por demanda: threads endereçáveis e achados publicados | Aceita |
 | [0011](0011-governanca-de-custo-llm.md) | Governança de custo de LLM: medição firme, roteamento em rascunho | **Rascunho** |
+| [0012](0012-economia-de-tokens.md) | Economia de tokens como disciplina de engenharia | Aceita |

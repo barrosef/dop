@@ -45,6 +45,15 @@ Disciplina de tamanho: o pacote cresce com a **demanda**, não com o projeto. O 
 coube entra por consulta — o agente pode pedir mais (`buscar_memoria`,
 `ler_indice(repo)`) durante a execução.
 
+**Duas exigências de engenharia (ADR-0012):**
+
+- **Serialização determinística.** O pacote entra no prefixo cacheado do prompt: ordem
+  estável, sem timestamps, sem IDs voláteis. Byte mudado invalida o cache dali em
+  diante — montagem "de qualquer jeito" queima ~90% de desconto em silêncio.
+- **Medição na montagem.** O tamanho do pacote é medido por token counting (endpoint
+  gratuito) e emitido como evento; acima do teto do projeto, alerta — a disciplina
+  "cresce com a demanda" tem número, não impressão.
+
 ## 4. O ciclo
 
 ```
