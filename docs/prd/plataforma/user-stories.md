@@ -1,9 +1,9 @@
 # Plataforma DOP — features e user stories
 
-> **Status:** Rascunho para revisão do Dev · **Data:** 2026-08-30 (rev. 2 — recursos
-> promovidos a feature de base, ADR-0013)
-> **Base:** specs SP-0 (identidade, integrações, recursos), ADRs 0001–0013, spec de
-> navegação e cockpit (protótipo aprovado)
+> **Status:** Rascunho para revisão do Dev · **Data:** 2026-08-30 (rev. 3 — fluxo
+> dinâmico e cockpit painel-sobre-barra)
+> **Base:** specs SP-0 (identidade, integrações, recursos), fluxo de trabalho,
+> navegação rev. 2; ADRs 0001–0014
 > **Fases:** conforme `ROADMAP.md` — **[F1]** constrói-se agora; **[F2]** modelado no
 > schema desde já, construído na fase seguinte.
 
@@ -182,7 +182,8 @@ convites são [F2] e vêm depois na numeração, ainda que no schema existam des
 
 ## Fora deste rascunho (registrado para não sumir)
 
-- Ciclo de vida completo da demanda — criar/iniciar/portões — depende do SP-4 núcleo.
-- Editor/formato declarativo de fluxo git e workflow — spec própria após o SP-4 núcleo.
+- Sintaxe dos critérios executáveis dentro do artefato `spec` — P-8.
+- Formato declarativo do **fluxo git** (o do fluxo de trabalho já está na spec) e os
+  editores visuais de ambos.
 - Credencial de organização (GitHub App etc.) — [F2], spec de integrações §4.
 - Notificações fora da plataforma (e-mail/push) — projeções futuras da caixa de atenção.
