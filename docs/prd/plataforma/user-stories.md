@@ -167,12 +167,17 @@ convites são [F2] e vêm depois na numeração, ainda que no schema existam des
   duplicação, complexidade & dívida, dependências & vulnerabilidades.
   - alimentados por stack Sonar-like em container + achados de agentes
 
-### 8.5 Arquitetura (painel: mapa e diagramas · centro: canvas)
-- **US-8.5.1** Como dev, quero o **mapa do projeto** (índice da ADR-0009) como diagrama
-  navegável.
-- **US-8.5.2** Como dev, quero pedir um **diagrama específico** — "o fluxo do pagamento
-  que envia e-mail, baixa estoque e passa pela fila" — produzido por subagente (thread
-  no Chat), renderizado como diagrama rico/canvas interativo e guardado como artefato.
+### 8.5 Arquitetura (painel: artefatos por task e tipo · centro: canvas/viewer)
+- **US-8.5.1** Como dev, quero pedir análises e **diagramas arquiteturais e de fluxo**
+  de uma feature ligada à task — "o fluxo do pagamento que envia e-mail, baixa estoque
+  e passa pela fila" — produzidos por subagente (thread no Chat), renderizados em canvas
+  interativo e guardados como artefatos da demanda.
+- **US-8.5.2** Como dev, quero que uma **análise forense** (ex.: de um hotfix
+  importante) renda um **parecer**: diagramas + documento técnico/executivo, agrupados
+  na Arquitetura sob aquela task.
+- **US-8.5.3** Como dev, quero navegar os artefatos arquiteturais **filtrados pelo task
+  header** — a demanda selecionada mostra só os dela; sem seleção, todos do projeto,
+  mais o mapa (índice ADR-0009).
 
 ### 8.6 Timeline (painel: filtros de evento · centro: linha do tempo)
 - **US-8.6.1** Como dev, quero a linha do tempo da demanda — quem fez o quê, com qual

@@ -57,11 +57,15 @@ Inalterado desde a rev. 1. Fora do cockpit só existem Auth e Primeiro uso.
 | **Repos** | Árvore git completa: repos → branches → PRs/MRs → arquivos (modificados, ignorados, gitStatus) → **fila de merge** (ADR-0008) | Diff, arquivo, detalhe do PR com pacote de evidência, estado da fila |
 | **Infra** | Três grupos: **aplicações** (pods/containers da demanda), **bancos**, **serviços remotos** — com estado | Logs em streaming, terminal, detalhe do recurso. **Acessa o ambiente da aplicação, nunca a microVM do agente** |
 | **QA** | Grupos de qualidade: Aceitação (critérios da spec) · Testes (aaa/e2e/integração) · Cobertura · Relatórios Allure · Histórico/flakiness · **Padrões & conformidade · Duplicação · Complexidade & dívida · Dependências & vulnerabilidades** (stack Sonar-like em container) | Painel do grupo selecionado |
-| **Arquitetura** | **Mapa do projeto** (índice da ADR-0009) · diagramas do projeto · diagramas por demanda | Diagramas ricos gerados por agente (canvas interativo, ex.: Claude Design); diagrama específico sob pedido do dev — "o fluxo do pagamento que envia e-mail, baixa estoque e passa pela fila" — produzido por subagente com thread no Chat |
+| **Arquitetura** | **Artefatos arquiteturais das demandas**, agrupados por task e por tipo — diagramas (arquiteturais, de fluxo/operacionais), documentos técnicos, pareceres/relatórios executivos — mais o mapa do projeto (índice ADR-0009) no escopo de projeto | Canvas interativo para diagramas (ex.: Claude Design), viewer para documentos. **Ligada às tasks e filtrada pelo task header**: no escopo de demanda, só os artefatos daquela task |
 | **Timeline** | Filtros/agrupamentos de evento: agentes, git, portões, custo | A linha do tempo (projeção do log — ADR-0006): quem fez o quê, com qual credencial; custo e cache (ADR-0011/0012). É onde auditoria e replay ficam visíveis |
 
 **Divisão QA × Arquitetura: QA mede, Arquitetura explica.** Todo índice — de produto ou
-de código — é QA; mapa e diagrama são Arquitetura.
+de código — é QA; Arquitetura é **produto do trabalho**: seus artefatos nascem de
+solicitações do dev nas demandas (pedir um diagrama de integração de uma feature, uma
+análise forense de um hotfix que rende parecer com diagramas e documento técnico) —
+subagentes com thread no Chat (ADR-0010), resultado gravado como artefato da demanda e
+na memória do projeto (ADR-0009).
 
 **Não são funções da barra** (decisão explícita): Spec/Docs (artefatos moram nas
 etapas); Custo (grupo da Timeline; conta em configuração); Segurança (grupo de QA na
