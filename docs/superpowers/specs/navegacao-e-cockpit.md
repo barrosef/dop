@@ -45,7 +45,14 @@ Inalterado desde a rev. 1. Fora do cockpit só existem Auth e Primeiro uso.
   escopo de barra, painel e centro. Clicar no chip do card abre o detalhe do card do
   provider (card original + artefatos).
 - **Overview fica acima do task header, fora da barra** — ele não responde ao filtro de
-  cards, e a posição diz isso. Na v1 é um botão que toma o centro; evolui depois.
+  cards, e a posição diz isso. Na v1 é um botão que toma o centro; a forma final será
+  explorada depois (P-10). Um item já definido do Overview: **Arquitetura do projeto** —
+  análises gerais geradas por solicitação do dev a partir de código-fonte, documentos,
+  repositórios e recursos de infraestrutura, para gerar conhecimento e identificar
+  stacks, integrações e pontos fortes/fracos, **propondo melhorias** em diagramas e
+  gráficos (ex.: "100 integrações, 90 sem resiliência" — diagrama do fluxo sem
+  resiliência + gráfico do índice). Distingue-se da Arquitetura da barra: a da barra é
+  por task; a do Overview é do projeto inteiro, imune ao filtro.
 - **Escopos:** projeto (nenhum card) e demanda (card selecionado). URL profunda
   `/:conta/:workspace/:projeto?card=` preservada.
 
