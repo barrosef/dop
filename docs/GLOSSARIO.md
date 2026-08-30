@@ -16,6 +16,10 @@ convenção de desambiguação está registrada.
 | **Recurso** | Unidade de posse e compartilhamento da conta: integração, skill, workflow humano↔agente ou fluxo git. Concessão `use`/`manage` por usuário |
 | **Integração** | Recurso com credencial: vínculo da conta com provedor externo — git, task manager ou **agente** (Claude, Codex, …) |
 | **Fluxo git** | Recurso que declara a governança git: taxonomia de branch por tipo de card, bases, promoção, políticas |
+| **Fluxo de trabalho** | Recurso que compõe o ciclo da demanda em etapas tipadas, com artefatos e portões (ADR-0014). Herdável na cadeia plataforma ◁ conta ◁ workspace ◁ projeto ◁ demanda |
+| **Etapa tipada** | Elemento do fluxo cujo tipo (contexto, spec, plano, implementação, teste, validação_humana, finalização, genérico) decide o renderizador da tela e o comportamento do agente |
+| **Portão** | Ponto do fluxo onde a demanda para e espera decisão humana; vira item da caixa de atenção |
+| **Fluxo efetivo** | O fluxo que vale para uma demanda após resolver a cadeia de herança; a versão congela quando a demanda inicia |
 | **Card** | Item de trabalho vindo do task manager. Tem tipo dinâmico, definido pelo provedor |
 | **Demanda** | Um card em execução na plataforma: sandbox, threads, spec, eventos. Card é a origem; demanda é o trabalho |
 | **Sandbox** | O ambiente isolado de uma demanda: microVM com agente(s), workspace e Docker interno. Fronteira de segurança |

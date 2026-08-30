@@ -1,66 +1,78 @@
 # Navegação e cockpit
 
-> **Status:** Aprovada (protótipo validado pelo Dev em 2026-08-29) · **Projeto:** plataforma DOP
+> **Status:** Aprovada (rev. 2 — painel-sobre-barra, 2026-08-30) · **Projeto:** plataforma DOP
 >
 > **Responde:** o padrão de navegação da plataforma e a anatomia do cockpit.
->
-> **Protótipo clicável:** https://claude.ai/code/artifact/184e2f56-7cf4-4c94-9e39-b49c993c73da
->
-> **Não responde:** conteúdo detalhado de cada seção (evolui com SP-4 núcleo e com as
-> user stories); protocolo (SP-2).
+> **Base:** ADR-0014 (fluxo dinâmico), ADR-0010 (threads), ADR-0006 (eventos).
+> O protótipo clicável de 2026-08-29 valida o chrome global e os escopos; a anatomia
+> interna do cockpit desta revisão (painel-sobre-barra) o substitui e será prototipada
+> na próxima iteração visual.
 
-## 1. Princípio
+## 1. Princípios
 
-**Zero telas até o trabalho.** Login cai no último cockpit aberto, com a demanda que
-estava selecionada. Trocar de projeto: 1 clique. Trocar de demanda: 1 clique. Trocar de
-workspace: 2. Configuração é desvio de 10 segundos (painel deslizante), nunca viagem.
+- **Zero telas até o trabalho.** Login cai no último cockpit; projeto a 1 clique,
+  demanda a 1 clique, workspace a 2. Configuração é painel deslizante, nunca página.
+- **A lei do cockpit: painel é "o quê", centro é "o conteúdo".** Toda função — atual ou
+  futura — é um par painel+centro no mesmo padrão (§3). Função nova não toca o chrome.
 
 ## 2. Chrome global
 
-- **Header fino:** logo, **seletor de conta ativa** (pessoal + PJs, estilo GitHub — SP-0),
-  breadcrumb `conta / workspace / projeto [/ demanda]`, **caixa de atenção (🔔 com
-  badge)** e paleta **⌘K**.
-- **Caixa de atenção é global**, nunca seção de cockpit: cruza todas as demandas da
-  conta ativa; cada item navega direto ao lugar da resolução (thread, spec, PR, conflito).
-- **Barra lateral esquerda = a árvore**, e só ela: workspaces → projetos, com busca;
-  colapsável a ícones; engrenagem por hover abre painel deslizante de configuração.
-  Não existem "lista de workspaces" nem "dashboard geral": a árvore é a lista, o
-  Overview do projeto é o dashboard.
-- **⌘K:** pular para workspace/projeto/demanda, criar demanda, abrir configuração.
+Header fino (logo, seletor de conta ativa, breadcrumb, caixa de atenção 🔔 global, ⌘K);
+árvore lateral workspaces→projetos com busca; painéis deslizantes de configuração.
+Inalterado desde a rev. 1. Fora do cockpit só existem Auth e Primeiro uso.
 
-## 3. Cockpit — três colunas, dois escopos
+## 3. Anatomia do cockpit
 
 ```
-[árvore] [seções] [conteúdo]     + faixa de demandas horizontal no topo do cockpit
+┌───────────────────────────────────────────────────────────────┐
+│  [Overview]                            ← acima do task header,│
+│  task header: faixa de cards (filtra tudo abaixo)   fora dele │
+├────┬─────────────────┬────────────────────────────────────────┤
+│ 💬 │                 │                                        │
+│ 📁 │  PAINEL         │   CENTRO                               │
+│ 🖥 │  sobrepõe a     │   acionado pelas opções do painel      │
+│ ✓  │  barra; barra   │   (no Chat: as etapas do fluxo)        │
+│ 🏛 │  encolhe p/     │                                        │
+│ ⏱ │  ícones         │                                        │
+└────┴─────────────────┴────────────────────────────────────────┘
 ```
 
-- A **faixa de demandas** (cards do provider, duplo status, filtrável) atravessa o topo —
-  a seleção de card é transversal às seções.
-- **Escopo projeto** (nenhum card selecionado): tudo agregado.
-- **Escopo demanda** (card selecionado, 1 clique): tudo restrito à demanda + o que só
-  existe com uma (chat/threads, runtime do sandbox, spec). Clicar de novo desseleciona.
-- Indicador de escopo fixo no rodapé da barra de seções.
-- **URL profunda:** `/:conta/:workspace/:projeto?card=<id>` — todo estado navegável é
-  linkável.
+- **Padrão de navegação (o padrão VS Code):** clicar num botão da barra abre o
+  **painel** sobrepondo a barra, que encolhe a ícones para trocar de função; o
+  **centro** responde à seleção no painel. Painel colapsável; larguras persistidas por
+  função.
+- **Task header** (faixa de cards com duplo status, filtrável): a seleção define o
+  escopo de barra, painel e centro. Clicar no chip do card abre o detalhe do card do
+  provider (card original + artefatos).
+- **Overview fica acima do task header, fora da barra** — ele não responde ao filtro de
+  cards, e a posição diz isso. Na v1 é um botão que toma o centro; evolui depois.
+- **Escopos:** projeto (nenhum card) e demanda (card selecionado). URL profunda
+  `/:conta/:workspace/:projeto?card=` preservada.
 
-## 4. As seções (barra lateral vertical, ícones + rótulo)
+## 4. As funções da barra
 
-| # | Seção | Conteúdo | Base |
-|---|---|---|---|
-| 7.1 | Overview | KPIs, cards com duplo status, atividade dos agentes, filas | |
-| 7.2 | Chat | Threads multi-agente, fichas, achados, lançar subagente | ADR-0010 |
-| 7.3 | QA | AAA/e2e, Allure, resultados de aceitação | ADR-0007 |
-| 7.4 | Código & entrega | Repos → branches → PRs → diffs; fila de merge com posição e sobreposições | ADR-0008 |
-| 7.5 | Runtime | Serviços do sandbox, logs em streaming, terminal | substrato |
-| 7.6 | Spec & docs | Spec da demanda, critérios, portão de aprovação, artefatos MD | spec-driven |
-| 7.7 | Timeline | Dossiê como linha do tempo de eventos; custo e cache da demanda | ADR-0006/0011 |
-| 7.8 | Arquitetura | Índice da base de conhecimento renderizado, achados arquiteturais, análise sob demanda | ADR-0009 |
+| Função | Painel | Centro |
+|---|---|---|
+| **Chat** | Threads da demanda: `#principal` + subagentes, fichas, achados, lançar subagente (ADR-0010) | **Régua de etapas do fluxo efetivo** (ADR-0014), em abas — artefatos, portões e renderizador por tipo de etapa |
+| **Repos** | Árvore git completa: repos → branches → PRs/MRs → arquivos (modificados, ignorados, gitStatus) → **fila de merge** (ADR-0008) | Diff, arquivo, detalhe do PR com pacote de evidência, estado da fila |
+| **Infra** | Três grupos: **aplicações** (pods/containers da demanda), **bancos**, **serviços remotos** — com estado | Logs em streaming, terminal, detalhe do recurso. **Acessa o ambiente da aplicação, nunca a microVM do agente** |
+| **QA** | Grupos de qualidade: Aceitação (critérios da spec) · Testes (aaa/e2e/integração) · Cobertura · Relatórios Allure · Histórico/flakiness · **Padrões & conformidade · Duplicação · Complexidade & dívida · Dependências & vulnerabilidades** (stack Sonar-like em container) | Painel do grupo selecionado |
+| **Arquitetura** | **Mapa do projeto** (índice da ADR-0009) · diagramas do projeto · diagramas por demanda | Diagramas ricos gerados por agente (canvas interativo, ex.: Claude Design); diagrama específico sob pedido do dev — "o fluxo do pagamento que envia e-mail, baixa estoque e passa pela fila" — produzido por subagente com thread no Chat |
+| **Timeline** | Filtros/agrupamentos de evento: agentes, git, portões, custo | A linha do tempo (projeção do log — ADR-0006): quem fez o quê, com qual credencial; custo e cache (ADR-0011/0012). É onde auditoria e replay ficam visíveis |
 
-## 5. Inventário de telas fora do cockpit
+**Divisão QA × Arquitetura: QA mede, Arquitetura explica.** Todo índice — de produto ou
+de código — é QA; mapa e diagrama são Arquitetura.
 
-1. **Auth** — sign in/up, 4 métodos.
-2. **Primeiro uso** — conta → 1 integração → workspace + projeto; tudo revisitável.
-3. **Painéis deslizantes** — conta (integrações, membros, perfis), workspace (tags),
-   projeto (repos, task manager, regras, conhecimento).
+**Não são funções da barra** (decisão explícita): Spec/Docs (artefatos moram nas
+etapas); Custo (grupo da Timeline; conta em configuração); Segurança (grupo de QA na
+v1, promove-se se crescer); caixa de atenção (global, no header).
 
-Nada além disso.
+## 5. O centro do Chat — renderização do fluxo
+
+O centro lê o **fluxo efetivo** da demanda (estrutura da ADR-0014) e desenha a régua de
+etapas sem conhecer nenhuma composição: o **tipo** da etapa escolhe o renderizador —
+documentos MD (contexto/spec/plano), progresso de execução (implementação), abas
+aaa/e2e/integração (teste), **checklist de validação com planos e links marcáveis**
+(validação_humana), **passos com estados e geração de PRs** (finalização). Os
+renderizadores derivam dos componentes já definidos no dop-app (ValidationStageView,
+FinalizationStageView, doc-viewer, test-stage-view) — repensados, não descartados.

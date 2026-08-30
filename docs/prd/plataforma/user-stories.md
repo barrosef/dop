@@ -52,9 +52,15 @@ convites são [F2] e vêm depois na numeração, ainda que no schema existam des
 - **US-3.5 [F1]** Como dev, quero manter **fluxos git** na conta — criados por mim ou
   adotados do catálogo — versionados, com validação estrutural e simulação a seco.
   - declaram: taxonomia de branch por tipo de card, bases, direção, composição de release, políticas
-- **US-3.6 [F2]** Como dev, quero manter **skills** e **workflows humano↔agente** como
-  recursos versionados.
-  - o formato do workflow depende do SP-4 núcleo (P-8/ciclo da demanda)
+- **US-3.6 [F1]** Como dev, quero manter **fluxos de trabalho** versionados — compostos
+  de etapas tipadas (ADR-0014) — criando os meus ou adotando o default da plataforma.
+  - validação estrutural na criação; aviso quando faltar etapa `spec`
+- **US-3.6b [F1]** Como dev, quero que workspace, projeto e demanda **herdem** o fluxo do
+  nível acima e possam sobrepor com um próprio — vendo sempre a origem do fluxo efetivo.
+  - cadeia plataforma ◁ conta ◁ workspace ◁ projeto ◁ demanda; demanda congela a versão ao iniciar
+- **US-3.6c [F2]** Como dev, quero **promover** um fluxo que criei numa demanda para o
+  projeto, a workspace ou a conta.
+- **US-3.6d [F2]** Como dev, quero manter **skills** como recursos versionados.
 - **US-3.7 [F2]** Como dev, quero adotar um recurso do catálogo da plataforma como
   cópia versionada, vendo o diff quando o catálogo evoluir.
 
@@ -112,57 +118,65 @@ convites são [F2] e vêm depois na numeração, ainda que no schema existam des
 
 ## 8. Cockpit / IDE **[F1]**
 
+> Lei do cockpit (spec de navegação rev. 2): botão da barra abre **painel** sobrepondo a
+> barra (que encolhe a ícones); o **centro** responde ao painel. Task header filtra tudo;
+> Overview fica acima dele, fora da barra.
+
 ### Navegação
-- **US-8.0.1** Como dev, quero selecionar um card na faixa e ver todas as seções se
-  restringirem à demanda; desselecionar volta ao agregado do projeto.
-- **US-8.0.2** Como dev, quero a caixa de atenção global (🔔) dizendo **onde sou
-  necessário** entre todas as demandas da conta, cada item levando ao lugar da
-  resolução.
-  - só entra o que exige decisão humana (spec de conversação §3)
-- **US-8.0.3** Como dev, quero a paleta ⌘K para pular a qualquer projeto/demanda e
-  disparar ações sem mouse.
+- **US-8.0.1** Como dev, quero selecionar um card na faixa e ver barra, painel e centro
+  se restringirem à demanda; desselecionar volta ao agregado do projeto.
+- **US-8.0.2** Como dev, quero a caixa de atenção global (🔔) dizendo onde sou
+  necessário, cada item levando ao lugar da resolução — incluindo portões de fluxo
+  pendentes.
+- **US-8.0.3** Como dev, quero a paleta ⌘K para pular a qualquer projeto/demanda sem
+  mouse.
+- **US-8.0.4** Como dev, quero o **Overview** num botão acima do task header — visão do
+  projeto inteiro, imune ao filtro de cards.
+- **US-8.0.5** Como dev, quero clicar no chip do card e ver o card original do provider
+  com seus artefatos.
 
-### 8.1 Overview
-- **US-8.1.1** Como dev, quero KPIs do escopo (cards, threads bloqueadas, fila de
-  merge, custo) e a atividade recente dos agentes numa olhada.
+### 8.1 Chat (painel: threads · centro: etapas do fluxo)
+- **US-8.1.1** Como dev, quero conversar com o principal e com cada subagente em threads
+  separadas, com fichas e achados (ADR-0010).
+- **US-8.1.2** Como dev, quero o centro exibindo a **régua de etapas do fluxo efetivo**
+  da demanda — qualquer fluxo, renderizado pelo tipo de cada etapa (ADR-0014).
+  - documentos MD com viewer/fonte e edição; portões de aprovação visíveis
+- **US-8.1.3** Como dev, quero a etapa de **validação humana** como checklist marcável
+  item a item, gerada do plano de validação, com links — podendo reprovar um item e
+  tratar com o agente no chat.
+- **US-8.1.4** Como dev, quero a etapa de **finalização** com passos visíveis
+  (commits/pushes → PRs → fila de merge → conflitos → dossiê) e estados por passo.
 
-### 8.2 Chat
-- **US-8.2.1** Como dev, quero conversar com o agente principal numa thread própria e
-  ver as threads dos subagentes separadas, sem misturar timelines (ADR-0010).
-- **US-8.2.2** Como dev, quero lançar um subagente com propósito e ferramentas (MCPs e
-  skills concedidos), acompanhando a ficha dele — inclusive o modelo, vindo das
-  integrações de agente da conta.
-- **US-8.2.3** Como dev, quero que conclusões virem **achados** visíveis, reutilizados
-  pelos irmãos e gravados no dossiê.
+### 8.2 Repos (painel: árvore git · centro: conteúdo)
+- **US-8.2.1** Como dev, quero a visão git completa: repos → branches → PRs/MRs →
+  arquivos com status git, diffs arquivo a arquivo.
+  - branches nomeadas conforme o fluxo git anexado
+- **US-8.2.2** Como dev, quero a **fila de merge** por repositório — posição,
+  re-verificação, sobreposições — e decidir conflitos escalados (ADR-0008).
 
-### 8.3 QA
-- **US-8.3.1** Como dev, quero resultados de AAA/e2e e dos critérios de aceitação por
-  demanda e por repo, com Allure embutido.
+### 8.3 Infra (painel: aplicações · bancos · serviços remotos)
+- **US-8.3.1** Como dev, quero ver as aplicações da demanda com estado, logs em
+  streaming e terminal — **no ambiente da aplicação, nunca na microVM do agente**.
+- **US-8.3.2** Como dev, quero listar bancos e serviços remotos que o sistema usa, com
+  estado e logs quando disponíveis.
 
-### 8.4 Código & entrega
-- **US-8.4.1** Como dev, quero navegar repos → branches → PRs → diffs no escopo atual.
-  - branches nomeadas conforme o fluxo git anexado ao projeto
-- **US-8.4.2** Como dev, quero a fila de merge por repositório — posição, estado,
-  sobreposições — e decidir conflitos escalados (ADR-0008).
+### 8.4 QA (painel: grupos de qualidade · centro: painel do grupo)
+- **US-8.4.1** Como dev, quero os grupos de qualidade do produto: aceitação, testes
+  (aaa/e2e/integração), cobertura, relatórios Allure, histórico/flakiness.
+- **US-8.4.2** Como dev, quero os grupos de qualidade de código: padrões & conformidade,
+  duplicação, complexidade & dívida, dependências & vulnerabilidades.
+  - alimentados por stack Sonar-like em container + achados de agentes
 
-### 8.5 Runtime
-- **US-8.5.1** Como dev, quero os serviços do sandbox da demanda, logs em streaming por
-  serviço, e um terminal no ambiente.
+### 8.5 Arquitetura (painel: mapa e diagramas · centro: canvas)
+- **US-8.5.1** Como dev, quero o **mapa do projeto** (índice da ADR-0009) como diagrama
+  navegável.
+- **US-8.5.2** Como dev, quero pedir um **diagrama específico** — "o fluxo do pagamento
+  que envia e-mail, baixa estoque e passa pela fila" — produzido por subagente (thread
+  no Chat), renderizado como diagrama rico/canvas interativo e guardado como artefato.
 
-### 8.6 Spec & docs
-- **US-8.6.1** Como dev, quero ler a spec da demanda com seus critérios e **aprovar ou
-  pedir ajustes** dali (o pedido abre o chat).
-  - independe da sintaxe final dos critérios (P-8)
-
-### 8.7 Timeline
-- **US-8.7.1** Como dev, quero a linha do tempo de eventos da demanda — quem fez o quê,
-  com qual credencial — e custo/cache (ADR-0006/0011/0012).
-
-### 8.8 Arquitetura
-- **US-8.8.1** Como dev, quero o mapa do projeto (índice renderizado) e os achados
-  arquiteturais acumulados.
-- **US-8.8.2** Como dev, quero pedir análise arquitetural a um subagente daqui, com a
-  thread aparecendo no Chat.
+### 8.6 Timeline (painel: filtros de evento · centro: linha do tempo)
+- **US-8.6.1** Como dev, quero a linha do tempo da demanda — quem fez o quê, com qual
+  credencial — filtrável por agentes, git, portões e custo (ADR-0006/0011/0012).
 
 ---
 

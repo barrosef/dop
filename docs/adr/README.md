@@ -21,3 +21,4 @@ descartada, ou quando alguém daqui a seis meses vai perguntar "por que assim?".
 | [0011](0011-governanca-de-custo-llm.md) | Governança de custo de LLM: medição firme, roteamento em rascunho | **Rascunho** |
 | [0012](0012-economia-de-tokens.md) | Economia de tokens como disciplina de engenharia | Aceita |
 | [0013](0013-recurso-como-unidade-de-compartilhamento.md) | Recurso como unidade de posse e compartilhamento da conta | Aceita |
+| [0014](0014-fluxo-de-trabalho-dinamico.md) | Fluxo de trabalho dinâmico, tipado e herdável | Aceita |

@@ -7,7 +7,7 @@
 | | Subprojeto | Decide | Estado |
 |---|---|---|---|
 | **SP-0** | Identidade, contas e tenancy | Quem é o usuário, o que é uma conta, como se possui e se isola, onde vivem as integrações, hierarquia conta → workspace → projeto | ✅ desenhado |
-| **SP-4** | Modelo de trabalho: specs e autonomia | O que a plataforma faz; o que substitui as etapas; onde o humano decide, aprova e dá contexto | 🟨 subsistemas fechados (substrato, contexto, verificação/entrega, conversação/atenção — ADRs 0006–0011); **núcleo pendente**: ciclo de vida da spec/demanda e formato dos critérios |
+| **SP-4** | Modelo de trabalho: specs e autonomia | O que a plataforma faz; o que substitui as etapas; onde o humano decide, aprova e dá contexto | ✅ desenhado — subsistemas (ADRs 0006–0012) + **núcleo fechado pela ADR-0014** (fluxo dinâmico tipado e herdável); resta P-8 (sintaxe dos critérios) |
 | **SP-1** | Topologia de componentes e repositórios | Quais componentes existem e o papel de cada um | ⬜ |
 | **SP-3** | Modelo de domínio e persistência | Workspace, projeto, card, artefato, evento; banco | ⬜ |
 | **SP-2** | Contrato e protocolos | Fonte da verdade do contrato; REST, gRPC e streaming | ⬜ |
@@ -63,4 +63,5 @@ Levantadas na revisão do SP-0, cada uma exigindo decisão própria e provável 
 | P-5 | **Custo da renomeação** *workspace → projeto* em código, rotas, i18n, mocks e documentação | Execução; vira tarefa de plano |
 | P-6 | **Recuperação de organização órfã não verificada** — sem domínio provado, não há evidência disponível para reivindicar posse | SP-0 identidade |
 | P-7 | **Calibrar o ModelRouter** — a tabela tarefa→(modelo, effort) da ADR-0011 nasce como palpite informado; calibra com telemetria real (F-7) e com os campos de cache dos eventos de custo | ADR-0011/0012 |
-| P-8 | **Formato dos critérios executáveis da spec** — a ADR-0007 fixa a exigência; a sintaxe pertence ao núcleo do SP-4 | SP-4 núcleo |
+| P-8 | **Sintaxe dos critérios executáveis** dentro do artefato `spec` — a ADR-0007 fixa a exigência e a ADR-0014 fixa onde vivem | spec de fluxo |
+| P-9 | **⭐ Compartilhamento externo de fluxos** (entre contas / catálogo comunitário) — **estratégica**: aguarda, não dorme; candidata a motor de popularização da plataforma. Revisitar a cada ciclo de planejamento | ADR-0014 §7 |
