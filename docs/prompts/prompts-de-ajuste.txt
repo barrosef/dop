@@ -1,0 +1,184 @@
+Claude deve perguntar se mantém configurações da workspace ou se utiliza configurações custom para a demanda atual;
+Ao iniciar cada demanda, dop deve 
+
+Prompt de ajuste 01
+---
+Vamos reformular o layout
+
+O chat vai para uma barra lateral esquerda (estilo replit);
+As etapas ficam numa barra horizontal no quadro central aonde hoje é a timeline do chat, cada etapa com opções para clicar de ver os detalhes que abrem mais abaixo no painel central. Etapas que permitem logs como testes exibem os logs também abaixo da barra de progresso no painel central.
+Mais a esquerda numa barra lateral fininha temos as opções para ver os repositórios impactados, branches, dossiê e infra....
+---
+Prompt de ajuste 02
+---
+O chat é uma das opções da barra lateral pequena, quando clicar em alguma opção como por exemplo branches ou repos, o chat some e a opção clicada ocupa o lugar do chat, que por sua vez, se clicar em infra iden,.. e assim sucessivamente.
+---
+Prompt de ajuste 03
+---
+1. branches deve estar hierarquicamente ligadas a um repo.
+2. infra, os componentes de infra devem ter uma opção de ver logs que quando clicados ocupam o espaço do painel central e quando fechada o painel central volta ao estado anterior (tela de execução).
+---
+Prompt de ajuste 04
+---
+As aplicações também pode ser logs visualizados exemplo frontend e backend podem ser vistas pelos logs também
+---
+Prompt de ajuste 05
+---
+Sobre a tela de execução das demandas
+
+1. Etapa iniciar deve apresentar a PRD / RFC gerada pelo claude com base no card jira ou outro task manager;
+2. Contexto também, deve exibir o contexto criado pelo claude;
+3. Plano também...
+4. Todas essas três etapas deve contar com um visualizador de formatos MD com possibilidade de ver o fonte e viewer amigável.
+5. Essas três etapas deve permitir que humano ajuste, revise, remova trechos e ou adicione conteúdo ou seja modificado via chat com o claude.
+---
+Prompt de ajuste 06
+---
+Sobre a tela de execução das demandas / Etapa Execução
+1. Mostrar barra de progresso que se movimenta conforme planejamento realizado na etapa anterior, deve possuir barra principal exibindo o andamento do plano em geral, sub-barra por repositório e por arquivo, sempre indicado hierarquicamente o repo, branch e arquivo em modificação. As barras devem ser sincronizadas entre si e prever que as modificações podem paralelizar repositórios.
+2. Deve exibir em runtime os arquivos sendo modificados (somente nome), 
+3. Após cada modificação, permitir visualizar git diffs, analisar código arquivo a arquivo modificado, todos organizados hierarquicamente pelos repositórios;
+---
+Prompt de ajuste 07
+---
+Sobre a tela de execução das demandas / Etapa Teste
+1. O centro da tela dessa etapa deve ser possível visualizar em formato de abas, os LOGs dos testes e das aplicações envolvidas na demanda;
+2. Visualizar o andamento dos testes com barras de progresso, sendo uma barra geral e sub barras repo a repo e dentro dos repos teste a teste;
+3. Relatório dividido entre teste aaa e e2e;
+---
+
+
+Prompt de ajuste 08
+---
+Tela de execução
+1. Pode remover o painel que exibe os repos e repos em execução (painel logo abaixo da barra de progresso principal), a tela estando preparada para execução paralela já é suficiente, essa informação não precisa estar visível em um bloco exclusivo, as barras abaixo repo a repo já exibirão o progresso dos repos em paralelo;
+2. Quando o repo atingir o status 'Concluído' a barra de progresso daquele repo pode desaparecer, dar um visual mais limpo, manter as barras somente no runtime;
+3. Exibir em cada arquivo o status, atualmente é vísivel no canto esquerdo de cada arquivo o status concluído (check), para cada arquivo pode exibir ícones que apresentem os status (na fila / aguardando, doing / executando / alterando, concluído - check atual, em caso de falha exibir também essa informação);
+---
+
+Prompt de ajuste 09
+---
+Tela de testes
+1. Quando o teste e repo atingirem o status 'Concluído' a barra de progresso daquele deve desaparecer, dar um visual mais limpo, manter as barras somente no runtime e a barra principal, incluir um íncone no header de cada repo exibindo o status, manter os badges com qtde de falhas, adicionar badges com qtde de skippeds;
+---
+
+Prompt de ajuste 11
+---
+Tela de 3 - plano
+1. A de plano, deve permitir visualizar o plano de implementação na forma como está e também deve incrementar em abas a tela para o plano de testes que serão implementados;
+2. A aba de plano de testes, deve ser dividida entre testes unitários AAA e teste e2e onde humano pode edita-los adicionando, ajustando e removendo itens, bem como ajustar via chat, tudo em formato MD;
+---
+
+Prompt de ajuste 12
+---
+Tela de validação humana
+1. A tela de validação humana, deve exibir em forma de tasks todos as tasks de validação e2e presentes no plano, onde humano irá validar item a item e ir checando / marcando teste a teste;
+2. Nessa tela pode existir interação entre humano e claude para ajustar requisitos, resolver problemas encontrados por humano, incrementar coisas, inclusive novas implementações pode ocorrer aqui caso humano identifique que uma correção desencadeou um bug novo e precise de correção adicional.
+---
+
+Prompt de ajuste 12
+---
+Na tela Etapa 5 / testes
+
+Incluir status do progresso em cada teste, repo e tipo de teste...
+Incluir badge com qtde sucesso;
+Exemplo
+Teste Unitário (x) 5/5 1 falhou (check verde) 5 success {(check verde alinhado à direita) concluído}.
+| - portal-backend 4/4 (x) 1 falhou (check) 3 success {(check verde alinhado à direita) concluído}.
+| - portal-frontend 1/1 (x) 0 falhou (check) 1 success {(check verde alinhado à direita) concluído}.
+...
+
+Aba logs deve permitir ver logs por tipo de teste e repo, os logs são exibidos mediante seleção do DEV.
+---
+
+Prompt de ajuste 13
+---
+Em dossiê (barra lateral esquerda)
+1. 'arquivos tocados' devem ser hierarquicamente organizados por 'repo branch', permitir ver diff, quando clicar em diff o painel central será ocupado pelo diff do arquivo e quando fechado volta ao estado anterior;
+2. Mostrar card, que quando clicado exibe no painel central uma tela com abas para 1. card jira vindo do jira e com a 2. RFC / PRD gerada pelo claude / humano (md viewer somente leitura)
+3. Tempo gasto, quando clicado deve exibir uma visão mais detalhada mostrando quando tempo gastou em cada task do plano, nos testes, ajustes e validação humana;
+4. Aó invés de relatório allure, deve apenas exibir um link Testes que quando clicado exibirá no painel central relatórios de testes allure.
+5. Adicionar PRs criados (pull requests) com status, se houve conflitos, se já foram mergeados, se foram aprovados pelos revisores, quais revisores aprovaram quais não aprovaram,.. tudo muito simples e intuitivo pode-se usar círculos com as iníciais dos revisores com checks verdes para os que aprovaram, x vermelhos para quem não aprovou e somente círculos para quem não ainda não aprovou.
+---
+
+Prompt de ajuste 14
+---
+Barra lateral opção repositórios
+1. Em demandas com status diferentes de done / concluída / delivered permitir adicionar novos repos da conexão existente na workspace, criar forma UI-UX avançada onde seja possível numa conexão por exemplo dev.azure listar os repos daquela conexão e adiciona-los, essa tela deve exibir os repos já adicionados na demanda bem como permitir adicionar novos.
+2. Permitir remover repos já adicionados;
+3. Manter comportamento padrão, onde operações na barra lateral ocupem o espaço do painel central e depois de fechado volta para a tela de execução da demanda.
+---
+
+Prompt de ajuste 15
+---
+Barra lateral opção Branches e PR
+1. Mudar título para somente Branches
+2. Barra lateral que abre ao clicar na opção deve ser dividida em duas abas no header da barra, Branches | PRs;
+3. Manter sempre o visual hieraquico começando com o repo;
+4. Na aba PRs, permitir expandir cada PR, exibindo os arquivos modificados e visualizar diffs arquivo por arquivo, mantendo na barra lateral a lista hierarquizada dos arquivos e no central uma lista arquivo por arquivo com visão de diff;
+5. Na aba Branches, exibir arquivos por status git novo, modificado, adicionado, deletado... manter visual limpo sem muitas abas ou divisores, adotar o máximo possível de ícones ao invés de separadores, utilizar separadores apenas para arquivos novos não adicionados para commits,... visão somente leitura;
+6. Na lista de arquivos de cada PR, adicione a ação: quando clicar no arquivo na barra lateral, navegar para o arquivo no painel central.
+---
+
+Prompt de ajuste 16
+---
+Tela de execução, etapa 6 validação
+1. Formato task manager com lista de testes e2e oriundas do plano de testes e2e que o usuário fará, o DEV tem opção de testar manualmente (fora do dop) e ir checando teste a teste, marcar todos e checar todos de uma vez, continuar para a próxima etapa sem checar,... inclusive fazer isso no chat (mas sem botão o dev apenas digita no chato,.. teste teste-01 realizado com sucesso);
+2. O dev tem opção de marcar o teste como falhou e via chat interajir com o claude para ajustarem o que for necessário;
+3. Nesta etapa o claude pode continuar codando, mediante interação com o dev.
+4. Dev pode prosseguir com testes falhando ou não, mas visualmente precisa estar claro os testes que deram certo, os que falharam e os testes não realizados,.. 
+---
+
+Prompt de ajuste 17
+---
+Tela de execução, etapa finalizar
+1. Etapa finalizar deve ser acionada via um botão de ação ou via chat;
+2. O processo automáticos de finalização deverão ser acionados e exibidos via barras de progresso, sendo eles:
+2.1. verificação dos repos envolvidos exibindo repo a repo, commits e pushes;
+2.2. criação dos PRs;
+2.3. Verificação se alguma PR gerou conflito;
+2.4. Resolução de conflitos caso tenham PRs com conflitos;
+2.5. Geração de relatório final da execução completa da demanda, lista de PRs, arquivos modificados, testes implementados, testes realizados, testes que passaram, testes que falharam e skippados... tudo o que é exibido no dossiê deve ser logado como gerando / gerado dossiê... porém é importante saber que o dossiê vai sendo gerado em runtime etapa pro etapa, então nessa etapa de finalização o dossiê vai ser incrementado com os PRs, commtis e pushs gerados no final,.. Importante o dossiê não é exibido aqui em formato de relatório, essa tela é apenas informativa do progresso, status e andamento das atividades em tempo real. 
+---
+
+Prompt de ajuste 18
+---
+1. Crie um menu esquerdo em forma de barra lateral com efeito expandir e fechar que quando fechado mantém um botão hamburguer no topo esquerdo da página para acesso ao menu expadido. O menu quando fechado, exibe apenas ícones.
+
+2. Refatoração das workspaces
+2.1. Ficam em um menu específico também e quando clicada abre o board com os cards das workspaces configuradas.
+2.2. Repositórios GIT devem permitir a criação de repositórios novos em caso de novos projetos ou a conexão com repositórios já existentes, deve ser intuitivo de modo a não confundir o usuário.
+2.3. A workspace deve permitir mais de um provedor git por workspace, podemos ter na workspace um repo github e outro gitlab. Reorganizar visualmente ux-ui bem planejado.
+2.4. Implementar a feature 'Adicionar outro repostiŕoio' abrindo um painel de configuração git abaixo.
+2.5. Quando for ssh, permitir fazer upload da chave ssh privada com aviso de que a chave pública deve estar no repo de destino.
+2.6. quando usuário optar por repo novo, também deve criar a conexão nos mesmos moldes, informar o nome, descrição do repo.
+---
+
+Prompt de ajuste 19
+---
+Na tela 2 Repostiório Git
+1.remova os campos Branch base e Branch(es) alvo do PR (vírgula). Vamos deixar para configurar isso no fluxo git.
+
+adicione mais um provider
+GitLab
+self hosted
+Pode remover o aviso da chave ssh, achei que poluiu mais do que ajudou, não foi uma boa idéia minha.
+Chave privada ssh, permitir no mesmo campo selecionar arquivo 1. arrastar e soltar, 2 fazer upload via 'file selector window' (como está) e digitar a chave (copiando e colando). Uma opção que transforme o upload num text área.
+---
+
+Prompt de ajuste 20
+---
+Deixar os botões de providers mais altos como estavam, estava bonito.
+
+Quando selecionart gitlab self hosted deve estar com linha quebrada e gitlab centralizado, conforme abaixo.
+gitlab
+self hosted
+
+Protocolo deve ser inferido pela url, se começar com git o sistema solicita a chave ssh e interpreta como ssh, se começar com https o sistema infere que seja https e pede o token. somente para 'Conectar existente'.
+
+Quando 'Conectar existente', os campos alias local e descrição veem depois da url. Os dois opcionais.
+
+Quando 'Criar novo', deve ter um campo url antes dos campos nome e descricao, e nome repo deve vir depois de url separando por uma /, exemplo: url: [http://url.do.git.selfhosted]/[nome] abaixo dessa linha descrição. Neste caso, mantem o campo protocolo de autenticação.
+
+Em nova workspace, página 1. Básico, somente os campos Nome e Descrição são necessários. Diretório o sistema vai definir no backend e será transparente para o usuário.
+---

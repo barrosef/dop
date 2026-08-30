@@ -13,7 +13,9 @@ convenção de desambiguação está registrada.
 | **Concessão** | Autorização de um usuário sobre uma integração específica, com nível `use` ou `manage`. Ortogonal ao papel |
 | **Workspace** | Nível 1. Agrupa projetos. Tem nome, chave, descrição e schema de tags |
 | **Projeto** | Nível 2. Onde vivem repositórios e o espaço do task manager, consumidos das integrações da conta dona |
-| **Integração** | O vínculo configurado entre uma conta e um provedor externo — git ou task manager |
+| **Recurso** | Unidade de posse e compartilhamento da conta: integração, skill, workflow humano↔agente ou fluxo git. Concessão `use`/`manage` por usuário |
+| **Integração** | Recurso com credencial: vínculo da conta com provedor externo — git, task manager ou **agente** (Claude, Codex, …) |
+| **Fluxo git** | Recurso que declara a governança git: taxonomia de branch por tipo de card, bases, promoção, políticas |
 | **Card** | Item de trabalho vindo do task manager. Tem tipo dinâmico, definido pelo provedor |
 | **Demanda** | Um card em execução na plataforma: sandbox, threads, spec, eventos. Card é a origem; demanda é o trabalho |
 | **Sandbox** | O ambiente isolado de uma demanda: microVM com agente(s), workspace e Docker interno. Fronteira de segurança |

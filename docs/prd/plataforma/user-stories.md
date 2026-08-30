@@ -46,8 +46,9 @@ pertence ao protótipo; detalhe de regra pertence às specs citadas.
 ## 4. Convites e acessos **[F2]**
 
 - **US-4.1** Como owner/admin, quero convidar um dev por e-mail **compondo no convite** o
-  papel e as concessões de integração, para que ele já entre com o acesso certo.
-  - papéis pré-definidos: `owner`, `admin`, `developer`, `viewer`; concessões `use`/`manage` por integração; sem defaults
+  papel e as concessões de **recursos** (integrações, skills, workflows, fluxos git —
+  ADR-0013), para que ele já entre com o acesso certo.
+  - papéis pré-definidos: `owner`, `admin`, `developer`, `viewer`; concessões `use`/`manage` por recurso; sem defaults
   - convite expira em 14 dias; revogável enquanto pendente; reenvio invalida o anterior
 - **US-4.2** Como convidado, quero aceitar pelo link — com cadastro no caminho se eu
   ainda não existir — e cair direto na conta da organização.
@@ -55,7 +56,7 @@ pertence ao protótipo; detalhe de regra pertence às specs citadas.
 - **US-4.3** Como owner/admin, quero editar papel e concessões de qualquer membro a
   qualquer tempo, e desvincular sem tocar no que é pessoal dele.
   - invariante: a conta nunca fica sem `owner` ativo — operação que violaria é recusada com mensagem
-- **US-4.4** Como developer, quero ver apenas as integrações que me foram concedidas ao
+- **US-4.4** Como developer, quero ver apenas os recursos que me foram concedidos ao
   configurar projetos.
   - revogar `use` não derruba projetos já configurados (credencial é da conta)
 
@@ -135,12 +136,29 @@ pertence ao protótipo; detalhe de regra pertence às specs citadas.
 - **US-7.8.2** Como dev, quero pedir uma análise arquitetural a um subagente a partir
   desta seção, com a thread aparecendo no Chat.
 
+## 8. Recursos da conta
+
+- **US-8.1 [F1]** Como dev, quero conectar um **provider de agente** (Claude, Codex,
+  Google Code Assist) por OAuth da minha assinatura ou API key, para os agentes das
+  minhas demandas rodarem com a minha credencial.
+  - credencial via SecretStore; modelos aparecem como cardápio do router; medição de custo inalterada
+- **US-8.2 [F1]** Como dev, quero anexar um **fluxo git** ao projeto — adotado do
+  catálogo ou criado na conta — para a nomenclatura de branches, a promoção e a fila de
+  merge obedecerem à governança declarada.
+  - exemplo de referência: trunk + release com `epic/`/`feat/`/`bug/`/`hotfix` e tipo de card determinando prefixo e fluxo
+- **US-8.3 [F2]** Como owner/admin de PJ, quero compartilhar skills, workflows e fluxos
+  git com membros, pelas mesmas concessões das integrações.
+- **US-8.4 [F2]** Como dev, quero adotar um recurso do catálogo da plataforma como cópia
+  versionada da minha conta, e ver o diff quando o catálogo evoluir.
+
 ---
 
 ## Fora deste rascunho (registrado para não sumir)
 
-- Integrações da conta (conectar provider, credencial de organização) — são
-  pré-requisito das US-6.x; stories na spec de integrações, telas no Primeiro uso e no
-  painel da conta.
+- Integrações git/task manager da conta (conectar provider, credencial de organização)
+  — pré-requisito das US-6.x; stories na spec de integrações, telas no Primeiro uso e
+  no painel da conta.
+- Editor/formato declarativo do fluxo git e do workflow — spec própria quando o SP-4
+  núcleo fixar o ciclo da demanda.
 - Ciclo de vida completo da demanda (criar/iniciar/portões) — depende do SP-4 núcleo.
 - Notificações fora da plataforma (e-mail/push) — projeções futuras da caixa de atenção.

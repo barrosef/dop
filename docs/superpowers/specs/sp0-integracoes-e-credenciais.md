@@ -19,13 +19,16 @@ como unidade de posse).
 Integrações **não são configuradas dentro de um projeto**. Elas pertencem à conta, e o
 projeto apenas consome o que já está integrado.
 
+> **Integração é um tipo de recurso** (ADR-0013) — o único com credencial. O mecanismo
+> de compartilhamento e concessão descrito aqui é o mecanismo geral de recursos.
+
 **`Integration`:**
 
 | Campo | |
 |---|---|
 | `accountId` | a conta dona — é o que decide compartilhamento |
-| `category` | `git` ou `task_manager` |
-| `provider` | `github`, `gitlab`, `gitlab_self_hosted`, `azure_devops`, `bitbucket` / `jira`, `clickup`, `redmine` |
+| `category` | `git`, `task_manager` ou `agent` |
+| `provider` | `github`, `gitlab`, `gitlab_self_hosted`, `azure_devops`, `bitbucket` / `jira`, `clickup`, `redmine` / `claude`, `codex`, `google_code_assist` |
 | `baseUrl` | para instâncias self-hosted |
 | `authMethod` | `oauth_app`, `oauth_user`, `token`, `ssh_key` |
 | `credentialRef` | **referência lógica opaca** ao segredo — nunca o segredo |
@@ -118,6 +121,20 @@ Conforme a ADR-0003:
 **Autoria no repositório:** o push e a abertura do PR usam a credencial da conta, mas cada
 commit leva `author` com nome e e-mail do dev que conduziu o card, e o corpo do PR
 identifica quem pediu.
+
+### 4.1 Providers de agente
+
+A categoria `agent` conecta a conta aos provedores de modelo/agente — **Claude, Codex,
+Google Code Assist** e futuros. Métodos: **OAuth de conta pessoal** (assinatura do
+provedor) ou **API key**, ambos guardados via `SecretStore` como qualquer credencial.
+
+- **São o cardápio do router**: os modelos que a `ficha` de um agente (ADR-0010) pode
+  usar são os das integrações de agente da conta, resolvidos pela porta `AgentRuntime`
+  — um adaptador por provider (ADR-0001, segunda família).
+- **Custo:** com credencial do cliente (BYO), o gasto de modelo cai na conta dele no
+  provedor; a **medição da ADR-0011 não muda** — mede-se igual, quem paga é que varia.
+- Numa PJ, valem as mesmas regras de titularidade da §4: preferir credencial que não
+  morre com a pessoa; API key organizacional quando o provedor oferecer.
 
 ## 5. Como o projeto consome
 

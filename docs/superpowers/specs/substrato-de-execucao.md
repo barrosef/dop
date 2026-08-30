@@ -102,8 +102,10 @@ send(session, msg) · cancel(session)
 events(session) → stream            // ações, perguntas, custo (→ ADR-0006/0011)
 ```
 
-Primeiro adaptador: Claude Agent SDK. A ficha (propósito, ferramentas, modelo,
-orçamento) vem da ADR-0010; o modelo, do router (ADR-0011).
+Primeiro adaptador: Claude Agent SDK; um adaptador por provider de agente da conta
+(integrações `category: agent` — Claude, Codex, Google Code Assist). A ficha (propósito,
+ferramentas, modelo, orçamento) vem da ADR-0010; o modelo, do router (ADR-0011),
+**restrito ao cardápio das integrações de agente da conta**.
 
 A porta expõe os botões de economia (ADR-0012), preenchidos pela ficha: **modelo**,
 **effort**, **orçamento** (task budget — o agente vê o teto e se ritma) e **política de

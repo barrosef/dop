@@ -124,11 +124,12 @@ Ficaram deliberadamente de fora um `maintainer` intermediário e um papel separa
 faturamento. Papel é um campo na membership: acrescentar depois não exige migração, e
 inventar hierarquia que ninguém pediu é complexidade que se paga sem receber.
 
-**Concessão de integração** — por usuário, por integração, com nível `use` ou `manage`.
-Ortogonal ao papel; definida em
+**Concessão de recurso** — por usuário, por recurso (integrações, skills, workflows,
+fluxos git — ADR-0013), com nível `use` ou `manage`. Ortogonal ao papel; mecanismo em
+[`sp0-recursos.md`](sp0-recursos.md) e, para o caso com credencial,
 [`sp0-integracoes-e-credenciais.md`](sp0-integracoes-e-credenciais.md).
 
-`owner` e `admin` têm `manage` implícito em toda integração — sem isso surge o cenário em
+`owner` e `admin` têm `manage` implícito em todo recurso — sem isso surge o cenário em
 que ninguém consegue consertar uma integração quebrada.
 
 **Não há default.** O acesso é o que foi composto no convite e o que se editou depois.
