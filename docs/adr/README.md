@@ -22,3 +22,4 @@ descartada, ou quando alguém daqui a seis meses vai perguntar "por que assim?".
 | [0012](0012-economia-de-tokens.md) | Economia de tokens como disciplina de engenharia | Aceita |
 | [0013](0013-recurso-como-unidade-de-compartilhamento.md) | Recurso como unidade de posse e compartilhamento da conta | Aceita |
 | [0014](0014-fluxo-de-trabalho-dinamico.md) | Fluxo de trabalho dinâmico, tipado e herdável | Aceita |
+| [0015](0015-orquestrador-de-projeto.md) | Orquestrador de projeto: o agente techlead | Aceita |

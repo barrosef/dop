@@ -115,6 +115,13 @@ convites são [F2] e vêm depois na numeração, ainda que no schema existam des
   acumulado (índice, memórias) na configuração (ADR-0009).
 - **US-7.5** Como dev, quero adicionar/remover repositórios e recursos depois, em
   painel deslizante, sem recriar o projeto.
+- **US-7.6** Como dev, quero que o projeto tenha um **agente techlead** (ADR-0015),
+  acionado quando houver demandas paralelas, que detecte transversais — dependências,
+  sobreposição de arquivos, interferência de comportamento — planeje soluções e me
+  **provoque decisões na caixa de atenção** com opções prontas.
+  - decisão vira diretriz de coordenação (ex.: "demanda 1 cherry-pick da branch da 0 quando ela commitar")
+  - **nenhuma demanda pausa por transversal detectada** — segue até onde dá e aplica a diretriz quando a condição se cumprir
+  - diretrizes visíveis na Timeline e nas threads das demandas envolvidas
 
 ## 8. Cockpit / IDE **[F1]**
 

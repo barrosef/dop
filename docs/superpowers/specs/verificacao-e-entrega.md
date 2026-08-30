@@ -55,9 +55,10 @@ Estados por repositório: `na fila → rebase → re-verificação → merge` �
   pega a quebra semântica entre demandas paralelas.
 - **Fila nativa do provedor** (GitHub merge queue, GitLab merge trains) é usada quando
   existir, via `GitProvider`; a fila do DOP orquestra por cima e cobre o resto.
-- **Detecção de sobreposição:** o orquestrador compara os arquivos tocados pelas
-  demandas ativas do mesmo repositório e sinaliza colisão provável **antes** do PR —
-  no cockpit e, quando exigir decisão, na caixa de atenção.
+- **Detecção de sobreposição:** o **techlead do projeto** (ADR-0015) compara os
+  arquivos tocados pelas demandas ativas, lê specs e diffs para interferência de
+  comportamento, e propõe diretrizes de coordenação na caixa de atenção — sem nunca
+  pausar demanda (a regra "segue até onde dá").
 - Posição na fila e previsão são visíveis no cockpit.
 
 ## 6. Riscos

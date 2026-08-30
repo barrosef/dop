@@ -55,6 +55,7 @@ necessário, e em que ordem". Não é o chat: é o que leva ao chat certo.
 | Spec aguardando aprovação | ciclo da spec (SP-4 núcleo) | a spec |
 | PR aguardando revisão | ADR-0007 | o PR com evidência |
 | Conflito escalado da fila de merge | ADR-0008 | o contexto do conflito |
+| **Transversal detectada pelo techlead** — dependência, sobreposição, interferência — com opções de diretriz prontas e recomendação | ADR-0015 | a decisão de coordenação |
 | Demanda pausada por orçamento | ADR-0011 | decisão de gasto |
 | Integração da conta quebrada | spec de integrações, R-1 | a integração |
 
