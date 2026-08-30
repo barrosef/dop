@@ -19,7 +19,7 @@ Decisão de base: [ADR-0013](../../adr/0013-recurso-como-unidade-de-compartilham
 | `integration` | Conexão com provedor externo (`git`, `task_manager`, `agent`) | GitHub da org; Claude por API key |
 | `skill` | Capacidade reutilizável concedida a agentes | "análise forense de banco" |
 | `workflow` | Fluxo de trabalho humano↔agente: portões, quem aprova o quê | "spec aprovada pelo dev antes de implementar" |
-| `git_flow` | Governança git declarativa: taxonomia de branch por tipo de card, bases, direção (forward/reverso), composição de release, políticas | trunk + release do ecossistema Optum |
+| `git_flow` | Governança git declarativa: taxonomia de branch por tipo de card, bases, direção (forward/reverso), composição de release, políticas | modelo trunk + release com branch de épico e hotfix reverso |
 
 Recursos sem credencial são **versionados** — mudar um fluxo git em uso gera versão
 nova; projetos migram explicitamente.

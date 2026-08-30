@@ -13,8 +13,9 @@ compartilhar sob autorização:
 - **Fluxos de trabalho humano↔agente** — como dev e agentes colaboram numa demanda;
 - **Fluxos git** — governança de branches como artefato: taxonomia por tipo de card,
   base e direção (forward/reverso), composição de release, back-merge de hotfix,
-  políticas. Exemplo real: a spec de governança do ecossistema Optum
-  (trunk + release, `epic/`→`feat/`, tipo de card determinando prefixo e fluxo);
+  políticas. O conceito vem de governanças reais em produção — ex.: modelo
+  trunk + release em que o tipo do card determina o prefixo, a base e o fluxo da
+  branch, com branch integradora de épico e hotfix em fluxo reverso;
 - E as próprias integrações ganharam uma terceira categoria: **providers de agente**
   (Claude, Codex, Google Code Assist…).
 
