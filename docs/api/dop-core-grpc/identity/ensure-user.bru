@@ -1,0 +1,32 @@
+meta {
+  name: EnsureUser
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.IdentityService/EnsureUser
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "subject": "sub-do-emulador",
+      "email": "dev@dop.local",
+      "email_verified": true,
+      "name": "Dev Local",
+      "provider": "password",
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Idempotente por desenho: é chamada em TODO primeiro login. Repetir com a mesma
+  `idempotency_key` devolve o mesmo usuário, sem duplicar (ADR-0017).
+
+  O `subject` é o do principal normalizado — não o `uid` cru do Firebase.
+}

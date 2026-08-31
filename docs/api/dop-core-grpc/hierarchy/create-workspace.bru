@@ -1,0 +1,30 @@
+meta {
+  name: CreateWorkspace
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.HierarchyService/CreateWorkspace
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "name": "csptech",
+      "key": "CSP",
+      "description": "Workspace de exemplo",
+      "tags": ["cliente", "ativo"],
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Cadastro enxuto de propósito: nome, chave, descrição e tags. Workspace agrupa
+  projetos — quem configura repositório é o projeto.
+}

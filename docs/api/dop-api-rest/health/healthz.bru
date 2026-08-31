@@ -1,0 +1,21 @@
+meta {
+  name: healthz
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{bffUrl}}/healthz
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq ok
+}
+
+docs {
+  Sonda de saúde. É `@public` — o único endpoint que não exige token, porque a
+  sonda do Kubernetes não tem credencial.
+}

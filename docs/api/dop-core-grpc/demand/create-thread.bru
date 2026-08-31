@@ -1,0 +1,38 @@
+meta {
+  name: CreateThread — lançar subagente
+  type: grpc
+  seq: 3
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.DemandService/CreateThread
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "demand_id": "dem-1",
+      "key": "forense-db",
+      "card": {
+        "purpose": "Análise forense do banco: divergência na parcela 12",
+        "tools": ["mcp:mysql"],
+        "model": "claude-haiku-4-5",
+        "effort": "medium",
+        "budget_micros": 500000
+      },
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Lança um subagente com ficha própria: propósito, ferramentas, modelo e fatia
+  do orçamento (ADR-0010).
+
+  O modelo vem do cardápio das integrações de agente da conta; quem escolhe é o
+  `ModelRouter` (ADR-0011). Thread própria — sem misturar timelines.
+}

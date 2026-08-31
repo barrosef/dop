@@ -1,0 +1,28 @@
+meta {
+  name: WatchDemand (stream)
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.DemandService/WatchDemand
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "demand_id": "dem-1"
+    }
+  ]
+}
+
+docs {
+  Stream server-side: régua de etapas, mensagens e achados em tempo real.
+
+  O BFF assina este stream e converte em SSE para o browser — tempo real é
+  projeção do log de eventos, não polling (ADR-0006).
+}

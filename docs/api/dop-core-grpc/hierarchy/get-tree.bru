@@ -1,0 +1,23 @@
+meta {
+  name: GetTree
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.HierarchyService/GetTree
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    { "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } } }
+  ]
+}
+
+docs {
+  A árvore lateral do cockpit em uma chamada: workspaces com seus projetos.
+  Evita o N+1 que a navegação faria.
+}

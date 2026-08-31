@@ -1,0 +1,19 @@
+meta {
+  name: me — sem token (401)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{bffUrl}}/api/v1/me
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  Prova negativa: rota não marcada `@public` recusa quem não se autenticou.
+}

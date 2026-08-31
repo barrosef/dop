@@ -1,0 +1,29 @@
+meta {
+  name: StartDemand
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.DemandService/StartDemand
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "project": { "id": "proj-1" },
+      "external_key": "SUOPT-1315",
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Resolve o fluxo efetivo pela cadeia `plataforma ◁ conta ◁ workspace ◁ projeto ◁
+  demanda` e **congela a versão** (ADR-0014). Mudança de fluxo acima não afeta
+  demanda em voo.
+}

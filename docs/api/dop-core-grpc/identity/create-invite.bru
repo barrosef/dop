@@ -1,0 +1,33 @@
+meta {
+  name: CreateInvite
+  type: grpc
+  seq: 3
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.IdentityService/CreateInvite
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "email": "novo.dev@empresa.com",
+      "role": "ROLE_DEVELOPER",
+      "grants": [
+        { "resource": { "id": "res-github" }, "level": "use" }
+      ],
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Papel e concessões são compostos NO CONVITE — não há default (ADR-0013).
+  Quem convida escolhe: tudo, nada ou uma seleção.
+
+  O convite expira em 14 dias e é revogável enquanto pendente.
+}

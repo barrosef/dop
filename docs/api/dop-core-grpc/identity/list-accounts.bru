@@ -1,0 +1,26 @@
+meta {
+  name: ListAccounts
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.IdentityService/ListAccounts
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "user": { "id": "u-1" }
+    }
+  ]
+}
+
+docs {
+  Toda RPC do domínio carrega `CallContext` — quem, em qual conta. A borda
+  preenche; o domínio confia (ADR-0016).
+}

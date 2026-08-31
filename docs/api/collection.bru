@@ -1,0 +1,42 @@
+headers {
+  x-request-id: {{$guid}}
+}
+
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{idToken}}
+}
+
+script:pre-request {
+  // Conta ativa em toda chamada: requisição sem ela é inválida (SP-0).
+  const account = bru.getEnvVar("accountId");
+  if (account) req.setHeader("x-account-id", account);
+}
+
+docs {
+  # DOP — coleções de API
+
+  Duas superfícies, dois protocolos (ADR-0016):
+
+  - **dop-api-rest** — REST + SSE, consumido pelo cockpit
+  - **dop-core-grpc** — gRPC do núcleo, consumido pelo BFF, pelo CLI e pelos agentes
+
+  ## Como obter um token no ambiente local
+
+  Rode a requisição `health/emulador-signup` (ou `signin`) da coleção REST: ela
+  fala com o emulador do Firebase Auth e grava `idToken` no ambiente
+  automaticamente. Todas as demais requisições já saem autenticadas.
+
+  ## Portas
+
+  Para alcançar o cluster a partir da máquina:
+
+  ```
+  kubectl port-forward -n dop-local svc/dop-api  8000:8000
+  kubectl port-forward -n dop-local svc/dop-core 9090:9090
+  kubectl port-forward -n dop-local svc/firebase 9099:9099
+  ```
+}

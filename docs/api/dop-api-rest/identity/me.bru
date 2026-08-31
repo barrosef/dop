@@ -1,0 +1,23 @@
+meta {
+  name: me
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{bffUrl}}/api/v1/me
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Quem sou eu, na conta ativa.
+
+  O `Principal` devolvido é NORMALIZADO — claims de Firebase não chegam aqui
+  (ADR-0001). Sem token: 401. Com token e sem `x-account-id`: os campos de conta
+  vêm vazios.
+}

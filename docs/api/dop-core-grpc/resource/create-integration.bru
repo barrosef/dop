@@ -1,0 +1,34 @@
+meta {
+  name: CreateResource — integração git
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.ResourceService/CreateResource
+  body: grpc
+  auth: none
+}
+
+body:grpc {
+  [
+    {
+      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
+      "kind": "KIND_INTEGRATION",
+      "name": "github-da-org",
+      "config": {
+        "category": "CATEGORY_GIT",
+        "provider": "github",
+        "auth_method": "AUTH_METHOD_OAUTH_APP"
+      },
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Cria a integração SEM credencial. O segredo entra por `SetCredential`, que o
+  grava no `SecretStore` e devolve apenas a REFERÊNCIA — o valor nunca volta
+  numa leitura (ADR-0001).
+}
