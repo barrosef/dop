@@ -1,0 +1,28 @@
+meta {
+  name: Conceder acesso a recurso
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{bffUrl}}/api/v1/grants
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resource_id": "{{integrationId}}",
+    "user_id": "{{granteeId}}",
+    "level": "use"
+  }
+}
+
+docs {
+  Exige owner ou admin. `level` aceita apenas `use` ou `manage` — a borda
+  recusa qualquer outro valor com 422, antes de gastar uma ida ao núcleo.
+
+  Recurso com credencial é FECHADO por padrão: sem concessão explícita ninguém
+  além de owner/admin o enxerga. Conteúdo (skill, fluxo) é aberto dentro da
+  organização, mas alterar exige concessão (ADR-0013).
+}

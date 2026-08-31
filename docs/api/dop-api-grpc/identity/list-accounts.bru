@@ -1,0 +1,34 @@
+meta {
+  name: ListAccounts
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{bffGrpc}}
+  method: /dop.bff.v1.IdentityService/ListAccounts
+  body: grpc
+  auth: none
+}
+
+metadata {
+  authorization: Bearer {{idToken}}
+  x-account-id: {{accountId}}
+}
+
+body:grpc {
+  [
+    {}
+  ]
+}
+
+docs {
+  Mesma superfície do REST, outro transporte — e o mesmo código por baixo: há
+  teste de paridade no dop-api que quebra se as duas pontas divergirem.
+
+  Diferente do gRPC do NÚCLEO, aqui a identidade vem do TOKEN, no metadado
+  `authorization`, exatamente como no REST. Não existe CallContext no corpo.
+
+  Esta é a chamada que se faz ANTES de haver conta ativa — o `x-account-id`
+  pode ir vazio.
+}

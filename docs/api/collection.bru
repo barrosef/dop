@@ -21,13 +21,19 @@ docs {
 
   Duas superfícies, dois protocolos (ADR-0016):
 
-  - **dop-api-rest** — REST + SSE, consumido pelo cockpit
+  - **dop-api-rest** — REST do BFF, consumido pelo cockpit
+  - **dop-api-grpc** — gRPC do BFF: MESMOS casos de uso, outro transporte
   - **dop-core-grpc** — gRPC do núcleo, consumido pelo BFF, pelo CLI e pelos agentes
+
+  As duas primeiras chamam exatamente o mesmo código no BFF — há teste de
+  paridade que quebra se alguém reimplementar um caso de uso numa das pontas.
 
   ## Como cada superfície identifica quem chama
 
-  No **REST** a identidade vem do token (`Authorization: Bearer`), e a conta
-  ativa do header `x-account-id`, posto pelo script abaixo.
+  No **REST** e no **gRPC do BFF** a identidade vem do token
+  (`authorization: Bearer`), e a conta ativa do metadado `x-account-id`. O BFF
+  não confia em nada que venha no corpo: conta ativa é seletor de interface,
+  não campo que o cliente possa forjar dentro da mensagem.
 
   No **gRPC do núcleo** não há token: o núcleo confia no BFF. Quem chama e em
   qual conta vão na **metadata** — `x-actor-id` e `x-account-id` — e cada
@@ -58,7 +64,11 @@ docs {
 
   ```
   kubectl port-forward -n dop-local svc/dop-api  8000:8000
+  kubectl port-forward -n dop-local svc/dop-api  9095:9095
   kubectl port-forward -n dop-local svc/dop-core 9090:9090
-  kubectl port-forward -n dop-local svc/firebase 9099:9099
   ```
+
+  Os **emuladores** dispensam port-forward: respondem pelo loadbalancer do k3d,
+  em `http://auth.localtest.me:8080` e `http://storage.localtest.me:8080`.
+  Prefira esse caminho — o port-forward cai sob rajada de conexões.
 }

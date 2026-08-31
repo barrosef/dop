@@ -1,0 +1,30 @@
+meta {
+  name: Vincular quadro ao projeto
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{bffUrl}}/api/v1/projects/{{projectId}}/task-manager
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "integration_id": "{{integrationId}}",
+    "external_space_id": "sp-901",
+    "external_project_id": "pj-42",
+    "card_types": ["bug", "feature"]
+  }
+}
+
+docs {
+  No NÚCLEO, UpdateProject é substituição: mandar o projeto sem os campos que
+  não se quer perder os apaga. A borda lê o projeto atual, sobrepõe só o
+  vínculo e reenvia — por isso aqui você manda apenas o quadro, e nome,
+  descrição e regras sobrevivem.
+
+  `card_types` vem do provedor e é dinâmico: a plataforma não impõe vocabulário
+  de card (ADR-0013).
+}

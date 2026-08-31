@@ -1,0 +1,30 @@
+meta {
+  name: GetTree
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{bffGrpc}}
+  method: /dop.bff.v1.HierarchyService/GetTree
+  body: grpc
+  auth: none
+}
+
+metadata {
+  authorization: Bearer {{idToken}}
+  x-account-id: {{accountId}}
+}
+
+body:grpc {
+  [
+    {}
+  ]
+}
+
+docs {
+  A árvore da conta ativa numa resposta só.
+
+  Projeto sem quadro NÃO traz o campo `task_manager` (em protobuf, ausente e
+  zerado são coisas diferentes) — o equivalente ao `null` do REST.
+}

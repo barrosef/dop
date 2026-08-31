@@ -1,0 +1,22 @@
+meta {
+  name: Árvore da conta ativa
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{bffUrl}}/api/v1/tree
+  body: none
+  auth: inherit
+}
+
+docs {
+  O que a barra lateral do cockpit desenha, numa resposta só.
+
+  Buscar workspaces e depois um ListProjects por workspace faria a navegação
+  piscar em N requisições — agregar é justamente o trabalho do BFF.
+
+  Projeto SEM quadro devolve `task_manager: null`, não um vínculo de campos
+  vazios: um vínculo zerado faria a tela mostrar "quadro configurado" onde não
+  há quadro nenhum.
+}
