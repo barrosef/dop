@@ -29,7 +29,7 @@ não depende de nenhuma delas — as dependências de infraestrutura já são co
 ```
 dop-infra/
 ├── README.md
-├── Makefile                    ENV obrigatório em todo alvo, sem default
+├── Makefile                    mínimo: guarda de contexto + atalhos; ENV obrigatório no Terraform
 ├── terraform/
 │   ├── bootstrap/              projetos, bucket de estado, SAs do CI — aplicado uma vez
 │   ├── modules/                blocos reutilizáveis; nenhum valor de ambiente dentro
@@ -105,10 +105,12 @@ O `kubectl` desta máquina aponta hoje para **`sar-sicar-prod`, namespace de pro
 um projeto de cliente sem relação com o DOP**, num cluster OKD remoto. Um `apply`
 descuidado implantaria os emuladores em produção alheia.
 
-**Todo alvo do `Makefile` que fale com um cluster verifica antes que
-`kubectl config current-context` seja exatamente `k3d-dop-local`, e recusa executar caso
-não seja.** A verificação vem antes do comando, não como aviso. Isso não é conveniência —
-é a diferença entre um ambiente de desenvolvimento e um incidente.
+**A única automação que existe é a guarda de contexto**, num `Makefile` mínimo: cada
+alvo que fala com cluster verifica antes que `kubectl config current-context` seja
+exatamente `k3d-dop-local` e **recusa executar** caso não seja — antes do comando, nunca
+como aviso. Não é conveniência: é a diferença entre um ambiente de desenvolvimento e um
+incidente. Fora essa guarda, nada de script; comando composto só nasce quando a repetição
+doer de verdade.
 
 ### 4.3 Os componentes
 
@@ -122,6 +124,23 @@ Namespace `dop-local`, composto por Kustomize.
 
 **Kustomize, não Helm** — conjunto pequeno e interno; sem linguagem de template a
 aprender, e o overlay `local` expressa literalmente "a base mais os emuladores".
+
+**Tudo é declarativo — não há script de orquestração.** O que num ambiente de
+`docker compose` exigiria um `dev.sh` (criar diretório de dados, importar condicional,
+esperar ficar pronto, dar tempo ao encerramento, resetar volume root-owned) o Kubernetes
+resolve em manifesto:
+
+| Necessidade | Recurso |
+|---|---|
+| persistência entre reinícios | PVC |
+| `--import` condicional | `if` no `command` do container — a lógica vive no pod |
+| tempo para o `--export-on-exit` concluir | `terminationGracePeriodSeconds: 30` |
+| configuração compartilhada com o deploy | ConfigMap a partir dos arquivos versionados |
+| reset dos dados | `kubectl delete pvc` — sem malabarismo de permissão |
+| esperar ficar pronto | `readinessProbe` |
+
+Operação do dia a dia: `kubectl apply -k`, `k3d cluster start/stop` e **k9s** para logs,
+exec e inspeção.
 
 **A imagem do emulador é construída aqui, não puxada da comunidade.** O Firebase não
 publica container oficial só do emulador de Auth; a alternativa seria confiar numa imagem
@@ -175,11 +194,11 @@ validate` passam no stack `platform`. Nada é aplicado.
 
 0. A guarda de contexto **recusa** executar quando o contexto ativo não é
    `k3d-dop-local` — testado deliberadamente antes de qualquer outra coisa.
-1. `make local-up` cria o cluster k3d, aplica o overlay, e os pods ficam `Running`.
+1. `make up` (guarda de contexto + `kubectl apply -k`) deixa os pods `Running`.
 2. O emulador Firebase Auth responde na 9099.
 3. O MinIO aceita criação de bucket.
 4. O MongoDB aceita conexão e um `ping`.
-5. `make local-down` remove o namespace sem deixar resíduo.
+5. `make down` remove o namespace sem deixar resíduo; `make reset` apaga os PVCs.
 
 ## 9. Riscos e pendências
 
