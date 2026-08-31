@@ -1,12 +1,12 @@
 meta {
-  name: CreateWorkspace
+  name: GetTree
   type: grpc
   seq: 2
 }
 
 grpc {
   url: {{coreGrpc}}
-  method: /dop.v1.HierarchyService/CreateWorkspace
+  method: /dop.v1.HierarchyService/GetTree
   body: grpc
   auth: none
 }
@@ -19,13 +19,7 @@ metadata {
 
 body:grpc {
   [
-    {
-      "name": "csptech",
-      "key": "CSP",
-      "description": "Workspace de exemplo",
-      "tags": ["cliente", "ativo"],
-      "idempotency_key": "{{$guid}}"
-    }
+    { "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } } }
   ]
 }
 
@@ -34,6 +28,6 @@ docs {
   O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
   use: ele dá a falsa impressão de escopar a chamada.
 
-  Cadastro enxuto de propósito: nome, chave, descrição e tags. Workspace agrupa
-  projetos — quem configura repositório é o projeto.
+  A árvore lateral do cockpit em uma chamada: workspaces com seus projetos.
+  Evita o N+1 que a navegação faria.
 }

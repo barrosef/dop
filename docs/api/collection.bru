@@ -19,6 +19,13 @@ script:pre-request {
 docs {
   # DOP — coleções de API
 
+  ## Como esta árvore é organizada
+
+  Toda pasta e todo arquivo começa com um índice de dois dígitos, e a ordem é a
+  de EXECUÇÃO, não a alfabética — ver `README.md` ao lado. Em `identity`,
+  `ensure-user` vem antes de `list-accounts` porque não há conta para listar
+  antes do primeiro login.
+
   Duas superfícies, dois protocolos (ADR-0016):
 
   - **dop-api-rest** — REST do BFF, consumido pelo cockpit

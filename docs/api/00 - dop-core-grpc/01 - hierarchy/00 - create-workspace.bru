@@ -1,12 +1,12 @@
 meta {
-  name: WatchDemand (stream)
+  name: CreateWorkspace
   type: grpc
-  seq: 2
+  seq: 1
 }
 
 grpc {
   url: {{coreGrpc}}
-  method: /dop.v1.DemandService/WatchDemand
+  method: /dop.v1.HierarchyService/CreateWorkspace
   body: grpc
   auth: none
 }
@@ -20,7 +20,11 @@ metadata {
 body:grpc {
   [
     {
-      "demand_id": "dem-1"
+      "name": "csptech",
+      "key": "CSP",
+      "description": "Workspace de exemplo",
+      "tags": ["cliente", "ativo"],
+      "idempotency_key": "{{$guid}}"
     }
   ]
 }
@@ -30,8 +34,6 @@ docs {
   O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
   use: ele dá a falsa impressão de escopar a chamada.
 
-  Stream server-side: régua de etapas, mensagens e achados em tempo real.
-
-  O BFF assina este stream e converte em SSE para o browser — tempo real é
-  projeção do log de eventos, não polling (ADR-0006).
+  Cadastro enxuto de propósito: nome, chave, descrição e tags. Workspace agrupa
+  projetos — quem configura repositório é o projeto.
 }

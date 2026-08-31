@@ -1,12 +1,12 @@
 meta {
-  name: GetTree
+  name: WatchDemand (stream)
   type: grpc
-  seq: 1
+  seq: 3
 }
 
 grpc {
   url: {{coreGrpc}}
-  method: /dop.v1.HierarchyService/GetTree
+  method: /dop.v1.DemandService/WatchDemand
   body: grpc
   auth: none
 }
@@ -19,7 +19,9 @@ metadata {
 
 body:grpc {
   [
-    { "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } } }
+    {
+      "demand_id": "dem-1"
+    }
   ]
 }
 
@@ -28,6 +30,8 @@ docs {
   O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
   use: ele dá a falsa impressão de escopar a chamada.
 
-  A árvore lateral do cockpit em uma chamada: workspaces com seus projetos.
-  Evita o N+1 que a navegação faria.
+  Stream server-side: régua de etapas, mensagens e achados em tempo real.
+
+  O BFF assina este stream e converte em SSE para o browser — tempo real é
+  projeção do log de eventos, não polling (ADR-0006).
 }
