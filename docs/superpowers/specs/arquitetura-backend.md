@@ -169,9 +169,9 @@ Persistência dos emuladores, ponte de variáveis e propriedade do Terraform: AD
 
 ## 7. Ordem de implementação
 
-1. **Fundação** — repositórios `dop-core` e `dop-api` com esqueleto; `buf` gerando de
-   `common` + `identity`; migração inicial; ambiente k3d de pé; CI com o teste de
-   arquitetura e `buf breaking`.
+1. ✅ **Fundação** — feita em 2026-08-31. Os dois repositórios com esqueleto, 10 protos
+   gerando Go, migração inicial aplicada, ambiente k3d de pé, teste de arquitetura e
+   testes de contrato passando. Detalhe em §9.
 2. **Fatia vertical fina** — sign in → conta pessoal → BFF chama o core → cockpit lista
    vazia. Quatro endpoints provam a stack inteira de ponta a ponta.
 3. **Recursos e hierarquia** — integrações (SecretStore com dois adaptadores e testes de
@@ -188,3 +188,29 @@ Persistência dos emuladores, ponte de variáveis e propriedade do Terraform: AD
 | R-3 | **Latência do relay** entre commit e publicação — aceitável; `LISTEN/NOTIFY` se doer |
 | R-4 | **Carga de eventos no mesmo Postgres** — partição mensal, retenção e vigilância desde a primeira migração |
 | R-5 | **Propriedade de recursos no Terraform** — perda silenciosa no `apply`; a tabela de dono único do `dop-infra` é a mitigação (ADR-0020 §5) |
+
+## 9. Estado da fundação (2026-08-31)
+
+**Construído e verificado:**
+
+| | |
+|---|---|
+| Contratos | 10 `.proto`, 9 serviços, 65 RPCs; `buf lint` limpo, Go gerado |
+| Portas | `SecretStore` (k8s + memória), `ObjectStore` (GCS real/emulado), `IdentityProvider` (Firebase), `EventBus` (NATS JetStream) |
+| Espinha | Outbox transacional + relay com `FOR UPDATE SKIP LOCKED`; `events` particionado por mês |
+| Schema | 16 tabelas aplicadas no Postgres local; invariante de owner como **trigger** |
+| Transversais | 5 decorators no BFF; log JSON com campos canônicos idênticos nos dois processos |
+| Testes | 7 garantias de contrato do `SecretStore`, teste de arquitetura, 21 testes do BFF |
+| Coleções | 18 requisições Bruno em `docs/api/` |
+
+**Duas armadilhas encontradas e resolvidas na construção:**
+
+1. **Logger vinculado no import** congela a configuração padrão (o `configure()` roda no
+   lifespan) e as linhas saem fora do formato JSON — **sem erro visível**. Corrigido com
+   acesso tardio; o teste de formato agora cobre.
+2. **Verificação de assinatura ativa no ambiente local** rejeita o token do emulador
+   (`alg: none`, sem `kid`) com "token sem kid". É comportamento correto — falta apenas
+   `FIREBASE_AUTH_EMULATOR_HOST` no ambiente. Documentado no README do BFF.
+
+**O que a fundação ainda não tem:** implementação dos serviços de domínio (os `.proto`
+existem, os servidores são esqueleto), o `AgentRuntime`, e o launcher de sandboxes.
