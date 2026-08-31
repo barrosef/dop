@@ -114,13 +114,13 @@ doer de verdade.
 
 ### 4.3 Os componentes
 
-Namespace `dop-local`, composto por Kustomize.
+Namespace `dop-local`, composto por Kustomize. **Construído e testado em 2026-08-31.**
 
 | Componente | Papel | Porta |
 |---|---|---|
-| **Emulador Firebase Auth** | Emissão e verificação de token | 9099 |
-| **MinIO** | Armazenamento de objetos, via adaptador S3 | 9000 / 9001 |
-| **MongoDB** | Banco de apoio ao desenvolvimento | 27017 |
+| **PostgreSQL 17 + pgvector** | Estado, log de eventos e busca semântica (ADR-0018) | 5432 |
+| **NATS JetStream** | Broker de eventos (ADR-0019) | 4222 · monitor 8222 |
+| **Emuladores Firebase** | Auth e Storage — mesmo SDK da produção (ADR-0020) | 9099 · 9199 · hub 4400 |
 
 **Kustomize, não Helm** — conjunto pequeno e interno; sem linguagem de template a
 aprender, e o overlay `local` expressa literalmente "a base mais os emuladores".
@@ -148,9 +148,8 @@ de terceiro. Constrói-se uma imagem fina sobre Node com `firebase-tools` **em v
 fixada** — coerente com a postura de cadeia de suprimentos que o `dop-app` já adota, onde
 o `pnpm-workspace.yaml` impõe idade mínima de release contra ataque de supply chain.
 
-**MongoDB é provisório.** Está aqui porque desenvolvimento precisa de banco, não porque a
-escolha esteja feita — ela pertence a SP-3. Trocar significa trocar um diretório em
-`k3s/services/`.
+**Consumo medido:** ~958 MB no total (cluster 935 + LB 10 + registry 13). O emulador é o
+mais pesado por ser Java; `k3d cluster stop` devolve tudo preservando os dados.
 
 ## 5. Emulador não é adaptador
 
@@ -160,13 +159,17 @@ A distinção que governa o que entra em `k3s/emulators/`, e que é fácil de er
 |---|---|---|---|
 | Identidade | Firebase Auth | **Emulador** | Emissão e verificação de token não se reimplementa |
 | Segredos | Secret Manager | **Secret do k8s** | Já é adaptador da ADR-0001. Emular seria duplicar trabalho |
-| Objetos | GCS | **MinIO** | O adaptador S3 cobre; não é emulação |
-| Banco | a decidir | container real | Banco roda igual local; não é emulação |
+| Objetos | GCS / Firebase Storage | **Emulador Firebase Storage** | Mesmo SDK e semântica da produção; MinIO só se surgir cliente sem GCP |
+| Banco | Cloud SQL Postgres | container real | Banco roda igual local; não é emulação |
 | Serviços | a decidir | container no k3s | Cloud Run não tem emulador; container é o denominador comum |
 
-**Regra: só entra em `emulators/` o que não tem adaptador nativo.** Cada emulador é uma
-segunda implementação a manter em sincronia; a portabilidade restante vem da ADR-0001, não
-de emulação. Hoje a lista tem **um item**.
+**Regra: só entra em `emulators/` o que não tem adaptador nativo.** Hoje a lista tem
+**um item** — o Emulator Suite do Firebase, que cobre Auth e Storage no mesmo processo.
+
+**Armadilhas resolvidas na construção** (detalhadas em `dop-infra/docs/ambiente-local.md`):
+`HOME` gravável para usuário arbitrário; JARs baixados na build; JDK 21; a probe checa o
+**hub (4400)**, não a UI (que só sobe se algum emulador tiver UI); e tag de imagem
+versionada, porque reconstruir com a mesma tag não garante que o pod puxe a nova camada.
 
 ## 6. Absorção do `infra/` da raiz
 
