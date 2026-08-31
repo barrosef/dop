@@ -1,0 +1,37 @@
+meta {
+  name: SearchMemory
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.KnowledgeService/SearchMemory
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "project": { "id": "{{projectId}}" },
+      "query": "por que a consulta de pedidos está lenta",
+      "limit": 5
+    }
+  ]
+}
+
+docs {
+  Busca na memória compartilhada do projeto. Com serviço de embedding ligado é
+  semântica (pgvector); sem ele, cai no caminho lexical por trigrama — e a
+  diferença é declarada, não silenciosa.
+
+  Isolamento por conta é constraint: memória de outra conta não aparece, e o
+  filtro vem do CONTEXTO, não do chamador.
+}

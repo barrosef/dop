@@ -1,0 +1,41 @@
+meta {
+  name: ListAttention
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.AttentionService/ListAttention
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {}
+  ]
+}
+
+docs {
+  A fila única de "onde eu sou necessário, e em que ordem", entre TODAS as
+  demandas da conta ativa.
+
+  **Não existe RPC para marcar como lido ou descartar**, e a ausência é
+  desenho: item nasce de um evento e morre de outro. Item que some sem o
+  problema ter sido resolvido é mentira confortável, e caixa que mente vira
+  caixa ignorada.
+
+  `priority` é DERIVADA (impacto do tipo, depois idade) e calculada na LEITURA
+  — idade muda sozinha, e prioridade materializada ficaria velha em silêncio.
+  Menor número = mais urgente.
+
+  `open_total` é o número do badge: contar a página daria um badge que muda ao
+  paginar.
+}

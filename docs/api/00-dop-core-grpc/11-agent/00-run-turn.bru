@@ -1,0 +1,47 @@
+meta {
+  name: RunTurn — o agente age
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.AgentService/RunTurn
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "demand_id": "{{demandId}}",
+      "thread_id": "{{threadId}}",
+      "text": "por que a consulta de pedidos está lenta?",
+      "task_kind": "investigation",
+      "resource_id": "{{agentResourceId}}",
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Um turno do agente. O runtime vive no NÚCLEO (ADR-0023): a credencial do
+  provedor sai do cofre e é usada no mesmo processo, sem atravessar rede.
+
+  `resource_id` vazio usa a única integração de categoria `agent` da conta;
+  havendo mais de uma, o núcleo RECUSA com a lista em vez de escolher.
+
+  **A chave de idempotência é obrigatória e a borda não inventa uma:** turno
+  gasta dinheiro, e uma chave gerada transformaria retry de rede em consumo em
+  dobro.
+
+  Com sandbox provisionado, o agente AGE — o laço de ferramentas roda comando
+  dentro do ambiente isolado da demanda, com teto de 8 voltas e consumo
+  registrado a cada uma.
+}

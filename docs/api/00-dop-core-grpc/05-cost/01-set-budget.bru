@@ -1,0 +1,42 @@
+meta {
+  name: SetBudget
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.CostService/SetBudget
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "budget": {
+        "scope": "demand",
+        "scope_id": "{{demandId}}",
+        "limit_micros": "5000000",
+        "currency": "USD"
+      }
+    }
+  ]
+}
+
+docs {
+  Valor em MICROS (10⁻⁶ da moeda), inteiro — nunca float. Um token custa fração
+  de centavo; em centavos todo registro arredondaria para zero, e float acumula
+  erro em soma de milhões de linhas.
+
+  `limit_micros: 0` é SEM TETO, não teto zero.
+
+  Estourar o orçamento PAUSA a demanda e vira item da caixa de atenção — não
+  mata trabalho em andamento (ADR-0011 §2).
+}

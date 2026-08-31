@@ -3,17 +3,24 @@
 Toda pasta e todo arquivo desta árvore começa com um **índice de dois dígitos**:
 
 ```
-00 - dop-core-grpc/
-  00 - identity/
-    00 - ensure-user.bru
-    01 - list-accounts.bru
-    02 - create-invite.bru
-  01 - hierarchy/
-  02 - resource/
-  03 - demand/
-01 - dop-api-grpc/
-02 - dop-api-rest/
+00-dop-core-grpc/
+  00-identity/
+    00-ensure-user.bru
+    01-list-accounts.bru
+    02-create-invite.bru
+  01-hierarchy/   02-resource/   03-demand/    04-workflow/
+  05-cost/        06-delivery/   07-knowledge/ 08-execution/
+  09-event/       10-attention/  11-agent/
+01-dop-api-grpc/
+02-dop-api-rest/
 ```
+
+**Sem espaço no nome, e sem `folder.bru`.** A primeira versão usava
+`00 - identity` e um `folder.bru` por pasta; o Bruno passou a acusar erro em
+todas as requisições. Sem CLI para reproduzir aqui, as duas coisas saíram — o
+espaço porque atravessa mal ferramenta e script, e o `folder.bru` porque é
+recurso recente: uma versão que não o conheça o lê como REQUISIÇÃO sem método
+nem URL. O índice, que é o que interessa, continua onde estava.
 
 ## Por que índice no NOME, e não só o `seq` do Bruno
 
@@ -63,9 +70,12 @@ pacotes de domínio, mesmo onde a documentação ao redor está em português.
 
 ## O que esta coleção AINDA não cobre
 
-O núcleo serve 12 serviços gRPC e a borda 11; aqui há 4 domínios do núcleo e 3
-da borda. Faltam `workflow`, `cost`, `delivery`, `execution`, `knowledge`,
-`event`, `attention` e `agent`.
+O **núcleo está completo**: os 12 domínios, com o corpo de cada requisição
+validado contra o servidor rodando — nenhum foi inventado.
+
+A **borda** tem 3 domínios de 11 no gRPC (`identity`, `hierarchy`, `resource`).
+Faltam `workflow`, `demand`, `delivery`, `knowledge`, `cost`, `execution`,
+`stream`, `runtime` e `attention`; e o REST cobre os mesmos 5 de sempre.
 
 Está escrito aqui de propósito: com o índice, a lacuna fica visível na própria
 árvore, em vez de ser descoberta por quem procurou e não achou.

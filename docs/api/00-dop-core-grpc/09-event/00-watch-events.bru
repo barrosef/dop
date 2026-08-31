@@ -1,0 +1,41 @@
+meta {
+  name: WatchEvents (streaming)
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.EventService/WatchEvents
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "since_event_id": ""
+    }
+  ]
+}
+
+docs {
+  Streaming ao vivo dos eventos da conta — é daqui que saem a timeline e a
+  caixa de atenção.
+
+  `since_event_id` vazio traz só o que vier daqui pra frente. Preenchido, o
+  núcleo DRENA o log a partir daquele ponto e emenda com o ao vivo, sem buraco
+  e sem duplicata.
+
+  Isolamento por conta vale inclusive para evento com conta nula: ele não vai
+  para ninguém.
+
+  Assinante lento cai com `Unavailable` e a instrução de reconectar com cursor
+  — um cliente que não consome não pode travar os outros.
+}

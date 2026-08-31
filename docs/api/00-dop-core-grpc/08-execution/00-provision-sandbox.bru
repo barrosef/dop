@@ -1,0 +1,40 @@
+meta {
+  name: ProvisionSandbox
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.ExecutionService/ProvisionSandbox
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "demand_id": "{{demandId}}",
+      "min_tier": "ISOLATION_TIER_NAMESPACE",
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  **`min_tier` é DECLARADO, nunca presumido.** Omitir devolve `InvalidArgument`:
+  o substrato não escolhe isolamento por você. Pedir um nível que o substrato
+  não oferece devolve `FailedPrecondition` com a lista do que há — recusar é
+  melhor que entregar menos em silêncio.
+
+  Níveis: `hardware`, `kernel_emulated`, `namespace`.
+
+  O sandbox nasce com workspace em `/workspace`, e é ele que SOBREVIVE à
+  suspensão. Destruir é irreversível e leva o workspace junto.
+}

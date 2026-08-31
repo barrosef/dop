@@ -1,0 +1,32 @@
+meta {
+  name: GetMergeQueue
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.DeliveryService/GetMergeQueue
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "repo_id": "{{repoId}}"
+    }
+  ]
+}
+
+docs {
+  A fila é POR REPOSITÓRIO (ADR-0008), com ordem determinística `(priority,
+  seq)` — `seq` é única por repositório, atribuída sob trava. Duas entradas
+  nunca empatam de forma ambígua.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: ListFlows
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.WorkflowService/ListFlows
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {}
+  ]
+}
+
+docs {
+  Os fluxos visíveis para a conta, incluindo o CATÁLOGO da plataforma — que é
+  semeado na migração e herdado por toda conta que não declarar o seu.
+
+  `owner_scope` vazio lista todos os níveis. Preenchido (platform | account |
+  workspace | project | demand), lista só aquele.
+}

@@ -1,0 +1,38 @@
+meta {
+  name: ResolveFlow — a herança
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.WorkflowService/ResolveFlow
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "scope": "account",
+      "scope_id": "{{accountId}}"
+    }
+  ]
+}
+
+docs {
+  O coração do domínio: a cadeia `plataforma ◁ conta ◁ workspace ◁ projeto ◁
+  demanda` resolvida (ADR-0014). O nível mais específico vence, e o resultado
+  diz DE ONDE cada etapa veio.
+
+  Repare em `origins` e `contributors`: a procedência viaja ESTRUTURADA, além
+  da frase em `resolved_from`. A frase existe para log e mensagem de erro;
+  contrato que obriga o consumidor a interpretar texto quebra no dia em que
+  alguém melhora a redação.
+}

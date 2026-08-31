@@ -1,0 +1,38 @@
+meta {
+  name: RouteModel
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.CostService/RouteModel
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "task_kind": "investigation"
+    }
+  ]
+}
+
+docs {
+  A decisão tarefa→(modelo, effort) da ADR-0011. Os tipos que a tabela conhece:
+  `mechanical`, `investigation`, `implementation`, `critic`.
+
+  **A justificativa vem junto, e é a parte que importa.** Ela carrega a
+  proveniência (`ADR-0011 §3 (rascunho — calibrar com telemetria, P-7)`) e o
+  porquê da linha. Sem isso ninguém audita nem recalibra a régua.
+
+  Tipo desconhecido cai no lado CARO e DIZ que caiu — na dúvida não se economiza,
+  porque o gasto aparece na medição e o inverso não aparece.
+}

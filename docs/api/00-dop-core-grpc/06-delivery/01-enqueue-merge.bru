@@ -1,0 +1,39 @@
+meta {
+  name: EnqueueMerge — sem verde não entra
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.DeliveryService/EnqueueMerge
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "repo_id": "{{repoId}}",
+      "demand_id": "{{demandId}}",
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  A ADR-0007 no ponto onde ela vale. Sem PR aberto, ou sem evidência de verde
+  do commit que o PR carrega, a resposta é `FailedPrecondition` listando ITEM
+  POR ITEM o que falta.
+
+  A evidência não é booleano: é execução de verificação com commit, suíte,
+  contagens, sandbox e rastro de log. O parecer do crítico é uma execução como
+  as outras. Um "sem verde sem PR" que aceita um booleano do chamador não vale
+  nada.
+}

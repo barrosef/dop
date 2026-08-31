@@ -1,0 +1,35 @@
+meta {
+  name: BuildContextPackage
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.KnowledgeService/BuildContextPackage
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "demand_id": "{{demandId}}"
+    }
+  ]
+}
+
+docs {
+  O pacote que o agente recebe, já cortado por orçamento de tokens (ADR-0012).
+
+  **Olhe o `dropped`**: ele conta o que ficou de FORA, por camada. "O pacote
+  coube" e "o pacote coube porque jogamos fora metade da memória relevante" são
+  fatos diferentes, e só o segundo explica um agente que não sabia o que devia
+  saber. O mapa vem sempre, inclusive zerado.
+}
