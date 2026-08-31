@@ -11,10 +11,15 @@ grpc {
   auth: none
 }
 
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
 body:grpc {
   [
     {
-      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
       "demand_id": "dem-1",
       "key": "forense-db",
       "card": {
@@ -30,6 +35,10 @@ body:grpc {
 }
 
 docs {
+  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
+  use: ele dá a falsa impressão de escopar a chamada.
+
   Lança um subagente com ficha própria: propósito, ferramentas, modelo e fatia
   do orçamento (ADR-0010).
 

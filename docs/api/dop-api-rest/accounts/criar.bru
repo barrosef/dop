@@ -1,0 +1,28 @@
+meta {
+  name: Criar organização
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{bffUrl}}/accounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "handle": "acme",
+    "display_name": "ACME Ltda",
+    "legal_id": "12.345.678/0001-90"
+  }
+}
+
+docs {
+  Qualquer usuário cria a sua organização — por isso não há exigência de papel.
+  O que se exige é conta ATIVA: a criação acontece a partir de um contexto
+  (SP-0), e quem cria nasce owner dela.
+
+  A conta pessoal, essa ninguém cria: ela nasce junto com o usuário no primeiro
+  login (ADR-0002).
+}

@@ -11,16 +11,21 @@ grpc {
   auth: none
 }
 
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
 body:grpc {
   [
     {
-      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
       "kind": "KIND_INTEGRATION",
       "name": "github-da-org",
       "config": {
-        "category": "CATEGORY_GIT",
+        "category": "git",
         "provider": "github",
-        "auth_method": "AUTH_METHOD_OAUTH_APP"
+        "base_url": "https://api.github.com"
       },
       "idempotency_key": "{{$guid}}"
     }
@@ -28,6 +33,13 @@ body:grpc {
 }
 
 docs {
+  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
+  use: ele dá a falsa impressão de escopar a chamada.
+
+  A categoria é uma string minúscula — `git`, `task_manager` ou `agent` — e não
+  um enum: quem manda no vocabulário de provedor é o provedor (ADR-0013).
+
   Cria a integração SEM credencial. O segredo entra por `SetCredential`, que o
   grava no `SecretStore` e devolve apenas a REFERÊNCIA — o valor nunca volta
   numa leitura (ADR-0001).

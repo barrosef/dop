@@ -24,6 +24,28 @@ docs {
   - **dop-api-rest** — REST + SSE, consumido pelo cockpit
   - **dop-core-grpc** — gRPC do núcleo, consumido pelo BFF, pelo CLI e pelos agentes
 
+  ## Como cada superfície identifica quem chama
+
+  No **REST** a identidade vem do token (`Authorization: Bearer`), e a conta
+  ativa do header `x-account-id`, posto pelo script abaixo.
+
+  No **gRPC do núcleo** não há token: o núcleo confia no BFF. Quem chama e em
+  qual conta vão na **metadata** — `x-actor-id` e `x-account-id` — e cada
+  requisição da coleção traz esse bloco (ADR-0017, conv. 5). As mensagens ainda
+  declaram um campo `ctx`, resquício de uma tentativa anterior: o servidor o
+  **ignora**, e usá-lo dá a falsa impressão de estar escopando a chamada.
+
+  Preencha `actorId` e `accountId` no ambiente com o que `EnsureUser` e
+  `ListAccounts` devolverem — `EnsureUser` é a única que roda sem os dois, por
+  ser justamente o primeiro login.
+
+  ## O que ainda não responde
+
+  As requisições em `dop-core-grpc/demand/` documentam contrato já fechado, mas
+  o `DemandService` ainda não está registrado no servidor: elas devolvem
+  `Unimplemented`. Estão aqui porque o contrato é a fonte da verdade (ADR-0017)
+  e o cliente pode ser escrito contra ele antes do servidor existir.
+
   ## Como obter um token no ambiente local
 
   Rode a requisição `health/emulador-signup` (ou `signin`) da coleção REST: ela

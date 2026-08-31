@@ -32,6 +32,17 @@ Convenções obrigatórias:
 3. **Toda RPC de escrita carrega `idempotency_key`** — com eventos e retries, isso é
    requisito, não luxo.
 4. Compatibilidade validada no CI (`buf breaking`): campo não muda de número nem de tipo.
+5. **Quem chama e em qual conta viaja na metadata**, não no corpo — `x-actor-id`,
+   `x-account-id`, `x-request-id`, resolvidos por interceptor antes de qualquer
+   caso de uso. Contexto é preocupação transversal: no corpo, cada RPC teria que
+   lembrar de conferir, e a que esquecesse viraria buraco de isolamento.
+
+   *Dívida registrada:* as mensagens de requisição ainda declaram um campo
+   `CallContext ctx = 1` de uma tentativa anterior. O servidor **ignora** esse
+   campo — autoriza só pela metadata. Um contrato que declara um campo que não
+   tem efeito ensina o errado a quem lê e faz o cliente acreditar que está
+   escopando a chamada quando não está. O campo sai dos protos (número 1
+   reservado, para não quebrar compatibilidade) num passe dedicado.
 
 ## Alternativas consideradas
 

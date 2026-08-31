@@ -1,0 +1,35 @@
+meta {
+  name: GetResource — a credencial não volta
+  type: grpc
+  seq: 3
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.ResourceService/GetResource
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "id": "{{integrationId}}"
+    }
+  ]
+}
+
+docs {
+  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+
+  Vale rodar esta requisição logo depois de `SetCredential`: a resposta traz
+  `credential_ref` — um rótulo opaco derivável da própria linha — e **nunca** o
+  segredo. Não existe caminho de leitura do valor pela API; quem precisa dele é
+  o executor, direto do cofre (ADR-0001).
+}

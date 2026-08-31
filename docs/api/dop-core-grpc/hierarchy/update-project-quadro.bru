@@ -1,0 +1,52 @@
+meta {
+  name: UpdateProject — vincula o quadro
+  type: grpc
+  seq: 4
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.HierarchyService/UpdateProject
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "project": {
+        "id": "{{projectId}}",
+        "workspace": { "id": "{{workspaceId}}" },
+        "name": "Cockpit",
+        "description": "Projeto de exemplo",
+        "task_manager": {
+          "integration": { "id": "{{integrationId}}" },
+          "external_space_id": "sp-901",
+          "external_project_id": "pj-42",
+          "card_types": ["bug", "feature"]
+        },
+        "rules": ["no-green-no-pr"]
+      }
+    }
+  ]
+}
+
+docs {
+  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+
+  `external_space_id` é o **espaço do provedor**, nunca a nossa palavra
+  "workspace": os dois conceitos existem e confundi-los é o caminho curto para
+  ligar o projeto ao quadro errado.
+
+  `card_types` vem do provedor e é dinâmico — a plataforma não impõe vocabulário
+  de card (ADR-0013).
+
+  Update é substituição: enviar `task_manager` nulo DESVINCULA o quadro. Enviar
+  o projeto sem os campos que você não quer perder apaga o que estava lá.
+}

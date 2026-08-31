@@ -11,16 +11,25 @@ grpc {
   auth: none
 }
 
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
 body:grpc {
   [
     {
-      "ctx": { "account": { "id": "{{accountId}}" }, "actor": { "kind": "KIND_USER", "id": "u-1" } },
       "user": { "id": "u-1" }
     }
   ]
 }
 
 docs {
+  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
+  use: ele dá a falsa impressão de escopar a chamada.
+
   Toda RPC do domínio carrega `CallContext` — quem, em qual conta. A borda
   preenche; o domínio confia (ADR-0016).
 }

@@ -1,0 +1,38 @@
+meta {
+  name: CreateProject
+  type: grpc
+  seq: 3
+}
+
+grpc {
+  url: {{coreGrpc}}
+  method: /dop.v1.HierarchyService/CreateProject
+  body: grpc
+  auth: none
+}
+
+metadata {
+  x-actor-id: {{actorId}}
+  x-account-id: {{accountId}}
+  x-request-id: {{$guid}}
+}
+
+body:grpc {
+  [
+    {
+      "workspace": { "id": "{{workspaceId}}" },
+      "name": "Cockpit",
+      "description": "Projeto de exemplo",
+      "idempotency_key": "{{$guid}}"
+    }
+  ]
+}
+
+docs {
+  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+
+  A criação é enxuta de propósito: repositórios, recursos e o vínculo com o
+  quadro entram por `UpdateProject`. A conta NÃO é informada — ela é herdada do
+  workspace, e deixar o chamador informá-la seria abrir caminho para projeto
+  nascer numa conta que não é a do seu workspace.
+}
