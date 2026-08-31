@@ -50,6 +50,14 @@ A fase 2 entra **sem migração** — é o que justifica modelar tudo agora. A f
 exercita o multi-tenant de verdade, porque toda consulta filtra por conta desde o início;
 a conta simplesmente é sempre pessoal.
 
+## Ordem combinada
+
+1. Terminar estrutura/arquitetura — **ferramentas do agente** (a peça que falta
+   para a plataforma executar em vez de só modelar) e **cockpit**.
+2. **Discussão** antes das user stories: comunicação (P-11), provisionamento de
+   sandbox (P-24) e o modelo de conta/cobrança do agente (P-23).
+3. User stories.
+
 ## Pendências transversais
 
 Levantadas na revisão do SP-0, cada uma exigindo decisão própria e provável ADR:
@@ -77,4 +85,6 @@ Levantadas na revisão do SP-0, cada uma exigindo decisão própria e provável 
 | ~~P-20~~ | **Resolvida** — Os quatro contornos saíram; o do `dropped` estava QUEBRADO, não funcionando | — |
 | ~~P-21~~ | **Resolvida** — Caixa na borda, reusando o SSE existente; `AttentionUpdate` ganhou `event_id` para a retomada | — |
 | ~~P-22~~ | **Resolvida** — Virou TESTE: varre `app/` atrás de cofre, chave de provedor e SDK de modelo | — |
+| P-23 | **⭐ De quem é a conta do agente — e quem paga o quê.** O modelo atual assume BYOK: provedor de agente é integração DA CONTA (ADR-0013), credencial no cofre do cliente. Isso já está construído e testado. As alternativas mudam arquitetura, não só preço: (a) **BYOK** — cliente paga o fornecedor direto, DOP cobra plataforma, e a medição de custo é VISIBILIDADE; (b) **conta enterprise do DOP revendida** — a medição vira FATURAMENTO, e passa a exigir precisão auditável, sem lacuna, com cota por conta (o domínio de orçamento já faz parte disso); (c) **OAuth na conta do fornecedor do usuário** — atenção: assinatura de consumidor (claude.ai) normalmente NÃO autoriza uso por terceiro via API; acesso de API é produto separado, então esse caminho pode não existir juridicamente; (d) **híbrido** — BYOK por padrão, conta do DOP para avaliação. O código de hoje suporta (a) e (d) sem mudança; (b) exige medição de qualidade fiscal; (c) precisa ser verificado com os termos de cada fornecedor ANTES de virar desenho | **discussão**, antes das user stories |
+| P-24 | **⭐ Explorar o provisionamento de sandbox** — sob demanda (hoje), automático ao iniciar demanda, ou preguiçoso no primeiro turno que precisa agir. Custa CPU, memória e disco por demanda; a suspensão automática ameniza mas não elimina. Só faz sentido decidir depois que o agente souber usar ferramentas — antes disso nenhum sandbox precisa subir | **discussão**, junto de P-11 |
 | P-10 | **Explorar o Overview** — forma final do nível acima do task header; já definido: item Arquitetura do projeto (análises gerais sob demanda: stacks, integrações, forças/fraquezas, propostas de melhoria em diagramas e gráficos) | spec de navegação §3 |
