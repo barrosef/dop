@@ -73,9 +73,10 @@ pacotes de domínio, mesmo onde a documentação ao redor está em português.
 O **núcleo está completo**: os 12 domínios, com o corpo de cada requisição
 validado contra o servidor rodando — nenhum foi inventado.
 
-A **borda** tem 3 domínios de 11 no gRPC (`identity`, `hierarchy`, `resource`).
-Faltam `workflow`, `demand`, `delivery`, `knowledge`, `cost`, `execution`,
-`stream`, `runtime` e `attention`; e o REST cobre os mesmos 5 de sempre.
+A **borda** expõe 12 serviços gRPC e 63 rotas REST; a coleção cobre 3 deles
+(`identity`, `hierarchy`, `resource`). Faltam requisições para `workflow`,
+`demand`, `delivery`, `knowledge`, `cost`, `execution`, `stream`, `runtime` e
+`attention` — a lacuna é da COLEÇÃO, não da API.
 
 Está escrito aqui de propósito: com o índice, a lacuna fica visível na própria
 árvore, em vez de ser descoberta por quem procurou e não achou.
