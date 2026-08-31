@@ -27,7 +27,7 @@ Postgres — nem "só para uma consulta rápida". Dois donos do schema é como a
 morre. Quando o BFF precisa registrar algo, **chama o core**, que grava estado e evento
 na mesma transação.
 
-**O `AgentRuntime` vive no BFF** (ADR-0015 §7 do substrato): o core decide *o quê*
+**~~O `AgentRuntime` vive no BFF~~ — SUBSTITUÍDA pela [ADR-0023](0023-runtime-de-agente-no-nucleo.md): o runtime passou para o núcleo, porque a credencial do provedor não pode chegar à camada exposta à internet.** ~~O `AgentRuntime` vive no BFF~~ (ADR-0015 §7 do substrato): o core decide *o quê*
 (fluxo, ficha, orçamento, roteamento — ADR-0011); o BFF executa a conversa com o modelo
 e devolve eventos ao core. O sandbox fala **apenas com o BFF**, o que mantém a
 allowlist de egress mínima (F-10).
