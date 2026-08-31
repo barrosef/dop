@@ -23,3 +23,8 @@ descartada, ou quando alguém daqui a seis meses vai perguntar "por que assim?".
 | [0013](0013-recurso-como-unidade-de-compartilhamento.md) | Recurso como unidade de posse e compartilhamento da conta | Aceita |
 | [0014](0014-fluxo-de-trabalho-dinamico.md) | Fluxo de trabalho dinâmico, tipado e herdável | Aceita |
 | [0015](0015-orquestrador-de-projeto.md) | Orquestrador de projeto: o agente techlead | Aceita |
+| [0016](0016-stack-go-core-python-bff.md) | Núcleo em Go, BFF em Python, e a fronteira entre eles | Aceita |
+| [0017](0017-proto-como-fonte-da-verdade.md) | O `.proto` é a fonte da verdade do contrato | Aceita |
+| [0018](0018-persistencia-postgres.md) | PostgreSQL como banco único, com pgvector | Aceita |
+| [0019](0019-outbox-e-nats.md) | Outbox transacional + NATS JetStream | Aceita |
+| [0020](0020-emuladores-firebase-e-dono-unico.md) | Emuladores Firebase no local; Terraform como dono único | Aceita |

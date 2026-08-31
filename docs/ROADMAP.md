@@ -8,9 +8,9 @@
 |---|---|---|---|
 | **SP-0** | Identidade, contas e tenancy | Quem é o usuário, o que é uma conta, como se possui e se isola, onde vivem as integrações, hierarquia conta → workspace → projeto | ✅ desenhado |
 | **SP-4** | Modelo de trabalho: specs e autonomia | O que a plataforma faz; o que substitui as etapas; onde o humano decide, aprova e dá contexto | ✅ desenhado — subsistemas (ADRs 0006–0012) + **núcleo fechado pela ADR-0014** (fluxo dinâmico tipado e herdável); resta P-8 (sintaxe dos critérios) |
-| **SP-1** | Topologia de componentes e repositórios | Quais componentes existem e o papel de cada um | ⬜ |
-| **SP-3** | Modelo de domínio e persistência | Workspace, projeto, card, artefato, evento; banco | ⬜ |
-| **SP-2** | Contrato e protocolos | Fonte da verdade do contrato; REST, gRPC e streaming | ⬜ |
+| **SP-1** | Topologia de componentes e repositórios | Quais componentes existem e o papel de cada um | ✅ desenhado — ADRs 0016–0020 + spec de arquitetura de backend |
+| **SP-3** | Modelo de domínio e persistência | Workspace, projeto, card, artefato, evento; banco | ✅ decidido — ADR-0018/0019 + schema na spec de backend |
+| **SP-2** | Contrato e protocolos | Fonte da verdade do contrato; REST, gRPC e streaming | ✅ decidido — ADR-0017 (proto); resta escrever os `.proto` |
 | **SP-5** | Runtime, ambiente e IDE | Terminal, execução paralela, implantação | ⬜ |
 | **SP-6** | Integração com o Claude | Agente, chat como canal de comando | ⬜ |
 
@@ -59,7 +59,7 @@ Levantadas na revisão do SP-0, cada uma exigindo decisão própria e provável 
 | ~~P-1~~ | **Resolvida pela ADR-0006** — auditoria é projeção do log de eventos da demanda | — |
 | P-2 | **Transições de `status` da integração** — quem detecta `expired`, com que frequência, o que acontece com trabalho em andamento | SP-0 integrações + SP-5 execução |
 | P-3 | **LGPD** — retenção, exclusão e residência, com CPF e CNPJ no escopo | Transversal; afeta exclusão de conta |
-| P-4 | **Plano de controle × plano de execução** — Cloud Run não sustenta sessão longa de terminal | SP-5 |
+| ~~P-4~~ | **Resolvida** — plano de controle no Cloud Run; plano de execução em cluster (GKE/k3s). Spec de arquitetura de backend §1 | — |
 | P-5 | **Custo da renomeação** *workspace → projeto* em código, rotas, i18n, mocks e documentação | Execução; vira tarefa de plano |
 | P-6 | **Recuperação de organização órfã não verificada** — sem domínio provado, não há evidência disponível para reivindicar posse | SP-0 identidade |
 | P-7 | **Calibrar o ModelRouter** — a tabela tarefa→(modelo, effort) da ADR-0011 nasce como palpite informado; calibra com telemetria real (F-7) e com os campos de cache dos eventos de custo | ADR-0011/0012 |

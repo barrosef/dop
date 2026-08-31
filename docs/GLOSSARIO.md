@@ -22,6 +22,10 @@ convenção de desambiguação está registrada.
 | **Fluxo efetivo** | O fluxo que vale para uma demanda após resolver a cadeia de herança; a versão congela quando a demanda inicia |
 | **Techlead (orquestrador de projeto)** | Agente do projeto, acionado com demandas paralelas: detecta transversais, planeja e provoca decisões na caixa de atenção; nunca pausa demandas (ADR-0015) |
 | **Diretriz de coordenação** | Decisão do dev sobre uma transversal, aplicada pelos agentes das demandas (ex.: cherry-pick condicionado, ordem na fila, partição de arquivos) |
+| **dop-core** | Núcleo em Go: domínio, estado, transações e eventos. Um binário, quatro modos (`serve`, `worker`, `sched`, `launcher`) |
+| **dop-api (BFF)** | Borda em Python: REST+SSE para o app, gRPC para CLI e sandbox, e o `AgentRuntime`. Não tem banco |
+| **Outbox** | Tabela onde o evento é gravado na mesma transação do estado; um relay publica no broker — atomicidade sem 2PC |
+| **Projeção** | Leitura derivada do log de eventos (dossiê, timeline, caixa de atenção, métricas). Nunca escreve a verdade |
 | **Card** | Item de trabalho vindo do task manager. Tem tipo dinâmico, definido pelo provedor |
 | **Demanda** | Um card em execução na plataforma: sandbox, threads, spec, eventos. Card é a origem; demanda é o trabalho |
 | **Sandbox** | O ambiente isolado de uma demanda: microVM com agente(s), workspace e Docker interno. Fronteira de segurança |
