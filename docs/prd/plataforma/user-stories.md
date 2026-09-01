@@ -1,9 +1,9 @@
 # Plataforma DOP — features e user stories
 
-> **Status:** Rascunho para revisão do Dev · **Data:** 2026-08-30 (rev. 3 — fluxo
-> dinâmico e cockpit painel-sobre-barra)
+> **Status:** Rascunho para revisão do Dev · **Data:** 2026-09-01 (rev. 4 — US-5.2
+> corrigida pela ADR-0026; organização por épicos em curso)
 > **Base:** specs SP-0 (identidade, integrações, recursos), fluxo de trabalho,
-> navegação rev. 2; ADRs 0001–0014
+> navegação rev. 2; ADRs 0001–0026
 > **Fases:** conforme `ROADMAP.md` — **[F1]** constrói-se agora; **[F2]** modelado no
 > schema desde já, construído na fase seguinte.
 
@@ -81,9 +81,16 @@ convites são [F2] e vêm depois na numeração, ainda que no schema existam des
   o papel e as concessões de **recursos**, para ele entrar com o acesso certo.
   - papéis: `owner`, `admin`, `developer`, `viewer`; concessão `use`/`manage` por recurso; sem defaults
   - expira em 14 dias; revogável pendente; reenvio invalida o anterior
-- **US-5.2** Como convidado, quero aceitar pelo link — com cadastro no caminho se eu não
-  existir — e cair na conta da organização.
-  - aceite exige sessão autenticada e mostra claramente qual conta se está entrando
+- **US-5.2** Como convidado, quero aceitar pelo link e cair na conta da organização.
+  - o link carrega só o `invite_id` — **não há token** (ADR-0026): o id sozinho não
+    concede nada, e por isso pode viajar em e-mail, evento e projeção
+  - o aceite exige estar logado **como o convidado**: e-mail da sessão VERIFICADO e igual
+    ao do convite. Sem isso, qualquer autenticado de posse do link entrava na conta
+  - quem não tem cadastro se cadastra no caminho, **com verificação de e-mail antes do
+    aceite** — é a verificação que substitui o token
+  - duas recusas com texto próprio: "confirme seu e-mail" ≠ "este convite não é seu";
+    a segunda NÃO revela para quem era o convite (viraria oráculo de e-mail)
+  - a tela mostra claramente em qual conta se está entrando
 - **US-5.3** Como owner/admin, quero editar papel e concessões a qualquer tempo, e
   desvincular sem tocar no que é pessoal do membro.
   - invariante: a conta nunca fica sem `owner` ativo
