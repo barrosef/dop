@@ -21,9 +21,11 @@ body:json {
 docs {
   Exige papel owner ou admin na conta ativa.
 
-  **O token do convite NÃO volta na resposta** — ele sai pelo canal de
-  comunicação (P-11). Quem perder o link precisa de convite novo; devolvê-lo
-  aqui transformaria qualquer leitura de log num convite válido.
+  **O convite NÃO tem token.** O `id` da resposta é o que o link do e-mail
+  carrega, e ele não concede nada por si só: o aceite exige que o e-mail
+  VERIFICADO de quem está logado seja o do convite. Foi isso que permitiu o
+  id viajar em texto claro no evento, na timeline e no e-mail — antes, um
+  token de portador tornava qualquer leitura de log um convite válido.
 
   `grants` sobe vazio de propósito: concessão de recurso não tem default
   (ADR-0013). Quem convida decide o que compartilhar, explicitamente.

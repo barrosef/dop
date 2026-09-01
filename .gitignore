@@ -4,3 +4,7 @@ infra/.env
 *.pyc
 .venv/
 node_modules/
+
+# artefatos de sessão de browser/captura — não são do projeto
+.playwright-mcp/
+cockpit-real.png
