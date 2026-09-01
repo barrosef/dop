@@ -7,3 +7,9 @@
 [submodule "repos/dop-app"]
 	path = repos/dop-app
 	url = git@github.com:Digital-Business-One/dop-app.git
+[submodule "repos/dop-core"]
+	path = repos/dop-core
+	url = git@github.com:Digital-Business-One/dop-core.git
+[submodule "repos/dop-infra"]
+	path = repos/dop-infra
+	url = git@github.com:Digital-Business-One/dop-infra.git
