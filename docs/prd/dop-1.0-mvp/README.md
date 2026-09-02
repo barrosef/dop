@@ -1,210 +1,209 @@
-# PRD Base — DOP 1.0 (MVP)
+# Base PRD — DOP 1.0 (the MVP)
 
-> **Documento vivo.** Captura todos os requisitos do DOP 1.0 a partir da visão do
-> Dev. Servirá de fonte para o fatiamento em *feature PRDs* e para a divisão de
-> responsabilidades Dev × Claude.
+> **A living document.** It captures every requirement of DOP 1.0 from the Dev's vision. It
+> will serve as the source for slicing into *feature PRDs* and for the division of
+> responsibilities Dev × Claude.
 >
-> - **Status:** Rascunho para revisão
-> - **Data:** 2026-05-30
-> - **Base atual:** dop 0.5.0 (CLI multi-workspace, multi-plataforma, runtime data-driven)
-> - **Não-objetivo deste documento:** decidir arquitetura/stack/implementação (isso é
->   responsabilidade do Claude, ver [§10](#10-decisões-técnicas-em-aberto-a-cargo-do-claude)).
->   Aqui o foco é **o quê** e **para quem**, não **como**.
+> - **Status:** A draft for review
+> - **Date:** 2026-05-30
+> - **Current base:** dop 0.5.0 (a multi-workspace, multi-platform CLI, with a data-driven
+>   runtime)
+> - **A non-goal of this document:** deciding architecture/stack/implementation (that is
+>   Claude's responsibility, see [§10](#10-open-technical-decisions-claudes-to-take)). Here the
+>   focus is **what** and **for whom**, not **how**.
 
-## Índice
+## Contents
 
-1. [Visão e proposta de valor](#1-visão-e-proposta-de-valor)
-2. [Objetivos e não-objetivos do 1.0](#2-objetivos-e-não-objetivos-do-10)
-3. [Atores, personas e divisão de responsabilidades](#3-atores-personas-e-divisão-de-responsabilidades)
-4. [Arquitetura de alto nível (descritiva)](#4-arquitetura-de-alto-nível-descritiva)
-5. [Conceitos e estados](#5-conceitos-e-estados)
-6. [Capacidades / Épicos e requisitos](#6-capacidades--épicos-e-requisitos)
-7. [Inferência (reduzir trabalho e erro do Dev)](#7-inferência-reduzir-trabalho-e-erro-do-dev)
-8. [Requisitos não-funcionais](#8-requisitos-não-funcionais)
-9. [Mapa de features e divisão de responsabilidades](#9-mapa-de-features-e-divisão-de-responsabilidades)
-10. [Decisões técnicas em aberto (a cargo do Claude)](#10-decisões-técnicas-em-aberto-a-cargo-do-claude)
-11. [Questões de produto em aberto (a validar com o Dev)](#11-questões-de-produto-em-aberto-a-validar-com-o-dev)
-12. [Fora de escopo do 1.0](#12-fora-de-escopo-do-10)
-13. [Glossário](#13-glossário)
+1. [The vision and the value proposition](#1-the-vision-and-the-value-proposition)
+2. [1.0's goals and non-goals](#2-10s-goals-and-non-goals)
+3. [Actors, personas and the division of responsibilities](#3-actors-personas-and-the-division-of-responsibilities)
+4. [High-level architecture (descriptive)](#4-high-level-architecture-descriptive)
+5. [Concepts and states](#5-concepts-and-states)
+6. [Capabilities / epics and requirements](#6-capabilities--epics-and-requirements)
+7. [Inference (reducing the Dev's work and error)](#7-inference-reducing-the-devs-work-and-error)
+8. [Non-functional requirements](#8-non-functional-requirements)
+9. [The feature map and the division of responsibilities](#9-the-feature-map-and-the-division-of-responsibilities)
+10. [Open technical decisions (Claude's to take)](#10-open-technical-decisions-claudes-to-take)
+11. [Open product questions (to validate with the Dev)](#11-open-product-questions-to-validate-with-the-dev)
+12. [Out of 1.0's scope](#12-out-of-10s-scope)
+13. [Glossary](#13-glossary)
 
 ---
 
-## 1. Visão e proposta de valor
+## 1. The vision and the value proposition
 
-O DOP evolui de uma **CLI** para uma **ferramenta auxiliar ao desenvolvimento de
-software IA-first**, composta por três componentes — **CLI, API e Frontend** — em
-que **Dev** e **Claude** colaboram para conduzir demandas do início ao fim
-(configuração do ambiente → desenvolvimento → PR → entrega).
+DOP evolves from a **CLI** into an **AI-first tool that assists software development**, made of
+three components — **the CLI, the API and the Frontend** — in which the **Dev** and **Claude**
+collaborate to run demands from start to finish (setting up the environment → development → the
+PR → delivery).
 
-A CLI continua fazendo tudo o que faz hoje (git/PR multi-plataforma, runtime
-docker-compose, e2e). A novidade é **expor essas capacidades via API** e oferecer um
-**Frontend** onde o Dev trabalha conversando com o Claude, com visibilidade rica do
-estado de cada demanda.
+The CLI keeps doing everything it does today (multi-platform git/PR, a docker-compose runtime,
+e2e). What is new is **exposing those capabilities through an API** and offering a **Frontend**
+where the Dev works by talking to Claude, with rich visibility of each demand's state.
 
-**Frase-âncora:** *"Um cockpit onde Dev e Claude desenvolvem juntos — da
-configuração da workspace ao PR entregue — com o Claude operando o DOP por baixo e o
-Dev acompanhando e guiando por cima."*
+**The anchor sentence:** *"A cockpit where the Dev and Claude develop together — from the
+workspace's configuration to the delivered PR — with Claude operating DOP underneath and the Dev
+following and guiding from above."*
 
-## 2. Objetivos e não-objetivos do 1.0
+## 2. 1.0's goals and non-goals
 
-### Objetivos
-- **O1.** Três componentes integrados: **CLI** (motor), **API** (orquestração HTTP),
-  **Frontend** (UI do Dev).
-- **O2.** **Toda ação que a CLI faz hoje** é acionável via API.
-- **O3.** **Workspaces** configuráveis por **wizard** (multi-etapa, salvável por
-  etapa), com teste de conexões, inferência e **chat de configuração** com o Claude.
-- **O4.** **Fluxo de desenvolvimento** guiado por demanda: listar tasks do dev,
-  trabalhar em chat com o Claude, acompanhar status até a entrega.
-- **O5.** **Task manager plugável** (Jira no 1.0), com a mesma filosofia de interface
-  do runtime/git providers.
-- **O6.** **Geração assistida** (pelo Claude) de artefatos da workspace (Dockerfiles,
-  docker-compose, regras/contexto).
-- **O7.** **Monousuário, multi-projeto em paralelo:** um Dev trabalhando em **várias
-  workspaces/demandas ao mesmo tempo**, com baixa sobrecarga de atenção.
+### Goals
+- **O1.** Three integrated components: the **CLI** (the engine), the **API** (HTTP
+  orchestration), the **Frontend** (the Dev's UI).
+- **O2.** **Every action the CLI does today** is triggerable through the API.
+- **O3.** **Workspaces** configurable through a **wizard** (multi-step, saveable step by step),
+  with connection testing, inference and a **configuration chat** with Claude.
+- **O4.** A **development flow** guided by demand: list the dev's tasks, work in a chat with
+  Claude, follow the status through to delivery.
+- **O5.** A **pluggable task manager** (Jira in 1.0), with the same interface philosophy as the
+  runtime/git providers.
+- **O6.** **Assisted generation** (by Claude) of the workspace's artifacts (Dockerfiles,
+  docker-compose, rules/context).
+- **O7.** **Single-user, multi-project in parallel:** one Dev working on **several
+  workspaces/demands at the same time**, with a low attention overhead.
 
-### Filosofia de produto: o Dev é gestor do Claude
+### The product philosophy: the Dev is Claude's manager
 
-No 1.0 o Dev atua **mais como gestor do Claude do que como executor**. O Claude é o
-**mais autônomo possível**: planeja, implementa, cria testes, gera **memórias**
-(contexto, ADRs, prompts) e faz **análises forenses** (ex.: por que um PR conflitou, o
-que mudou entre branches, por que uma pipeline falhou). O Dev **fornece requisitos e
-contexto, decide, aprova e intervém quando o Claude pede** — sem micro-gerenciar.
+In 1.0 the Dev acts **more as Claude's manager than as an executor**. Claude is **as autonomous
+as possible**: it plans, implements, creates tests, generates **memories** (context, ADRs,
+prompts) and does **forensic readings** (e.g. why a PR conflicted, what changed between
+branches, why a pipeline failed). The Dev **supplies requirements and context, decides, approves
+and steps in when Claude asks** — without micro-managing.
 
-Consequências de design:
-- A UX é de **supervisão**, não de operação manual: **minimalista**, mostra o essencial
-  ("onde eu sou necessário", estado das demandas) e evita proliferação de telas e
-  relatórios.
-- Com **múltiplos projetos em paralelo**, o recurso escasso do Dev é **atenção** — a
-  ferramenta deve dirigir a atenção, não exigir varredura manual.
+Design consequences:
+- The UX is one of **supervision**, not of manual operation: **minimalist**, it shows the
+  essentials ("where I am needed", the demands' state) and avoids a proliferation of screens and
+  reports.
+- With **several projects in parallel**, the Dev's scarce resource is **attention** — the tool
+  has to direct attention, not require a manual sweep.
 
-### Não-objetivos do 1.0
-- Não substituir pipelines de CI/CD remotos.
-- Não fazer merge/aprovação automática de PR (decisão humana permanece).
-- Não suportar webhooks (detecção de merge é por **polling** no 1.0).
-- Multi-task-manager / multi-git-provider **simultâneos** além de Jira + Azure DevOps
-  (a *plugabilidade* é requisito; as *implementações extras* não).
+### 1.0's non-goals
+- Not replacing remote CI/CD pipelines.
+- Not doing automatic PR merge/approval (the human decision stays).
+- Not supporting webhooks (merge detection is by **polling** in 1.0).
+- Multi-task-manager / multi-git-provider **at the same time** beyond Jira + Azure DevOps (the
+  *pluggability* is a requirement; the *extra implementations* are not).
 
-## 3. Atores, personas e divisão de responsabilidades
+## 3. Actors, personas and the division of responsibilities
 
-### Atores
-- **Dev (humano):** configura workspaces, escolhe demandas, conversa com o Claude,
-  aprova/decide, acompanha o estado. Pode ocasionalmente usar a **CLI** direto.
-- **Claude (agente):** opera o DOP (git/PR/runtime/e2e), conversa com o Dev, faz
-  perguntas para entender o projeto, gera artefatos e conduz a demanda.
+### The actors
+- **The Dev (a human):** configures workspaces, chooses demands, talks to Claude,
+  approves/decides, follows the state. May occasionally use the **CLI** directly.
+- **Claude (the agent):** operates DOP (git/PR/runtime/e2e), talks to the Dev, asks questions to
+  understand the project, generates artifacts and runs the demand.
 
-### Cadeia de interação
+### The interaction chain
 ```
-Dev ──▶ Frontend ───────────────▶ API-DOP ──▶ workspace + ferramentas
-                                   ▲   │          (git / azure / jira / docker, estado)
-                                   │   └──▶ Claude (agente) ◀──▶ Dev  (chat)
+Dev ──▶ Frontend ───────────────▶ DOP API ──▶ the workspace + the tools
+                                   ▲   │          (git / azure / jira / docker, the state)
+                                   │   └──▶ Claude (the agent) ◀──▶ Dev  (chat)
                                    │                 │
                                    └──── CLI ◀───────┘
-                          (Claude roda `dop ...`; a CLI só repassa para a API)
+                          (Claude runs `dop ...`; the CLI only forwards to the API)
 ```
-- A **API é o núcleo/motor**: contém a lógica de negócio (que hoje vive na CLI),
-  **acessa a workspace e as ferramentas** (git/azure/jira/docker) e **detém o estado**.
-  É a **única fonte de verdade**.
-- Há **duas portas de entrada para a API**: o **Frontend** (usado pelo Dev) e a
-  **CLI** (usada pelo Claude).
-- A **CLI virou cliente fino da API**: o Claude continua rodando `dop ...` como hoje,
-  mas a CLI **não acessa a workspace diretamente** — ela traduz comandos em chamadas
-  à API. Faz tudo o que faz hoje, porém **via API**.
-- O **Claude** é hospedado/dirigido pela API, **conversa com o Dev** (chat) e
-  **opera o DOP** acionando a CLI (→ API).
+- The **API is the core/engine**: it holds the business logic (which today lives in the CLI), it
+  **reaches the workspace and the tools** (git/azure/jira/docker) and it **holds the state**. It
+  is the **only source of truth**.
+- There are **two entry doors to the API**: the **Frontend** (used by the Dev) and the **CLI**
+  (used by Claude).
+- The **CLI became a thin client of the API**: Claude keeps running `dop ...` as today, but the
+  CLI **does not reach the workspace directly** — it translates commands into calls to the API.
+  It does everything it does today, but **through the API**.
+- **Claude** is hosted/driven by the API, **talks to the Dev** (chat) and **operates DOP** by
+  invoking the CLI (→ the API).
 
-### Divisão de responsabilidades (deste 1.0)
-| Domínio | Responsável | Observação |
+### The division of responsibilities (for this 1.0)
+| Domain | Responsible | Note |
 |---|---|---|
-| Requisitos de produto, expectativa de usuário | **Dev** | Fonte da verdade do "o quê". |
-| UX/UI, fluxos de tela, interação do Dev | **Dev** | Wizard, dashboards, chat UI. |
-| Requisitos da CLI usada pelo Dev | **Dev** | Ergonomia da CLI ocasional. |
-| Arquitetura, stack, integrações, implementação | **Claude** | Liberdade para escolher/testar/implementar. |
-| Integração com Claude (mecanismo), API↔CLI, persistência, segurança técnica | **Claude** | Decisões em [§10](#10-decisões-técnicas-em-aberto-a-cargo-do-claude). |
+| Product requirements, user expectation | **The Dev** | The source of truth of the "what". |
+| UX/UI, screen flows, the Dev's interaction | **The Dev** | The wizard, the dashboards, the chat UI. |
+| Requirements of the CLI used by the Dev | **The Dev** | The ergonomics of the occasional CLI. |
+| Architecture, stack, integrations, implementation | **Claude** | Freedom to choose/test/implement. |
+| Integration with Claude (the mechanism), API↔CLI, persistence, technical security | **Claude** | Decisions in [§10](#10-open-technical-decisions-claudes-to-take). |
 
-## 4. Arquitetura de alto nível (descritiva)
+## 4. High-level architecture (descriptive)
 
-> Descrição **conceitual** dos componentes e do fluxo de dados. As escolhas técnicas
-> (stack, in-process × subprocess, persistência, mecanismo de chat com o Claude)
-> estão em aberto em [§10](#10-decisões-técnicas-em-aberto-a-cargo-do-claude).
+> A **conceptual** description of the components and the data flow. The technical choices
+> (stack, in-process × subprocess, persistence, the mechanism of the chat with Claude) are open
+> in [§10](#10-open-technical-decisions-claudes-to-take).
 
-- **Componente 1 — API (núcleo/motor):** contém a lógica de negócio (hoje na CLI),
-  **acessa a workspace e as ferramentas** (git/azure/jira/docker), **mantém o estado**
-  de workspaces/demandas, hospeda/dirige o **Claude** e faz o **polling de PRs**.
-  **Única fonte de verdade.**
-- **Componente 2 — CLI (cliente fino da API):** porta de entrada usada pelo **Claude**
-  (continua rodando `dop ...` como hoje). **Não acessa a workspace diretamente** —
-  repassa tudo para a API. Mantida ergonômica para uso ocasional do Dev.
-- **Componente 3 — Frontend:** SPA onde o Dev navega (tela inicial, wizard de
-  workspace, menu de desenvolvimento, lista de tasks, painel da demanda, chat). Porta
-  de entrada usada pelo **Dev**.
-- **Claude:** acionado pela API como colaborador/operador; **conversa com o Dev** e
-  **opera o DOP via CLI → API**, tanto na configuração quanto no desenvolvimento.
+- **Component 1 — the API (the core/engine):** it holds the business logic (today in the CLI),
+  it **reaches the workspace and the tools** (git/azure/jira/docker), it **keeps the state** of
+  workspaces/demands, it hosts/drives **Claude** and it does the **PR polling**. **The only
+  source of truth.**
+- **Component 2 — the CLI (a thin client of the API):** the entry door used by **Claude** (it
+  keeps running `dop ...` as today). It **does not reach the workspace directly** — it forwards
+  everything to the API. Kept ergonomic for the Dev's occasional use.
+- **Component 3 — the Frontend:** the SPA where the Dev navigates (the home screen, the
+  workspace wizard, the development menu, the task list, the demand's panel, the chat). The
+  entry door used by the **Dev**.
+- **Claude:** invoked by the API as a collaborator/operator; it **talks to the Dev** and
+  **operates DOP through the CLI → the API**, both in configuration and in development.
 
-> **Consequência estrutural (a cargo do Claude/impl):** a lógica que hoje reside no
-> pacote da CLI (`git/`, `platform/`, `runtime/`, `core/state`) **migra para um núcleo
-> consumido pela API**; a CLI é reescrita como cliente HTTP fino. É a maior mudança de
-> estrutura do projeto no 1.0.
+> **A structural consequence (Claude's/the implementation's to handle):** the logic that today
+> lives in the CLI's package (`git/`, `platform/`, `runtime/`, `core/state`) **migrates to a
+> core consumed by the API**; the CLI is rewritten as a thin HTTP client. It is the project's
+> biggest structural change in 1.0.
 
-**Princípios herdados (mantidos como requisito):**
-- Estado auditável (hoje `.state.json`); operações idempotentes; `--dry-run`;
-  **redação de segredos em toda saída**; multi-workspace; providers plugáveis
-  (git/runtime/**task manager**).
+**Inherited principles (kept as a requirement):**
+- Auditable state (today `.state.json`); idempotent operations; `--dry-run`; **secret redaction
+  in every output**; multi-workspace; pluggable providers (git/runtime/**task manager**).
 
-## 5. Conceitos e estados
+## 5. Concepts and states
 
-### 5.1 Workspace — estados
-`draft` → `ativa` → `inativa` → `deletada`
-- **draft:** criada via wizard, possivelmente incompleta (salvável etapa a etapa).
-- **ativa:** configurada e utilizável para desenvolvimento.
-- **inativa:** desativada temporariamente (não aparece para trabalho, mas preservada).
-- **deletada:** removida logicamente.
+### 5.1 The workspace — states
+`draft` → `active` → `inactive` → `deleted`
+- **draft:** created through the wizard, possibly incomplete (saveable step by step).
+- **active:** configured and usable for development.
+- **inactive:** temporarily disabled (it does not show up for work, but it is preserved).
+- **deleted:** logically removed.
 
-### 5.2 Demanda — status do DOP (independente do status no task manager)
-| Status DOP | Significado |
+### 5.2 The demand — DOP's status (independent of the status in the task manager)
+| DOP status | Meaning |
 |---|---|
-| `new` | A demanda ainda não começou no DOP. |
-| `doing` | Claude e Dev estão trabalhando nela. |
-| `done` | PR feito; Claude e Dev consideraram terminada. |
-| `delivered` | PR mergeado **e** pipeline rodou no ambiente de dev. |
+| `new` | The demand has not started in DOP yet. |
+| `doing` | Claude and the Dev are working on it. |
+| `done` | The PR is made; Claude and the Dev considered it finished. |
+| `delivered` | The PR was merged **and** the pipeline ran in the dev environment. |
 
-- O card exibe **dois status**: o do **task manager** (Jira) e o do **DOP**.
-- A transição `done → delivered` é detectada por **polling periódico** (intervalo
-  configurável), via API/az-cli/MCP (o que for mais simples) — **sem webhook** no 1.0.
+- The card shows **two statuses**: the **task manager**'s (Jira) and **DOP**'s.
+- The `done → delivered` transition is detected by **periodic polling** (a configurable
+  interval), through the API/az-cli/MCP (whichever is simplest) — **with no webhook** in 1.0.
 
-### 5.3 Dossiê da demanda
+### 5.3 The demand's dossier
 
-Cada demanda acumula um **dossiê** consultável (apresentação **enxuta**, não relatório):
-- **Git:** repos impactados, branches criadas, commits.
-- **PRs:** PRs enviados e **mergeados**, **quem aprovou**, **conflitos** ocorridos.
-- **Arquivos manipulados:** planos, contextos, **ADRs**, código-fonte criado/alterado.
-- **Testes:** testes unitários criados e **e2e** criados.
-- **Qualidade:** relatórios **Allure** embutidos na própria tela do DOP, por demanda.
-- **Tempo:** início, fim e tempo gasto (por demanda e, quando fizer sentido, por etapa).
-- **Memórias e análises forenses** geradas pelo Claude (persistidas como artefatos).
-- **Logs** das aplicações (na tela de execução).
+Each demand accumulates a consultable **dossier** (a **lean** presentation, not a report):
+- **Git:** the repos affected, the branches created, the commits.
+- **PRs:** the PRs sent and **merged**, **who approved**, the **conflicts** that occurred.
+- **Files handled:** plans, contexts, **ADRs**, source code created/changed.
+- **Tests:** the unit tests created and the **e2e** tests created.
+- **Quality:** **Allure** reports embedded in DOP's own screen, per demand.
+- **Time:** start, end and time spent (per demand and, where it makes sense, per stage).
+- **Memories and forensic readings** generated by Claude (persisted as artifacts).
+- The applications' **logs** (on the execution screen).
 
-### 5.4 Modelo de etapas da demanda (BAM em runtime)
+### 5.4 The demand's stage model (BAM at runtime)
 
-Uma demanda é executada em **etapas pré-definidas (estáticas no MVP)** — por exemplo:
-*planejar → implementar → criar test specs → e2e → testes AAA → criar PR*. No MVP o
-**conjunto de etapas é fixo**; o que o **Dev + Claude definem são as regras e os fluxos
-*dentro* de cada etapa** (o "como" de cada fase), e **não** a lista de etapas em si.
+A demand is executed in **predefined stages (static in the MVP)** — for example: *plan →
+implement → create test specs → e2e → AAA tests → create the PR*. In the MVP the **set of stages
+is fixed**; what the **Dev + Claude define are the rules and the flows *inside* each stage**
+(each phase's "how"), and **not** the list of stages itself.
 
-> **Evolução futura (fora do MVP):** processo **dinâmico** — etapas definidas por
-> Claude + Dev **por demanda** via chat, gerando uma estrutura de dados versionável.
-> No MVP isso é simplificado para o conjunto estático acima. (Ver [§12](#12-fora-de-escopo-do-10).)
+> **A future evolution (outside the MVP):** a **dynamic** process — stages defined by Claude +
+> the Dev **per demand** through the chat, generating a versionable data structure. In the MVP
+> that is simplified to the static set above. (See [§12](#12-out-of-10s-scope).)
 
-A estrutura (estática) de etapas alimenta a **tela de acompanhamento em tempo real** —
-um **BAM** (*Business Activity Monitoring*) — onde o Dev:
-- vê o **progresso de cada etapa** (pendente / em execução / concluída / bloqueada);
-- **interage com o Claude em runtime** (responde perguntas, intervém, ajusta o rumo);
-- vê os **logs das aplicações** durante a execução.
+The (static) stage structure feeds the **real-time follow-up screen** — a **BAM** (*Business
+Activity Monitoring*) — where the Dev:
+- sees **each stage's progress** (pending / running / done / blocked);
+- **interacts with Claude at runtime** (answers questions, steps in, adjusts the course);
+- sees the **applications' logs** during the run.
 
-A **tela de detalhe/execução** combina **chat + wizard de etapas + faixa de testes
-e2e** (composição detalhada em [E10](#e10--execução-em-etapas-bam)). A **visualização
-ao vivo dos testes Playwright no browser** é um **capítulo de planejamento à parte**.
+The **detail/execution screen** combines a **chat + a stage wizard + an e2e test strip** (the
+detailed composition in [E10](#e10--stage-by-stage-execution-bam)). The **live view of the
+Playwright tests in the browser** is a **separate planning chapter**.
 
-### 5.5 Estrutura de pastas da workspace
+### 5.5 The workspace's folder structure
 ```
 <root>/
 ├── docs/
@@ -216,327 +215,327 @@ ao vivo dos testes Playwright no browser** é um **capítulo de planejamento à 
 │   ├── <repo2>/
 │   └── ...
 └── runtime/
-    ├── docker/            # Dockerfiles de dev — gerados pelo Claude
-    └── docker-compose/    # docker-compose.yaml — gerado pelo Claude na config
+    ├── docker/            # dev Dockerfiles — generated by Claude
+    └── docker-compose/    # docker-compose.yaml — generated by Claude at configuration time
 ```
 
-## 6. Capacidades / Épicos e requisitos
+## 6. Capabilities / epics and requirements
 
-> Cada épico vira (na próxima fase) um *feature PRD* próprio. IDs de requisito no
-> formato `R<épico>.<n>`.
+> Each epic becomes (in the next phase) a *feature PRD* of its own. Requirement IDs in the
+> `R<epic>.<n>` format.
 
-### E1 — Workspaces (configuração via wizard)
+### E1 — Workspaces (configuration through a wizard)
 
-**User story principal**
-> Como Dev, quero uma tela inicial com opção de **criar/configurar várias
-> workspaces**, configurando repositórios remotos, provider git, fluxo de branches,
-> task manager e runtime — testando conexões na criação — para preparar o ambiente
-> de trabalho IA-first com mínimo esforço e erro.
+**The main user story**
+> As a Dev, I want a home screen with the option to **create/configure several workspaces**,
+> configuring remote repositories, the git provider, the branch flow, the task manager and the
+> runtime — testing connections at creation — to prepare the AI-first working environment with
+> minimum effort and error.
 
-**Requisitos**
-- **R1.1** Tela inicial lista workspaces existentes e permite **criar** nova.
-- **R1.2** Wizard **multi-etapa**, **salvável etapa a etapa**; o Dev pode **editar
-  qualquer workspace em qualquer etapa** (completa ou incompleta).
-- **R1.3** Configurar **repositórios remotos** git com protocolo **http/https/ssh**;
-  para cada tipo, informar as **credenciais** apropriadas (login/token; chave SSH).
-- **R1.4** Escolher o **provider git** (no 1.0: **Azure DevOps**), tratado como
-  **estratégia plugável** (futuro: GitLab, GitHub, outros).
-- **R1.5** Configurar **fluxo de branches**: branch base e branches-alvo de PR (e
-  regras de fluxo da workspace).
-- **R1.6** Configurar **task manager** (no 1.0: **Jira**) como provider plugável.
-- **R1.7** Configurar **runtime** (apps, deps, infra, orquestrador) — reusando o
-  modelo data-driven atual.
-- **R1.8** A aplicação **infere** o que puder (ver [§7](#7-inferência-reduzir-trabalho-e-erro-do-dev))
-  para reduzir trabalho e erro do Dev.
-- **R1.9** **Testar conexões no momento da criação** (git, task manager, runtime).
-- **R1.10** Listagem de workspaces com **edição**: incluir/remover repositórios,
-  **re-testar** conexões, **atualizar credenciais** (tokens, chaves SSH).
-- **R1.11** **Etapa final = chat com o Claude** para co-construir a workspace:
-  estabelecer **regras da workspace** (ex.: "não fazer merge da `desenv` na branch
-  de feature"), **regras de fluxo de trabalho**, e **contexto do projeto** (para o
-  Claude entender o projeto). O Claude pode **fazer perguntas específicas**.
-- **R1.12** Estados de workspace conforme [§5.1](#51-workspace--estados).
-- **R1.13** Tudo o que compõe o `config.toml` atual deve ser configurável pela UI
-  (o que não for inferido).
-- **R1.14** *(secundário)* Configurar **extensões do Claude** por workspace:
-  **MCPs** (ex.: postgres, mysql, e outros), **plugins**, **skills** e **comandos
-  customizados** para o Claude. Os comandos customizados são **acionáveis via
-  auto-complete durante o chat** (E6). Isolados por workspace.
+**Requirements**
+- **R1.1** The home screen lists the existing workspaces and allows **creating** a new one.
+- **R1.2** A **multi-step** wizard, **saveable step by step**; the Dev may **edit any workspace
+  at any step** (complete or incomplete).
+- **R1.3** Configure **remote** git **repositories** with the **http/https/ssh** protocol; for
+  each type, provide the appropriate **credentials** (login/token; an SSH key).
+- **R1.4** Choose the **git provider** (in 1.0: **Azure DevOps**), treated as a **pluggable
+  strategy** (in the future: GitLab, GitHub, others).
+- **R1.5** Configure the **branch flow**: the base branch and the PR target branches (and the
+  workspace's flow rules).
+- **R1.6** Configure the **task manager** (in 1.0: **Jira**) as a pluggable provider.
+- **R1.7** Configure the **runtime** (apps, deps, infrastructure, the orchestrator) — reusing
+  the current data-driven model.
+- **R1.8** The application **infers** what it can (see
+  [§7](#7-inference-reducing-the-devs-work-and-error)) to reduce the Dev's work and error.
+- **R1.9** **Test the connections at creation time** (git, task manager, runtime).
+- **R1.10** A workspace listing with **editing**: add/remove repositories, **re-test**
+  connections, **update credentials** (tokens, SSH keys).
+- **R1.11** **The final step = a chat with Claude** to co-build the workspace: establishing the
+  **workspace's rules** (e.g. "do not merge `develop` into the feature branch"), the **workflow
+  rules**, and the **project's context** (so Claude understands the project). Claude may **ask
+  specific questions**.
+- **R1.12** Workspace states as per [§5.1](#51-the-workspace--states).
+- **R1.13** Everything that makes up the current `config.toml` has to be configurable through
+  the UI (whatever is not inferred).
+- **R1.14** *(secondary)* Configure **Claude's extensions** per workspace: **MCPs** (e.g.
+  postgres, mysql, and others), **plugins**, **skills** and **custom commands** for Claude. The
+  custom commands are **triggerable through auto-complete during the chat** (E6). Isolated per
+  workspace.
 
-### E2 — Desenvolvimento (trabalhar uma demanda)
+### E2 — Development (working a demand)
 
-**User story principal**
-> Como Dev, quero um menu para **começar a desenvolver**: seleciono a workspace, vejo
-> minhas tasks do task manager com status (no card e no DOP), seleciono um card e caio
-> num **chat com o Claude** onde trabalhamos até a demanda ficar `done`; e quero
-> **visibilidade rica** do que aconteceu na demanda.
+**The main user story**
+> As a Dev, I want a menu to **start developing**: I select the workspace, I see my task
+> manager's tasks with their status (on the card and in DOP), I select a card and land in a
+> **chat with Claude** where we work until the demand is `done`; and I want **rich visibility**
+> of what happened on the demand.
 
-**Requisitos**
-- **R2.1** Menu para iniciar desenvolvimento; **seleção de workspace**.
-- **R2.2** Após selecionar, **listar as tasks do provider** (Jira) **vinculadas ao
-  Dev**, exibindo **status do task manager** e **status do DOP** (`new/doing/done/
-  delivered`).
-- **R2.3** Selecionar um card → **tela de prompt/chat com o Claude**.
-- **R2.4** Dev e Claude interagem até a demanda concluir (→ `done`).
-- **R2.5** **Polling periódico** (intervalo configurável) para detectar **PR
-  mergeado** e pipeline executada → `done → delivered`. Sem webhook.
-- **R2.6** **Painel rico da demanda** com o **dossiê** ([E9](#e9--dossiê-da-demanda)):
-  repos impactados, branches, commits, pipelines, PRs (enviados/mergeados), quem
-  aprovou, conflitos — em apresentação **enxuta** (não relatório).
-- **R2.7** Manter uma **base local** das demandas — as que o Dev **já trabalhou** e as
-  **atribuídas a ele** — com **polling** periódico para **novas atribuições** (sem
-  webhook).
-- **R2.8** **UX minimalista:** ao entrar na workspace, o Dev vê o essencial (demandas +
-  estado) sem proliferação de telas e relatórios.
-- **R2.9** *(proposto)* **Visão cross-workspace "onde sou necessário":** um ponto único
-  que, **entre todos os projetos**, destaca demandas que precisam da **atenção do Dev**
-  (Claude bloqueado/perguntando, PR aguardando revisão, conflito a decidir). Justifica-se
-  pelo cenário multi-projeto + filosofia "Dev como gestor".
+**Requirements**
+- **R2.1** A menu to start development; **workspace selection**.
+- **R2.2** After selecting, **list the provider's tasks** (Jira) **assigned to the Dev**,
+  showing the **task manager's status** and **DOP's status** (`new/doing/done/delivered`).
+- **R2.3** Selecting a card → the **prompt/chat screen with Claude**.
+- **R2.4** The Dev and Claude interact until the demand concludes (→ `done`).
+- **R2.5** **Periodic polling** (a configurable interval) to detect a **merged PR** and a
+  pipeline run → `done → delivered`. No webhook.
+- **R2.6** A **rich demand panel** with the **dossier** ([E9](#e9--the-demands-dossier)): the
+  repos affected, branches, commits, pipelines, PRs (sent/merged), who approved, conflicts — in
+  a **lean** presentation (not a report).
+- **R2.7** Keep a **local base** of the demands — those the Dev **has already worked** and those
+  **assigned to them** — with periodic **polling** for **new assignments** (no webhook).
+- **R2.8** **A minimalist UX:** on entering the workspace, the Dev sees the essentials (demands
+  + state) with no proliferation of screens and reports.
+- **R2.9** *(proposed)* **A cross-workspace "where I am needed" view:** a single place that,
+  **across all the projects**, highlights the demands that need the **Dev's attention** (Claude
+  blocked/asking, a PR waiting for review, a conflict to decide). It is justified by the
+  multi-project scenario + the "the Dev as a manager" philosophy.
 
-### E3 — Task Manager Provider (Jira; plugável)
+### E3 — The Task Manager Provider (Jira; pluggable)
 
-- **R3.1** Interface de **task manager provider** com requisito de plugabilidade
-  **igual ao do runtime** (estratégia selecionável por configuração).
-- **R3.2** Implementação **Jira** no 1.0: listar tasks do Dev, ler status, vincular ao
-  fluxo do DOP. (Futuro: ClickUp e outros — *fora de escopo de implementação no 1.0*.)
-- **R3.3** O provider é **inferido pela configuração** da workspace.
+- **R3.1** A **task manager provider** interface with a pluggability requirement **equal to the
+  runtime's** (a strategy selectable by configuration).
+- **R3.2** A **Jira** implementation in 1.0: list the Dev's tasks, read the status, link them to
+  DOP's flow. (In the future: ClickUp and others — *out of 1.0's implementation scope*.)
+- **R3.3** The provider is **inferred from the workspace's configuration**.
 
-### E4 — Git Provider (Azure DevOps; estratégia plugável)
+### E4 — The Git Provider (Azure DevOps; a pluggable strategy)
 
-- **R4.1** Provider git como **estratégia** (Azure DevOps no 1.0; pluggable p/ GitLab,
-  GitHub, outros). *Base já existe na CLI (`PlatformProvider`).*
-- **R4.2** Operações de PR (criar/listar/status/conflito/aprovador) expostas via API.
+- **R4.1** The git provider as a **strategy** (Azure DevOps in 1.0; pluggable for GitLab,
+  GitHub, others). *The base already exists in the CLI (`PlatformProvider`).*
+- **R4.2** PR operations (create/list/status/conflict/approver) exposed through the API.
 
-### E5 — Runtime (data-driven; geração assistida)
+### E5 — The Runtime (data-driven; assisted generation)
 
-- **R5.1** Reusar o runtime data-driven atual (orquestrador plugável; docker_compose).
-- **R5.2** **Claude gera** os **Dockerfiles** de dev e o **docker-compose.yaml**
-  durante a configuração da workspace.
+- **R5.1** Reuse the current data-driven runtime (a pluggable orchestrator; docker_compose).
+- **R5.2** **Claude generates** the dev **Dockerfiles** and the **docker-compose.yaml** during
+  the workspace's configuration.
 
-### E6 — Integração com o Claude (chat/agente)
+### E6 — Integration with Claude (the chat/agent)
 
-- **R6.1** Chat com o Claude disponível em dois contextos: **config de workspace**
-  (E1.11) e **desenvolvimento por demanda** (E2.3).
-- **R6.2** O Claude **opera o DOP** (executa ações via API/CLI) durante a conversa.
-- **R6.3** O Claude tem **contexto** da workspace (regras, fluxo, projeto) e da
-  demanda corrente.
-- **R6.4** Histórico de conversa por demanda/workspace (persistência — ver [§10](#10-decisões-técnicas-em-aberto-a-cargo-do-claude)).
-- **R6.5** O chat suporta **comandos customizados** da workspace acionáveis por
-  **auto-complete**, e o Claude tem acesso aos **MCPs / plugins / skills** configurados
-  na workspace (R1.14).
-- *Mecanismo técnico de integração (Agent SDK × API × claude CLI): em aberto, §10.*
+- **R6.1** A chat with Claude available in two contexts: the **workspace's configuration**
+  (E1.11) and **development per demand** (E2.3).
+- **R6.2** Claude **operates DOP** (it runs actions through the API/CLI) during the
+  conversation.
+- **R6.3** Claude has the **context** of the workspace (rules, flow, project) and of the current
+  demand.
+- **R6.4** A conversation history per demand/workspace (persistence — see
+  [§10](#10-open-technical-decisions-claudes-to-take)).
+- **R6.5** The chat supports the workspace's **custom commands**, triggerable through
+  **auto-complete**, and Claude has access to the **MCPs / plugins / skills** configured in the
+  workspace (R1.14).
+- *The technical mechanism of the integration (the Agent SDK × the API × the claude CLI): open,
+  §10.*
 
-### E7 — Estrutura de pastas da workspace
+### E7 — The workspace's folder structure
 
-- **R7.1** Criar/gerenciar a estrutura de [§5.5](#55-estrutura-de-pastas-da-workspace).
-- **R7.2** `docs/{RFC,ADR,prompts}` como repositório de conhecimento da workspace.
+- **R7.1** Create/manage the structure of [§5.5](#55-the-workspaces-folder-structure).
+- **R7.2** `docs/{RFC,ADR,prompts}` as the workspace's knowledge repository.
 
-### E8 — CLI (cliente fino da API)
+### E8 — The CLI (a thin client of the API)
 
-- **R8.1** A CLI é a **porta de entrada do Claude** para o DOP: continua oferecendo os
-  mesmos comandos `dop ...` de hoje (preserva a forma como o Claude opera).
-- **R8.2** A CLI **não acessa a workspace diretamente**; cada comando traduz-se em
-  **chamada(s) à API**. A API é quem executa e detém o estado.
-- **R8.3** Toda operação do DOP é, portanto, exposta pela **API** e refletida na CLI
-  (a CLI nunca tem capacidade que a API não tenha).
-- **R8.4** A CLI permanece **ergonômica para uso ocasional do Dev** (responsabilidade
-  de produto do **Dev**).
+- **R8.1** The CLI is **Claude's entry door** into DOP: it keeps offering the same `dop ...`
+  commands as today (it preserves the way Claude operates).
+- **R8.2** The CLI **does not reach the workspace directly**; each command translates into
+  call(s) to the API. The API is the one that executes and holds the state.
+- **R8.3** Every DOP operation is therefore exposed by the **API** and reflected in the CLI (the
+  CLI never has a capability the API does not have).
+- **R8.4** The CLI stays **ergonomic for the Dev's occasional use** (a product responsibility of
+  the **Dev**).
 
-### E9 — Dossiê da demanda
+### E9 — The demand's dossier
 
-**User story principal**
-> Como Dev (gestor), quero entrar numa demanda e ver **enxutamente** tudo o que o
-> Claude fez — sem telas e relatórios demais — para supervisionar sem operar.
+**The main user story**
+> As a Dev (a manager), I want to enter a demand and see **leanly** everything Claude did —
+> without too many screens and reports — so I can supervise without operating.
 
-**Requisitos** (ver conceito em [§5.3](#53-dossiê-da-demanda))
-- **R9.1** Git: repos impactados, branches criadas, commits.
-- **R9.2** PRs **enviados** e **mergeados**, **quem aprovou** e **conflitos** ocorridos.
-- **R9.3** **Arquivos manipulados**: planos, contextos, **ADRs**, código-fonte
-  criado/alterado.
-- **R9.4** **Testes** criados e **e2e** criados.
-- **R9.5** **Tempo**: início, fim e tempo gasto (por demanda e, quando fizer sentido,
-  por etapa).
-- **R9.6** **Allure embutido** na tela do DOP, por demanda.
-- **R9.7** **Logs da demanda em tempo real** — exibidos na tela (acessíveis por **clique
-  do Dev**, com atualização ao vivo) **e** acessíveis ao **Claude via `dop`** (→ API)
-  para **auditoria e troubleshooting**. Abrangem três fontes:
-  - **(a) Aplicações** envolvidas na demanda — equivalente ao `dop log <app>` de hoje,
-    porém renderizado na tela com atualização em tempo real.
-  - **(b) Testes** — execução dos testes **AAA** e **e2e**.
-  - **(c) Containers de infra/terceiros** — ex.: **mysql/mongo**, **allure** e outros
-    serviços de apoio do runtime.
-- **R9.8** **Memórias e análises forenses** do Claude persistidas como artefatos
-  consultáveis.
-- **R9.9** Apresentação **minimalista**: foco no que importa, sem proliferação de telas.
+**Requirements** (see the concept in [§5.3](#53-the-demands-dossier))
+- **R9.1** Git: the repos affected, the branches created, the commits.
+- **R9.2** The PRs **sent** and **merged**, **who approved** and the **conflicts** that
+  occurred.
+- **R9.3** The **files handled**: plans, contexts, **ADRs**, source code created/changed.
+- **R9.4** The **tests** created and the **e2e** tests created.
+- **R9.5** **Time**: start, end and time spent (per demand and, where it makes sense, per
+  stage).
+- **R9.6** **Allure embedded** in DOP's screen, per demand.
+- **R9.7** The **demand's logs in real time** — shown on the screen (reachable by the **Dev's
+  click**, updating live) **and** reachable by **Claude through `dop`** (→ the API) for
+  **auditing and troubleshooting**. They cover three sources:
+  - **(a) The applications** involved in the demand — the equivalent of today's `dop log <app>`,
+    but rendered on the screen with real-time updates.
+  - **(b) The tests** — running the **AAA** and **e2e** tests.
+  - **(c) The infrastructure/third-party containers** — e.g. **mysql/mongo**, **allure** and
+    other supporting services of the runtime.
+- **R9.8** Claude's **memories and forensic readings** persisted as consultable artifacts.
+- **R9.9** A **minimalist** presentation: a focus on what matters, with no proliferation of
+  screens.
 
-### E10 — Execução em etapas (BAM)
+### E10 — Stage-by-stage execution (BAM)
 
-**User story principal**
-> Como Dev, quero acompanhar a demanda em **etapas, em tempo real** (Claude planejando,
-> implementando, criando specs, e2e, AAA, PR), e **interagir com o Claude em runtime**,
-> para acompanhar e guiar sem precisar perguntar "como está?".
+**The main user story**
+> As a Dev, I want to follow the demand in **stages, in real time** (Claude planning,
+> implementing, creating specs, e2e, AAA, the PR), and to **interact with Claude at runtime**,
+> so I can follow and guide without having to ask "how is it going?".
 
-**Requisitos** (ver conceito em [§5.4](#54-modelo-de-etapas-da-demanda-bam-em-runtime))
-- **R10.1** **MVP:** o conjunto de etapas é **pré-definido (estático)**. Dev + Claude
-  definem **regras e fluxos *dentro* de cada etapa**, não a lista de etapas.
-  *(Futuro: etapas dinâmicas por demanda — ver [§12](#12-fora-de-escopo-do-10).)*
-- **R10.2** A estrutura (estática) de etapas alimenta a **tela de etapas em runtime**.
-- **R10.3** Acompanhamento em **tempo real** do estado de cada etapa (pendente / em
-  execução / concluída / bloqueada).
-- **R10.4** **Interação em runtime** com o Claude a partir da tela de execução
-  (responder perguntas, intervir, ajustar o rumo).
-- **R10.5** A tela de execução exibe os **logs em tempo real** da demanda — aplicações,
-  testes (AAA/e2e) e containers de infra/terceiros (mysql/mongo/allure/…) — conforme
-  [R9.7](#e9--dossiê-da-demanda).
+**Requirements** (see the concept in
+[§5.4](#54-the-demands-stage-model-bam-at-runtime))
+- **R10.1** **The MVP:** the set of stages is **predefined (static)**. The Dev + Claude define
+  the **rules and flows *inside* each stage**, not the list of stages. *(In the future: dynamic
+  stages per demand — see [§12](#12-out-of-10s-scope).)*
+- **R10.2** The (static) stage structure feeds the **runtime stage screen**.
+- **R10.3** **Real-time** follow-up of each stage's state (pending / running / done / blocked).
+- **R10.4** **Interaction at runtime** with Claude from the execution screen (answering
+  questions, stepping in, adjusting the course).
+- **R10.5** The execution screen shows the demand's **real-time logs** — applications, tests
+  (AAA/e2e) and infrastructure/third-party containers (mysql/mongo/allure/…) — as per
+  [R9.7](#e9--the-demands-dossier).
 
-**Composição da tela de detalhe/execução da demanda**
-- **R10.6** A tela compõe-se de três áreas: **(1) chat** com o Claude (E6); **(2) wizard
-  de etapas** indicando a **etapa atual**, as **já executadas** e as **próximas**; e
-  **(3) faixa de testes e2e** (durante a etapa de e2e).
-- **R10.7** **Faixa de e2e (esteira):** exibe a execução dos testes com **barras de
-  progresso** e **status por teste** — `running` / `success` / `fail` / `skipped`
-  (e estados intermediários conforme necessário).
-- **R10.8** **"Exibir visualmente"** (toggle do Dev, com label intuitiva): quando
-  ligado, transmite a **execução do Playwright no próprio browser**, na **mesma tela de
-  execução**, durante a fase de e2e — o Dev **assiste aos testes rodando** como num
-  monitor.
-- **R10.9** **Capítulo à parte (planejamento dedicado):** a **experiência visual
-  avançada** dos testes (modo imersivo "tipo meeting"/monitor) será **planejada
-  separadamente**. O 1.0 estabelece a base — esteira + status + barras + o toggle
-  "Exibir visualmente"; o *mecanismo de streaming* ao vivo é decisão técnica em aberto
-  (ver [D11](#10-decisões-técnicas-em-aberto-a-cargo-do-claude)).
+**The composition of the demand's detail/execution screen**
+- **R10.6** The screen is composed of three areas: **(1) a chat** with Claude (E6); **(2) a
+  stage wizard** showing the **current stage**, the ones **already run** and the **next ones**;
+  and **(3) an e2e test strip** (during the e2e stage).
+- **R10.7** **The e2e strip (the conveyor):** it shows the tests running with **progress bars**
+  and a **status per test** — `running` / `success` / `fail` / `skipped` (and intermediate
+  states as needed).
+- **R10.8** **"Show it visually"** (a Dev's toggle, with an intuitive label): when on, it
+  streams the **Playwright run in the browser itself**, on the **same execution screen**, during
+  the e2e phase — the Dev **watches the tests running** as if on a monitor.
+- **R10.9** **A separate chapter (dedicated planning):** the **advanced visual experience** of
+  the tests (an immersive "meeting-like"/monitor mode) will be **planned separately**. 1.0
+  establishes the base — the conveyor + statuses + bars + the "Show it visually" toggle; the
+  live *streaming mechanism* is an open technical decision (see
+  [D11](#10-open-technical-decisions-claudes-to-take)).
 
-## 7. Inferência (reduzir trabalho e erro do Dev)
+## 7. Inference (reducing the Dev's work and error)
 
-A aplicação deve **inferir automaticamente** o máximo possível durante a configuração,
-deixando para o Dev apenas o que não dá para deduzir. Candidatos a inferência (a
-refinar):
-- Provider git e organização/projeto a partir da **URL do remote**.
-- Nome/serviço de apps e portas a partir dos repositórios e/ou docker-compose.
-- Branch base e alvos de PR a partir do repositório remoto.
-- Task manager / chave de projeto a partir de convenções do remote ou do Dev.
-- Estrutura de pastas e mapeamento app↔repo a partir do layout em `repos/`.
-- Dependências FE→BE e suites e2e a partir da estrutura dos repositórios.
+The application has to **infer automatically** as much as possible during configuration, leaving
+the Dev only what cannot be deduced. Candidates for inference (to be refined):
+- The git provider and the organization/project from the **remote's URL**.
+- The apps' names/services and ports from the repositories and/or docker-compose.
+- The base branch and the PR targets from the remote repository.
+- The task manager / project key from the remote's conventions or from the Dev.
+- The folder structure and the app↔repo mapping from the layout in `repos/`.
+- FE→BE dependencies and e2e suites from the repositories' structure.
 
-> **Princípio:** *inferir e pedir confirmação* > *perguntar do zero*.
+> **The principle:** *infer and ask for confirmation* > *ask from scratch*.
 
-## 8. Requisitos não-funcionais
+## 8. Non-functional requirements
 
-- **RNF1 — Segurança de segredos:** nunca vazar tokens/credenciais (reusar a
-  redação/guard atuais); credenciais armazenadas de forma segura (mecanismo em §10).
-- **RNF2 — Idempotência & dry-run:** preservar o comportamento idempotente e o
-  `--dry-run` da CLI nas operações expostas.
-- **RNF3 — Auditabilidade:** estado e histórico de ações/conversas rastreáveis.
-- **RNF4 — Multi-workspace:** isolamento entre workspaces.
-- **RNF5 — Plugabilidade:** git, runtime e **task manager** seguem o mesmo padrão de
-  provider/estratégia selecionável por configuração.
-- **RNF6 — Responsividade do polling:** detecção de merge/pipeline em intervalo
-  configurável, sem sobrecarregar APIs externas.
-- **RNF7 — Observabilidade:** logs (com redação) por workspace/demanda.
-- **RNF8 — Portabilidade:** sem acoplamento a um workspace específico (lição do
-  refactor de runtime).
+- **NFR1 — Secret security:** never leak tokens/credentials (reuse the current
+  redaction/guard); credentials stored securely (the mechanism in §10).
+- **NFR2 — Idempotency & dry-run:** preserve the CLI's idempotent behaviour and `--dry-run` in
+  the operations exposed.
+- **NFR3 — Auditability:** the state and the history of actions/conversations traceable.
+- **NFR4 — Multi-workspace:** isolation between workspaces.
+- **NFR5 — Pluggability:** git, the runtime and the **task manager** follow the same
+  provider/strategy pattern, selectable by configuration.
+- **NFR6 — Polling responsiveness:** merge/pipeline detection at a configurable interval,
+  without overloading external APIs.
+- **NFR7 — Observability:** logs (with redaction) per workspace/demand.
+- **NFR8 — Portability:** no coupling to a specific workspace (the lesson of the runtime
+  refactor).
 
-## 9. Mapa de features e divisão de responsabilidades
+## 9. The feature map and the division of responsibilities
 
-> Visão preliminar para o fatiamento. Cada feature vira um PRD próprio.
-> **Owner** indica quem lidera os **requisitos/decisões** (não exclusividade de execução).
+> A preliminary view for the slicing. Each feature becomes a PRD of its own.
+> **Owner** indicates who leads the **requirements/decisions** (not exclusivity of execution).
 
-| Feature | Épico(s) | Owner (requisitos) | Notas |
+| Feature | Epic(s) | Owner (requirements) | Notes |
 |---|---|---|---|
-| F0 — Fundação (3 componentes, integração Claude, persistência, auth) | E6, E8 | **Claude** | Decisões em §10; destrava o resto. |
-| F1 — Núcleo + API; CLI vira cliente fino | E8, E4, E5 | **Claude** | Migrar lógica da CLI p/ o núcleo da API; CLI → API. |
-| F2 — Task Manager Provider (Jira) | E3 | **Claude** | Espelha providers atuais. |
-| F3 — Wizard de Workspace (UI) | E1 | **Dev** (UX) + Claude (infra) | Multi-etapa, save parcial, testes de conexão. |
-| F4 — Inferência de configuração | E1, E7 | **Claude** | Reduzir trabalho/erro do Dev. |
-| F5 — Chat com o Claude (config + dev) | E6, E1.11, E2.3 | **Dev** (UX) + Claude (motor) | Núcleo da colaboração. |
-| F6 — Workflow de Desenvolvimento (lista + painel da demanda) | E2 | **Dev** (UX) + Claude (dados) | UI rica + polling. |
-| F7 — Scaffolding de workspace (Dockerfiles/compose) | E5, E7 | **Claude** | Geração assistida. |
-| F8 — CLI (cliente fino da API) | E8 | **Dev** (ergonomia) + Claude (impl.) | Comandos `dop ...` → API. |
-| F9 — Dossiê da demanda | E9 | **Dev** (UX) + Claude (dados) | Visão enxuta; Allure embutido; tempo. |
-| F10 — Execução em etapas (BAM) | E10 | **Dev** (UX) + Claude (motor) | Etapas dinâmicas + interação em runtime. |
+| F0 — The foundation (3 components, the Claude integration, persistence, auth) | E6, E8 | **Claude** | Decisions in §10; it unblocks the rest. |
+| F1 — The core + the API; the CLI becomes a thin client | E8, E4, E5 | **Claude** | Migrate the CLI's logic to the API's core; CLI → API. |
+| F2 — The Task Manager Provider (Jira) | E3 | **Claude** | It mirrors the current providers. |
+| F3 — The Workspace wizard (UI) | E1 | **The Dev** (UX) + Claude (infrastructure) | Multi-step, partial save, connection tests. |
+| F4 — Configuration inference | E1, E7 | **Claude** | Reducing the Dev's work/error. |
+| F5 — The chat with Claude (configuration + development) | E6, E1.11, E2.3 | **The Dev** (UX) + Claude (the engine) | The collaboration's core. |
+| F6 — The development workflow (the list + the demand's panel) | E2 | **The Dev** (UX) + Claude (the data) | A rich UI + polling. |
+| F7 — Workspace scaffolding (Dockerfiles/compose) | E5, E7 | **Claude** | Assisted generation. |
+| F8 — The CLI (a thin client of the API) | E8 | **The Dev** (ergonomics) + Claude (implementation) | `dop ...` commands → the API. |
+| F9 — The demand's dossier | E9 | **The Dev** (UX) + Claude (the data) | A lean view; Allure embedded; time. |
+| F10 — Stage-by-stage execution (BAM) | E10 | **The Dev** (UX) + Claude (the engine) | Dynamic stages + interaction at runtime. |
 
-## 10. Decisões técnicas em aberto (a cargo do Claude)
+## 10. Open technical decisions (Claude's to take)
 
-> Estas serão resolvidas por mim (Claude) com liberdade para escolher/testar, e
-> documentadas como ADRs quando decididas.
+> These will be resolved by me (Claude) with freedom to choose/test, and documented as ADRs once
+> decided.
 
-- **D1 — Mecanismo de integração com o Claude:** Claude Agent SDK (Claude Code
-  headless) × Anthropic API direta × `claude` CLI. Afeta chat, operação do DOP e
-  contexto.
-- **D2 — Migração do núcleo e CLI-como-cliente:** como extrair a lógica atual do
-  pacote da CLI para um **núcleo consumido pela API**, e como reescrever a CLI como
-  **cliente HTTP fino** preservando os comandos `dop ...`. (A direção — CLI → API — é
-  requisito fixo; o "como" é decisão técnica.) Inclui como o núcleo reusa
-  `git/platform/runtime/core` de hoje.
-- **D3 — Stack:** linguagem/framework da API (provável Python p/ reusar a CLI) e do
-  Frontend (SPA); empacotamento e execução local.
-- **D4 — Persistência:** manter `.state.json` em disco × banco (workspaces, demandas,
-  histórico de chat, status DOP). Migração/coexistência com o config atual.
-- **D5 — Modelo de uso e auth:** ferramenta **local de um Dev** × **hospedada
-  multiusuário** (muda auth, isolamento, segredos).
-- **D6 — Armazenamento de segredos:** tokens/chaves SSH (keychain/secret store ×
-  arquivo cifrado × variáveis de ambiente, como hoje).
-- **D7 — Detecção de merge/pipeline:** Azure REST API × `az` CLI × Claude+Azure MCP.
-- **D8 — Tempo real no Frontend:** streaming do chat e atualização de status
-  (SSE/WebSocket × polling no front).
-- **D9 — Geração de Dockerfiles/compose pelo Claude:** fluxo, validação e versionamento.
-- **D10 — Modelo de dados de etapas + dossiê:** como representar/persistir a estrutura
-  de etapas (BAM) e o dossiê da demanda, e como atualizar a tela em tempo real
-  (relaciona-se a D4 persistência e D8 tempo real).
-- **D11 — Streaming visual dos testes e2e (R10.8/R10.9):** mecanismo para transmitir a
-  execução do Playwright ao vivo para o browser do DOP — ex.: container *headed* +
-  VNC/noVNC, stream de screenshots, Playwright trace/live, ou outro. É o cerne do
-  **capítulo à parte** de visualização de testes; exige planejamento próprio.
-- **D12 — Extensões do Claude por workspace (R1.14/R6.5):** como provisionar e isolar
-  **MCPs, plugins, skills e comandos customizados** por workspace, e como expô-los no
-  chat (auto-complete). Relaciona-se a D1 (mecanismo de integração com o Claude).
+- **D1 — The mechanism of the integration with Claude:** the Claude Agent SDK (headless Claude
+  Code) × the direct Anthropic API × the `claude` CLI. It affects the chat, operating DOP and the
+  context.
+- **D2 — Migrating the core and the CLI-as-a-client:** how to extract the current logic from the
+  CLI's package into a **core consumed by the API**, and how to rewrite the CLI as a **thin HTTP
+  client** preserving the `dop ...` commands. (The direction — CLI → API — is a fixed
+  requirement; the "how" is a technical decision.) It includes how the core reuses today's
+  `git/platform/runtime/core`.
+- **D3 — The stack:** the API's language/framework (probably Python, to reuse the CLI) and the
+  Frontend's (an SPA); packaging and local execution.
+- **D4 — Persistence:** keeping `.state.json` on disk × a database (workspaces, demands, the
+  chat history, the DOP status). Migration/coexistence with the current config.
+- **D5 — The usage model and auth:** a **Dev's local tool** × a **hosted multi-user** one (it
+  changes auth, isolation, secrets).
+- **D6 — Secret storage:** tokens/SSH keys (a keychain/secret store × an encrypted file ×
+  environment variables, as today).
+- **D7 — Merge/pipeline detection:** the Azure REST API × the `az` CLI × Claude+the Azure MCP.
+- **D8 — Real time in the Frontend:** streaming the chat and updating statuses (SSE/WebSocket ×
+  polling in the front).
+- **D9 — Generating Dockerfiles/compose with Claude:** the flow, validation and versioning.
+- **D10 — The data model of the stages + the dossier:** how to represent/persist the stage
+  structure (BAM) and the demand's dossier, and how to update the screen in real time (it
+  relates to D4 persistence and D8 real time).
+- **D11 — Visual streaming of the e2e tests (R10.8/R10.9):** the mechanism to stream the
+  Playwright run live to DOP's browser — e.g. a *headed* container + VNC/noVNC, a screenshot
+  stream, a Playwright trace/live, or another. It is the heart of the **separate chapter** on
+  test visualization; it requires planning of its own.
+- **D12 — Claude's extensions per workspace (R1.14/R6.5):** how to provision and isolate
+  **MCPs, plugins, skills and custom commands** per workspace, and how to expose them in the
+  chat (auto-complete). It relates to D1 (the mechanism of the integration with Claude).
 
-## 11. Questões de produto em aberto (a validar com o Dev)
+## 11. Open product questions (to validate with the Dev)
 
-- ~~**P1 — Modelo de uso:**~~ **RESOLVIDO:** **monousuário, multi-projeto em paralelo**
-  ([O7](#2-objetivos-e-não-objetivos-do-10)). Sem multiusuário/RBAC no 1.0.
-- **P2 — "Done" por quem:** `done` é decisão conjunta Dev+Claude explícita (botão) ou
-  inferida (PR criado)? Confirmar gatilho exato.
-- **P3 — Escopo de "minhas tasks":** filtro de tasks do Jira (assignee = Dev? sprint
-  atual? projeto?).
-- **P4 — Edição de workspace ativa:** alterar config de uma workspace `ativa` com
-  demandas em andamento — quais campos podem mudar e o que reprocessa?
-- **P5 — Onde o chat "mora":** chat por demanda, por workspace, ou ambos? Histórico
-  some quando a demanda vira `delivered`?
-- **P6 — Multi-repo por demanda na UI:** como a UI apresenta uma demanda que toca N
-  repositórios (branches/PRs/pipelines por repo).
-- **P7 — Regras da workspace:** formato (texto livre para o Claude × regras
-  estruturadas que o DOP também valida).
-- ~~**P8 — Etapas (BAM): default × livre?**~~ **RESOLVIDO:** no MVP as etapas são
-  **estáticas/pré-definidas**; Dev + Claude definem regras/fluxos *dentro* das etapas.
-  *(Ainda em aberto: quem marca a etapa como concluída — Claude / Dev / inferência tipo
-  "PR criado". A definir no detalhamento de E10.)*
-- **P9 — Atenção cross-workspace (R2.9):** entra no 1.0 ou fica para depois? Se entrar,
-  quais sinais contam como "preciso do Dev" (pergunta do Claude, PR aguardando revisão,
-  conflito, etapa bloqueada)?
-- **P10 — Captura do dossiê:** o que o DOP coleta automaticamente (git/PR/pipeline/
-  arquivos via diff) × o que o Claude precisa registrar explicitamente (memórias,
-  análises forenses, mapeamento de testes/e2e à demanda)?
+- ~~**P1 — The usage model:**~~ **RESOLVED:** **single-user, multi-project in parallel**
+  ([O7](#2-10s-goals-and-non-goals)). No multi-user/RBAC in 1.0.
+- **P2 — "Done" by whom:** is `done` an explicit joint Dev+Claude decision (a button) or is it
+  inferred (the PR created)? Confirm the exact trigger.
+- **P3 — The scope of "my tasks":** the Jira task filter (assignee = the Dev? the current
+  sprint? the project?).
+- **P4 — Editing an active workspace:** changing the configuration of an `active` workspace with
+  demands under way — which fields may change and what gets reprocessed?
+- **P5 — Where the chat "lives":** a chat per demand, per workspace, or both? Does the history
+  vanish when the demand becomes `delivered`?
+- **P6 — Multi-repo per demand in the UI:** how the UI presents a demand that touches N
+  repositories (branches/PRs/pipelines per repo).
+- **P7 — The workspace's rules:** the format (free text for Claude × structured rules that DOP
+  also validates).
+- ~~**P8 — Stages (BAM): a default × free?**~~ **RESOLVED:** in the MVP the stages are
+  **static/predefined**; the Dev + Claude define rules/flows *inside* the stages. *(Still open:
+  who marks the stage as done — Claude / the Dev / an inference like "the PR was created". To be
+  defined in E10's detailing.)*
+- **P9 — Cross-workspace attention (R2.9):** does it come into 1.0 or is it left for later? If
+  it comes in, which signals count as "I need the Dev" (a question from Claude, a PR waiting for
+  review, a conflict, a blocked stage)?
+- **P10 — Capturing the dossier:** what DOP collects automatically
+  (git/PR/pipeline/files through a diff) × what Claude has to record explicitly (memories,
+  forensic readings, mapping tests/e2e to the demand)?
 
-## 12. Fora de escopo do 1.0
+## 12. Out of 1.0's scope
 
-- Webhooks (detecção é por polling).
-- Implementações extras de task manager (ClickUp etc.) e git providers (GitLab/GitHub)
-  — apenas a **plugabilidade** é requisito.
-- Merge/aprovação automática de PR.
-- CI/CD remoto gerenciado pelo DOP.
-- Multiusuário com RBAC avançado (depende de P1/D5).
-- **Processo de etapas dinâmico** (etapas geradas por demanda via chat, gerando estrutura
-  de dados versionável) — no MVP o conjunto de etapas é **estático/pré-definido**
-  ([§5.4](#54-modelo-de-etapas-da-demanda-bam-em-runtime), [E10](#e10--execução-em-etapas-bam)).
+- Webhooks (detection is by polling).
+- Extra task manager implementations (ClickUp etc.) and git providers (GitLab/GitHub) — only the
+  **pluggability** is a requirement.
+- Automatic PR merge/approval.
+- Remote CI/CD managed by DOP.
+- Multi-user with advanced RBAC (it depends on P1/D5).
+- A **dynamic stage process** (stages generated per demand through the chat, generating a
+  versionable data structure) — in the MVP the set of stages is **static/predefined**
+  ([§5.4](#54-the-demands-stage-model-bam-at-runtime),
+  [E10](#e10--stage-by-stage-execution-bam)).
 
-## 13. Glossário
+## 13. Glossary
 
-- **Workspace:** unidade de configuração de um projeto (repos, providers, runtime,
-  regras) onde o trabalho acontece.
-- **Demanda / card / task:** item de trabalho originado no task manager (Jira),
-  conduzido no DOP.
-- **Provider:** implementação plugável de uma integração (git, runtime, task manager).
-- **Runtime:** ambiente local de execução (docker-compose hoje) das aplicações.
-- **Status DOP:** ciclo `new/doing/done/delivered` (distinto do status do task manager).
-- **Inferência:** dedução automática de configuração para reduzir trabalho/erro do Dev.
+- **Workspace:** the unit of configuration of a project (repos, providers, runtime, rules) where
+  the work happens.
+- **Demand / card / task:** a work item originating in the task manager (Jira), run in DOP.
+- **Provider:** a pluggable implementation of an integration (git, runtime, task manager).
+- **Runtime:** the local execution environment (docker-compose today) of the applications.
+- **DOP status:** the `new/doing/done/delivered` cycle (distinct from the task manager's
+  status).
+- **Inference:** the automatic deduction of configuration to reduce the Dev's work/error.

@@ -1,168 +1,164 @@
-# Prompt para o Replit — Frontend do DOP 1.0 (mock-first)
+# A prompt for Replit — the DOP 1.0 frontend (mock-first)
 
-> **Como usar:** cole o conteúdo da seção "PROMPT" abaixo no Replit Agent. Tudo fora
-> dela é nota para o time (Dev/Claude). O frontend é **100% mockado** nesta fase; o
-> Claude fará a integração com a API depois. A camada de dados foi desenhada para ser
-> trocada por um cliente HTTP real sem reescrever as telas.
+> **How to use it:** paste the content of the "PROMPT" section below into the Replit Agent.
+> Everything outside it is a note for the team (the Dev/Claude). The frontend is **100% mocked**
+> in this phase; Claude will integrate it with the API later. The data layer was designed to be
+> swapped for a real HTTP client without rewriting the screens.
 
 ---
 
 ## PROMPT
 
-Você vai construir o **frontend completo** do **DOP** — uma ferramenta auxiliar ao
-desenvolvimento de software *IA-first*, onde um **Dev** e um agente **Claude**
-colaboram para conduzir demandas (cards do Jira) do início ao fim. Nesta fase, **use
-apenas dados mockados** (sem backend real). O objetivo é uma SPA navegável, polida e
-realista.
+You are going to build the **complete frontend** of **DOP** — an *AI-first* tool that assists
+software development, where a **Dev** and a **Claude** agent collaborate to run demands (Jira
+cards) from start to finish. In this phase, **use mocked data only** (no real backend). The goal
+is a navigable, polished and realistic SPA.
 
-### 1. Stack (obrigatória)
+### 1. The stack (mandatory)
 
 - **React + Vite + TypeScript**
-- **Tailwind CSS** + **shadcn/ui** (Radix) para componentes
-- **React Router** para navegação
-- **TanStack Query** para data fetching (apontando para a camada de mock)
-- **Zustand** para estado de UI leve (ex.: wizard, sessão de chat)
-- **lucide-react** para ícones
-- Estrutura de pastas:
+- **Tailwind CSS** + **shadcn/ui** (Radix) for the components
+- **React Router** for navigation
+- **TanStack Query** for data fetching (pointing at the mock layer)
+- **Zustand** for light UI state (e.g. the wizard, the chat session)
+- **lucide-react** for icons
+- The folder structure:
   ```
   src/
-    app/            # rotas/páginas
-    components/     # UI reutilizável
+    app/            # routes/pages
+    components/     # reusable UI
     features/       # workspaces, demands, chat, dossier, logs
     lib/
       api/
-        types.ts        # TODOS os tipos do domínio (contrato)
-        client.ts       # interface DopApi (assinaturas)
-        mockClient.ts   # implementação mock (fixtures + latência simulada)
-        index.ts        # exporta a instância ativa (mock por enquanto)
+        types.ts        # ALL the domain's types (the contract)
+        client.ts       # the DopApi interface (signatures)
+        mockClient.ts   # the mock implementation (fixtures + simulated latency)
+        index.ts        # it exports the active instance (mock for now)
       mocks/        # fixtures (workspaces, demands, logs, etc.)
     store/          # zustand
   ```
-- **Regra de ouro:** as telas **só conhecem a interface `DopApi`** (`client.ts`),
-  nunca os mocks diretamente. Trocar `mockClient` por um `httpClient` no futuro não
-  pode exigir mudança nas telas.
+- **The golden rule:** the screens **only know the `DopApi` interface** (`client.ts`), never the
+  mocks directly. Swapping `mockClient` for an `httpClient` in the future must not require a
+  change to the screens.
 
-### 2. Filosofia de produto (guia de UX)
+### 2. The product philosophy (a UX guide)
 
-- O **Dev é gestor do Claude**, não operador. O Claude é autônomo (planeja,
-  implementa, testa, gera contexto/memórias, faz análises forenses). O Dev fornece
-  contexto/requisitos, decide, aprova e intervém quando chamado.
-- **Multi-projeto, monousuário:** o Dev trabalha em várias workspaces/demandas em
-  paralelo. O recurso escasso é a **atenção** — a UI deve **direcionar atenção**, não
-  exigir varredura.
-- **Minimalismo:** mostrar o essencial; **evitar telas e relatórios em excesso**.
-  Densidade calma, hierarquia clara, status legíveis (badges, barras de progresso).
-- Suporte a **tema claro/escuro**.
+- The **Dev is Claude's manager**, not an operator. Claude is autonomous (it plans, implements,
+  tests, generates context/memories, does forensic readings). The Dev supplies
+  context/requirements, decides, approves and steps in when called.
+- **Multi-project, single-user:** the Dev works on several workspaces/demands in parallel. The
+  scarce resource is **attention** — the UI has to **direct attention**, not require a sweep.
+- **Minimalism:** show the essentials; **avoid excess screens and reports**. A calm density, a
+  clear hierarchy, legible statuses (badges, progress bars).
+- Support a **light/dark theme**.
 
-### 3. Mapa de telas e rotas
+### 3. The map of screens and routes
 
-| Rota | Tela |
+| Route | Screen |
 |---|---|
-| `/` | **Home**: lista de workspaces + ação "Nova workspace". Faixa opcional "Onde sou necessário" (demandas que pedem atenção do Dev em qualquer workspace). |
-| `/workspaces/new` | **Wizard de criação** de workspace (multi-etapa, salvável por etapa). |
-| `/workspaces/:id/edit` | **Edição** da workspace (mesmo wizard, qualquer etapa; re-testar conexões, atualizar credenciais, incluir/remover repos). |
-| `/workspaces/:id` | **Visão da workspace**: menu para "Desenvolver" + resumo. |
-| `/workspaces/:id/demands` | **Lista de demandas** do Dev (cards do Jira) com duplo status. |
-| `/workspaces/:id/demands/:demandId` | **Tela de execução/detalhe da demanda** (chat + wizard de etapas + dossiê + logs). |
+| `/` | **Home**: a list of workspaces + a "New workspace" action. An optional "Where I am needed" strip (demands asking for the Dev's attention in any workspace). |
+| `/workspaces/new` | The workspace **creation wizard** (multi-step, saveable per step). |
+| `/workspaces/:id/edit` | **Editing** the workspace (the same wizard, any step; re-test connections, update credentials, add/remove repos). |
+| `/workspaces/:id` | **The workspace's view**: a menu to "Develop" + a summary. |
+| `/workspaces/:id/demands` | **The Dev's demand list** (Jira cards) with a double status. |
+| `/workspaces/:id/demands/:demandId` | **The demand's execution/detail screen** (chat + stage wizard + dossier + logs). |
 
-### 4. Workspace — wizard
+### 4. The workspace — the wizard
 
-Estados da workspace: `draft` | `active` | `inactive` | `deleted` (badge visível).
-O wizard salva **etapa por etapa** e permite editar qualquer etapa (completa ou não).
-Cada etapa de conexão tem botão **"Testar conexão"** (mock: retorna sucesso/erro com
-latência). Etapas:
+The workspace's states: `draft` | `active` | `inactive` | `deleted` (a visible badge). The
+wizard saves **step by step** and allows editing any step (complete or not). Each connection step
+has a **"Test the connection"** button (mocked: it returns success/error with latency). The
+steps:
 
-1. **Básico** — nome, pasta raiz (root), descrição.
-2. **Repositórios git** — lista de repos remotos; por repo: URL e **protocolo
-   (http / https / ssh)** com os **campos de credencial conforme o protocolo**
-   (login+token para http/https; chave SSH para ssh). **Provider git = Azure DevOps**
-   (apresentar como seleção com nota "outros providers em breve"). Botão testar
-   conexão por repo.
-3. **Fluxo de branches** — por repo: **branch base** e **branches-alvo de PR**; campo
-   para **regras de fluxo** (texto).
-4. **Task manager** — **Jira** (seleção; nota "outros em breve"): URL, projeto,
-   credenciais; testar conexão.
-5. **Runtime** — apps (nome, papel frontend/backend, porta), dependências FE→BE, infra
-   (ex.: mongodb, mysql). Apresentação simples (lista editável).
-6. **Extensões do Claude (secundário)** — adicionar **MCPs** (ex.: postgres, mysql),
-   **plugins**, **skills** e **comandos customizados** (nome + descrição); os comandos
-   ficam disponíveis por **auto-complete no chat** (ver §6).
-7. **Chat de configuração** — uma **tela de chat com o Claude** para definir **regras
-   da workspace** (ex.: "não fazer merge da `desenv` na branch de feature"), **regras
-   de fluxo de trabalho** e **contexto do projeto**. O Claude (mock) pode fazer
-   **perguntas** e ir consolidando as regras num painel lateral.
+1. **Basics** — the name, the root folder, the description.
+2. **Git repositories** — a list of remote repos; per repo: the URL and the **protocol
+   (http / https / ssh)** with the **credential fields according to the protocol** (login+token
+   for http/https; an SSH key for ssh). **The git provider = Azure DevOps** (present it as a
+   selection with a note "other providers coming soon"). A test-connection button per repo.
+3. **The branch flow** — per repo: the **base branch** and the **PR target branches**; a field
+   for the **flow rules** (text).
+4. **The task manager** — **Jira** (a selection; a note "others coming soon"): the URL, the
+   project, the credentials; test the connection.
+5. **The runtime** — apps (name, frontend/backend role, port), FE→BE dependencies,
+   infrastructure (e.g. mongodb, mysql). A simple presentation (an editable list).
+6. **Claude's extensions (secondary)** — add **MCPs** (e.g. postgres, mysql), **plugins**,
+   **skills** and **custom commands** (a name + a description); the commands become available
+   through **auto-complete in the chat** (see §6).
+7. **The configuration chat** — a **chat screen with Claude** to define the **workspace's
+   rules** (e.g. "do not merge `develop` into the feature branch"), the **workflow rules** and
+   the **project's context**. Claude (mocked) may ask **questions** and consolidate the rules in
+   a side panel as it goes.
 
-A Home/listagem permite: editar, **re-testar conexões**, **atualizar credenciais**
-(tokens/chaves), incluir/remover repositórios, ativar/inativar/excluir.
+The Home/listing allows: editing, **re-testing connections**, **updating credentials**
+(tokens/keys), adding/removing repositories, activating/deactivating/deleting.
 
-### 5. Desenvolvimento — lista de demandas
+### 5. Development — the demand list
 
-Ao escolher "Desenvolver" numa workspace, listar **as demandas do Dev** (cards do Jira
-mockados). Cada card mostra **dois status**:
-- **Status no Jira** (ex.: To Do, In Progress, Code Review, Done…).
-- **Status no DOP**: `new` | `doing` | `done` | `delivered` (badge distinto).
-  - `new` = não começou no DOP · `doing` = Claude+Dev trabalhando · `done` = PR feito e
-    considerado terminado · `delivered` = PR mergeado e pipeline rodou.
+On choosing "Develop" in a workspace, list **the Dev's demands** (mocked Jira cards). Each card
+shows **two statuses**:
+- **The status in Jira** (e.g. To Do, In Progress, Code Review, Done…).
+- **The status in DOP**: `new` | `doing` | `done` | `delivered` (a distinct badge).
+  - `new` = it has not started in DOP · `doing` = Claude+the Dev working · `done` = the PR is
+    made and it is considered finished · `delivered` = the PR was merged and the pipeline ran.
 
-Filtros simples (por status DOP, por status Jira, busca por chave). Clicar no card →
-tela de execução.
+Simple filters (by DOP status, by Jira status, a search by key). Clicking the card → the
+execution screen.
 
-### 6. Tela de execução/detalhe da demanda (núcleo do produto)
+### 6. The demand's execution/detail screen (the product's core)
 
-Layout em **3 áreas** (responsivo; em telas largas, lado a lado):
+A layout in **3 areas** (responsive; side by side on wide screens):
 
-**(A) Chat com o Claude** (coluna principal)
-- Conversa Dev ↔ Claude (mock). Mensagens com markdown, blocos de código, e
-  "ações do Claude" (ex.: "executei `dop demand-init OG-123`", "criei branch X").
-- **Auto-complete de comandos customizados**: ao digitar `/`, sugerir os comandos
-  configurados na workspace (etapa 6) + comandos padrão.
-- Caixa de entrada com envio; indicador de "Claude trabalhando…".
+**(A) The chat with Claude** (the main column)
+- The Dev ↔ Claude conversation (mocked). Messages with markdown, code blocks, and "Claude's
+  actions" (e.g. "I ran `dop demand-init OG-123`", "I created branch X").
+- **Auto-complete of custom commands**: on typing `/`, suggest the commands configured in the
+  workspace (step 6) + the default commands.
+- An input box with a send action; a "Claude is working…" indicator.
 
-**(B) Wizard de etapas da demanda** (lateral) — **etapas estáticas (MVP)**, mostrando
-**etapa atual**, **já executadas** (✓) e **próximas**. As 7 etapas:
+**(B) The demand's stage wizard** (on the side) — **static stages (the MVP)**, showing the
+**current stage**, the ones **already run** (✓) and the **next ones**. The 7 stages:
 
-1. **Iniciar a demanda** — leitura do card Jira **via MCP**; o humano informa a
-   **jira-key** pelo chat.
-2. **Contextualização** — Claude e humano interagem; Claude faz **análise forense**,
-   busca o que precisa no código-fonte; humano informa dados necessários; Claude
-   **monta o contexto**.
-3. **Plano** — Claude monta o **plano de desenvolvimento e de testes**.
-4. **Execução do plano** — implementação + testes unitários + testes e2e; o Claude
-   **aciona o DOP via CLI** que **cria as branches** (como já funciona hoje).
-5. **Execução dos testes** —
-   - **5.1 Testes unitários:** executa; **ajusta os testes** se falharem por erro de
-     teste; **ajusta o código-fonte** se os testes estiverem certos mas a implementação
-     falhar.
-   - **5.2 Testes e2e:** executa; **ajusta repetidas vezes** (testes e/ou código) até
-     **passarem**.
-6. **Validação humana** — o humano faz **teste funcional**, interage com o Claude
-   (que pode ou não precisar ajustar) e por fim **aprova** a mudança.
-7. **Finalização** — o Claude aciona o **DOP** para **commit + push + PRs**, monta uma
-   **mensagem .txt simples** com a **lista dos PRs** (sem muitos detalhes, como hoje),
-   **finaliza a demanda** e **move o card para a próxima etapa** (as etapas/filtros do
-   card são definidos via chat na demanda).
+1. **Start the demand** — reading the Jira card **through the MCP**; the human gives the
+   **jira-key** through the chat.
+2. **Contextualisation** — Claude and the human interact; Claude does a **forensic reading**,
+   looks for what it needs in the source code; the human gives the data needed; Claude
+   **assembles the context**.
+3. **The plan** — Claude assembles the **development and test plan**.
+4. **Running the plan** — the implementation + unit tests + e2e tests; Claude **invokes DOP
+   through the CLI**, which **creates the branches** (as it already works today).
+5. **Running the tests** —
+   - **5.1 Unit tests:** it runs them; it **adjusts the tests** if they fail through a test
+     error; it **adjusts the source code** if the tests are right but the implementation fails.
+   - **5.2 e2e tests:** it runs them; it **adjusts repeatedly** (the tests and/or the code)
+     until they **pass**.
+6. **Human validation** — the human does a **functional test**, interacts with Claude (which may
+   or may not need to adjust) and finally **approves** the change.
+7. **Finalisation** — Claude invokes **DOP** for **commit + push + PRs**, assembles a **simple
+   .txt message** with the **list of PRs** (without much detail, as today), **finishes the
+   demand** and **moves the card to the next stage** (the card's stages/filters are defined
+   through the chat on the demand).
 
-Cada etapa tem estado: `pending` | `running` | `done` | `blocked`. Mostrar progresso e
-permitir clicar numa etapa para ver seu resumo. *(Observação: a marcação de conclusão
-de etapa pode ser por ação do Claude ou do Dev — trate como dado vindo da API.)*
+Each stage has a state: `pending` | `running` | `done` | `blocked`. Show progress and allow
+clicking a stage to see its summary. *(A note: marking a stage as done may be an action of
+Claude's or of the Dev's — treat it as data coming from the API.)*
 
-**(C) Dossiê + Logs** (abas ou painel inferior) — apresentação **enxuta**:
-- **Git:** repos impactados, branches criadas, commits.
-- **PRs:** enviados e **mergeados**, **quem aprovou**, **conflitos**.
-- **Arquivos manipulados:** planos, contextos, **ADRs**, código-fonte criado/alterado.
-- **Testes:** unitários e **e2e** criados, com resultado (`success`/`fail`/`skipped`)
-  e **barras de progresso** na etapa de testes. **NÃO** implemente a visualização ao
-  vivo do Playwright agora (fica para outra fase) — apenas status/contagem/progresso.
-- **Tempo:** início, fim, tempo gasto (por demanda; opcional por etapa).
-- **Allure:** apenas um **placeholder** "relatório Allure" (sem integração agora).
-- **Logs (tempo real, mockado):** três fontes selecionáveis — **(a) aplicações**,
-  **(b) testes (unitários/e2e)**, **(c) containers de infra** (mysql/mongo/allure).
-  Simular streaming (novas linhas aparecendo); acessível por clique.
+**(C) The dossier + logs** (tabs or a bottom panel) — a **lean** presentation:
+- **Git:** the repos affected, the branches created, the commits.
+- **PRs:** sent and **merged**, **who approved**, the **conflicts**.
+- **Files handled:** plans, contexts, **ADRs**, source code created/changed.
+- **Tests:** the unit and **e2e** tests created, with their result (`success`/`fail`/`skipped`)
+  and **progress bars** in the test stage. Do **NOT** implement the live Playwright view now (it
+  is left for another phase) — only status/count/progress.
+- **Time:** start, end, time spent (per demand; optionally per stage).
+- **Allure:** only a **placeholder** "Allure report" (no integration now).
+- **Logs (real time, mocked):** three selectable sources — **(a) the applications**, **(b) the
+  tests (unit/e2e)**, **(c) the infrastructure containers** (mysql/mongo/allure). Simulate
+  streaming (new lines appearing); reachable by a click.
 
-### 7. Modelo de dados (TypeScript — em `lib/api/types.ts`)
+### 7. The data model (TypeScript — in `lib/api/types.ts`)
 
-Defina e use estes tipos (ajuste nomes/campos se melhorar a clareza, mantendo a
-intenção). Crie fixtures realistas em `lib/mocks/`.
+Define and use these types (adjust names/fields if it improves clarity, keeping the intent).
+Create realistic fixtures in `lib/mocks/`.
 
 ```ts
 type WorkspaceStatus = 'draft' | 'active' | 'inactive' | 'deleted';
@@ -173,13 +169,13 @@ type TestStatus = 'running' | 'success' | 'fail' | 'skipped';
 
 interface RepoConfig {
   id: string; name: string; remoteUrl: string; protocol: GitProtocol;
-  credentialRef?: string;                 // referência (nunca o segredo em si)
+  credentialRef?: string;                 // a reference (never the secret itself)
   baseBranch: string; prTargets: string[]; flowRules?: string;
 }
 interface TaskManagerConfig { provider: 'jira'; baseUrl: string; project: string; }
 interface RuntimeApp { name: string; role: 'frontend' | 'backend'; port: number; dependsOn?: string[]; }
 interface ClaudeExtensions {
-  mcps: { name: string; kind: string }[];   // ex.: { name:'pg', kind:'postgres' }
+  mcps: { name: string; kind: string }[];   // e.g. { name:'pg', kind:'postgres' }
   plugins: string[]; skills: string[];
   commands: { name: string; description: string }[];
 }
@@ -189,8 +185,8 @@ interface Workspace {
   repos: RepoConfig[]; taskManager: TaskManagerConfig;
   runtime: { apps: RuntimeApp[]; infra: string[] };
   claudeExtensions: ClaudeExtensions;
-  rules: string[];                          // regras consolidadas (etapa de chat)
-  context: string;                          // contexto do projeto
+  rules: string[];                          // the consolidated rules (the chat step)
+  context: string;                          // the project's context
 }
 interface Stage { key: string; title: string; status: StageStatus; summary?: string; startedAt?: string; finishedAt?: string; }
 interface PullRequest { id: string; repo: string; sourceBranch: string; targetBranch: string; url: string; merged: boolean; approver?: string; hasConflict: boolean; }
@@ -210,48 +206,48 @@ interface Demand {
 }
 ```
 
-### 8. Interface da API (em `lib/api/client.ts`) — mock a implementa
+### 8. The API's interface (in `lib/api/client.ts`) — the mock implements it
 
 ```ts
 interface DopApi {
   listWorkspaces(): Promise<Workspace[]>;
   getWorkspace(id: string): Promise<Workspace>;
-  saveWorkspace(ws: Partial<Workspace>): Promise<Workspace>;   // upsert por etapa
+  saveWorkspace(ws: Partial<Workspace>): Promise<Workspace>;   // an upsert per step
   testConnection(kind: 'git' | 'jira' | 'runtime', payload: unknown): Promise<{ ok: boolean; message: string }>;
   listDemands(workspaceId: string): Promise<Demand[]>;
   getDemand(workspaceId: string, demandId: string): Promise<Demand>;
-  sendChatMessage(demandId: string, text: string): Promise<ChatMessage>;   // mock responde como "claude"
-  streamLogs(demandId: string, source: LogLine['source']): AsyncIterable<LogLine>; // ou callback; simule streaming
+  sendChatMessage(demandId: string, text: string): Promise<ChatMessage>;   // the mock answers as "claude"
+  streamLogs(demandId: string, source: LogLine['source']): AsyncIterable<LogLine>; // or a callback; simulate streaming
 }
 ```
 
-O `mockClient` deve simular latência (200–800ms), respostas plausíveis do Claude, e
-um "streaming" de logs (novas linhas a cada ~1s). Inclua ~3 workspaces e ~8 demandas
-em estados variados (incluindo demandas que pedem atenção do Dev).
+The `mockClient` has to simulate latency (200–800ms), plausible answers from Claude, and a
+"streaming" of logs (new lines every ~1s). Include ~3 workspaces and ~8 demands in varied states
+(including demands that ask for the Dev's attention).
 
-### 9. Fora de escopo (NÃO fazer agora)
+### 9. Out of scope (do NOT do it now)
 
-- Visualização **ao vivo** dos testes e2e (Playwright no browser) — outra fase.
-- Backend real, autenticação, multiusuário, deploy.
-- Integração real com Jira/Azure/Allure (tudo mock).
+- The **live** view of the e2e tests (Playwright in the browser) — another phase.
+- A real backend, authentication, multi-user, deployment.
+- A real integration with Jira/Azure/Allure (all mocked).
 
-### 10. Critérios de aceite
+### 10. Acceptance criteria
 
-- Navegação completa entre todas as rotas da §3.
-- Wizard funcional com salvamento por etapa e edição; botões "testar conexão" (mock).
-- Lista de demandas com **duplo status** e filtros.
-- Tela de execução com **chat + wizard de 7 etapas + dossiê + logs** (logs simulando
-  streaming; 3 fontes).
-- UI minimalista, responsiva, tema claro/escuro, sem dados reais.
-- Telas dependem **somente** da interface `DopApi` (mock plugável).
+- Complete navigation between all the routes of §3.
+- A working wizard with a save per step and editing; "test the connection" buttons (mocked).
+- A demand list with a **double status** and filters.
+- An execution screen with a **chat + a 7-stage wizard + the dossier + the logs** (the logs
+  simulating streaming; 3 sources).
+- A minimalist, responsive UI, a light/dark theme, no real data.
+- The screens depend **only** on the `DopApi` interface (a pluggable mock).
 
 ---
 
-## Notas para o time (não enviar ao Replit)
+## Notes for the team (do not send to Replit)
 
-- A interface `DopApi` e os `types.ts` são o **contrato preliminar** que o Claude usará
-  ao construir a `dop-api`; manter alinhados evita retrabalho na integração.
-- Quando a API existir, o Claude troca `mockClient` por um `httpClient` que implementa
-  `DopApi` — as telas não mudam.
-- A visualização ao vivo dos testes e2e (D11) e o processo de etapas dinâmico são
-  evoluções pós-MVP, já registradas na PRD.
+- The `DopApi` interface and `types.ts` are the **preliminary contract** Claude will use when
+  building `dop-api`; keeping them aligned avoids rework at integration time.
+- When the API exists, Claude swaps `mockClient` for an `httpClient` that implements `DopApi` —
+  the screens do not change.
+- The live view of the e2e tests (D11) and the dynamic stage process are post-MVP evolutions,
+  already recorded in the PRD.
