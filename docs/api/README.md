@@ -1,6 +1,6 @@
-# Coleções de API — o padrão de organização
+# API collections — the organization pattern
 
-Toda pasta e todo arquivo desta árvore começa com um **índice de dois dígitos**:
+Every folder and every file in this tree starts with a **two-digit index**:
 
 ```
 00-dop-core-grpc/
@@ -15,68 +15,64 @@ Toda pasta e todo arquivo desta árvore começa com um **índice de dois dígito
 02-dop-api-rest/
 ```
 
-**Sem espaço no nome, e sem `folder.bru`.** A primeira versão usava
-`00 - identity` e um `folder.bru` por pasta; o Bruno passou a acusar erro em
-todas as requisições. Sem CLI para reproduzir aqui, as duas coisas saíram — o
-espaço porque atravessa mal ferramenta e script, e o `folder.bru` porque é
-recurso recente: uma versão que não o conheça o lê como REQUISIÇÃO sem método
-nem URL. O índice, que é o que interessa, continua onde estava.
+**No space in a name, and no `folder.bru`.** The first version used `00 - identity` and a
+`folder.bru` per folder; Bruno started reporting an error on every request. With no CLI to
+reproduce it here, both things went — the space because it travels badly through tooling and
+scripts, and `folder.bru` because it is a recent feature: a version that does not know it reads
+it as a REQUEST with no method and no URL. The index, which is what matters, stayed where it
+was.
 
-## Por que índice no NOME, e não só o `seq` do Bruno
+## Why an index in the NAME, and not only Bruno's `seq`
 
-O `seq` do Bruno ordena dentro da ferramenta e é invisível em todo o resto. O
-índice no nome ordena no `ls`, no `git diff`, no navegador de arquivos do editor
-e na revisão de PR — que é onde a maioria das pessoas encontra estes arquivos.
+Bruno's `seq` orders things inside the tool and is invisible everywhere else. The index in the
+name orders things in `ls`, in `git diff`, in the editor's file browser and in a PR review —
+which is where most people meet these files.
 
-Os dois convivem: o `seq` de cada `.bru` **acompanha** o índice do nome, e cada
-pasta tem um `folder.bru` com o mesmo número. Um lugar só decide a ordem; os
-outros a repetem. Se divergirem, o nome é a verdade — ele é o que aparece na
-revisão.
+The two coexist: each `.bru`'s `seq` **follows** the name's index, and each folder has a
+`folder.bru` with the same number. One place decides the order; the others repeat it. If they
+diverge, the name is the truth — it is what shows up in the review.
 
-## A ordem não é alfabética: é a de execução
+## The order is not alphabetical: it is the execution order
 
-Dentro de uma pasta, o índice segue **a sequência em que alguém realmente
-percorre** o fluxo. Em `identity`, `ensure-user` vem antes de `list-accounts`
-porque não há conta para listar antes do primeiro login. Em `resource`,
-`create-integration` vem antes de `set-credential` porque não há onde guardar a
-credencial antes de o recurso existir.
+Inside a folder, the index follows **the sequence in which somebody actually walks** the flow.
+In `identity`, `ensure-user` comes before `list-accounts` because there is no account to list
+before the first sign-in. In `resource`, `create-integration` comes before `set-credential`
+because there is nowhere to keep the credential before the resource exists.
 
-Ordenar por alfabeto colocaria `create-invite` na frente de `ensure-user`, e a
-primeira requisição da coleção falharia — ensinando a quem chega que a coleção
-está quebrada, quando o quebrado é a ordem.
+Ordering alphabetically would put `create-invite` ahead of `ensure-user`, and the collection's
+first request would fail — teaching whoever arrives that the collection is broken, when what is
+broken is the order.
 
-## A ordem das coleções
+## The collections' order
 
-`00` é o **núcleo**, porque é a fonte da verdade: o contrato dele é o que as
-bordas traduzem. Depois vêm as duas superfícies da borda, gRPC (`01`) e REST
-(`02`) — as duas chamam o mesmo código no BFF, e há teste de paridade provando
-isso.
+`00` is the **core**, because it is the source of truth: its contract is what the edges
+translate. Then come the edge's two surfaces, gRPC (`01`) and REST (`02`) — both call the same
+code in the BFF, and there is a parity test proving it.
 
-## Os nomes de domínio são os do CÓDIGO
+## The domain names are the CODE's
 
-`identity`, `hierarchy`, `resource`, `demand` — os mesmos dos protos e dos
-pacotes de domínio, mesmo onde a documentação ao redor está em português.
-Índice numerado com rótulo que não bate com o código é meio padrão: quem procura
-`hierarchy.proto` precisa achar a pasta correspondente sem traduzir.
+`identity`, `hierarchy`, `resource`, `demand` — the same as the protos' and the domain
+packages', even where the documentation around them was in another language. A numbered index
+with a label that does not match the code is half a pattern: whoever looks for
+`hierarchy.proto` needs to find the matching folder without translating.
 
-## Ao acrescentar
+## When adding
 
-- **Requisição nova no meio do fluxo:** renumere as seguintes. Índice com buraco
-  ou repetido é pior que renumerar — ele sugere que falta alguma coisa.
-- **Corpo copiado de chamada que rodou de verdade**, nunca inventado. Já houve
-  nesta coleção requisição que o servidor recusava enquanto o exemplo parecia
-  correto.
-- **`docs {}` explica o PORQUÊ**, não o que a rota faz — isso o nome já diz.
+- **A new request in the middle of the flow:** renumber the following ones. An index with a
+  gap or a repeat is worse than renumbering — it suggests something is missing.
+- **A body copied from a call that really ran**, never invented. This collection has already
+  had a request the server refused while the example looked correct.
+- **`docs {}` explains the WHY**, not what the route does — the name already says that.
 
-## O que esta coleção AINDA não cobre
+## What this collection does NOT cover yet
 
-O **núcleo está completo**: os 12 domínios, com o corpo de cada requisição
-validado contra o servidor rodando — nenhum foi inventado.
+The **core is complete**: the 12 domains, with each request's body validated against the
+running server — none was invented.
 
-A **borda** expõe 12 serviços gRPC e 63 rotas REST; a coleção cobre 3 deles
-(`identity`, `hierarchy`, `resource`). Faltam requisições para `workflow`,
-`demand`, `delivery`, `knowledge`, `cost`, `execution`, `stream`, `runtime` e
-`attention` — a lacuna é da COLEÇÃO, não da API.
+The **edge** exposes 12 gRPC services and 63 REST routes; the collection covers 3 of them
+(`identity`, `hierarchy`, `resource`). Requests are missing for `workflow`, `demand`,
+`delivery`, `knowledge`, `cost`, `execution`, `stream`, `runtime` and `attention` — the gap is
+the COLLECTION's, not the API's.
 
-Está escrito aqui de propósito: com o índice, a lacuna fica visível na própria
-árvore, em vez de ser descoberta por quem procurou e não achou.
+It is written here on purpose: with the index, the gap is visible in the tree itself, instead
+of being discovered by somebody who looked and did not find.

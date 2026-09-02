@@ -1,5 +1,5 @@
 meta {
-  name: GetResource — a credencial não volta
+  name: GetResource — the credential does not come back
   type: grpc
   seq: 3
 }
@@ -26,10 +26,11 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5).
 
-  Vale rodar esta requisição logo depois de `SetCredential`: a resposta traz
-  `credential_ref` — um rótulo opaco derivável da própria linha — e **nunca** o
-  segredo. Não existe caminho de leitura do valor pela API; quem precisa dele é
-  o executor, direto do cofre (ADR-0001).
+  It is worth running this request right after `SetCredential`: the response
+  carries `credential_ref` — an opaque label derivable from the row itself — and
+  **never** the secret. There is no path to read the value through the API;
+  whoever needs it is the executor, straight from the vault (ADR-0001).
 }

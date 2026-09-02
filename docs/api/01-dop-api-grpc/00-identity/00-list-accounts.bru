@@ -23,12 +23,12 @@ body:grpc {
 }
 
 docs {
-  Mesma superfície do REST, outro transporte — e o mesmo código por baixo: há
-  teste de paridade no dop-api que quebra se as duas pontas divergirem.
+  The same surface as REST, another transport — and the same code underneath: there
+  is a parity test in dop-api that breaks if the two ends diverge.
 
-  Diferente do gRPC do NÚCLEO, aqui a identidade vem do TOKEN, no metadado
-  `authorization`, exatamente como no REST. Não existe CallContext no corpo.
+  Unlike the CORE's gRPC, here the identity comes from the TOKEN, in the
+  `authorization` metadata, exactly as in REST. There is no CallContext in the body.
 
-  Esta é a chamada que se faz ANTES de haver conta ativa — o `x-account-id`
-  pode ir vazio.
+  This is the call made BEFORE there is an active account — `x-account-id` may go
+  empty.
 }

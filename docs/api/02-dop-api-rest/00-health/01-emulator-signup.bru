@@ -1,0 +1,34 @@
+meta {
+  name: emulator — create a user
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{authEmulator}}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-api-key
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}",
+    "returnSecureToken": true
+  }
+}
+
+script:post-response {
+  if (res.body.idToken) {
+    bru.setEnvVar("idToken", res.body.idToken);
+    console.log("idToken gravado no ambiente");
+  }
+}
+
+docs {
+  It creates a user in the Firebase Auth emulator and writes the `idToken` into the
+  environment.
+
+  Run this request first: the rest come out authenticated. If the user already
+  exists, use `emulator — sign in`.
+}

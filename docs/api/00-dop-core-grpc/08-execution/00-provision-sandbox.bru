@@ -28,13 +28,13 @@ body:grpc {
 }
 
 docs {
-  **`min_tier` é DECLARADO, nunca presumido.** Omitir devolve `InvalidArgument`:
-  o substrato não escolhe isolamento por você. Pedir um nível que o substrato
-  não oferece devolve `FailedPrecondition` com a lista do que há — recusar é
-  melhor que entregar menos em silêncio.
+  **`min_tier` is DECLARED, never presumed.** Omitting it returns
+  `InvalidArgument`: the substrate does not choose isolation for you. Asking for a
+  tier the substrate does not offer returns `FailedPrecondition` with the list of
+  what there is — refusing is better than delivering less in silence.
 
-  Níveis: `hardware`, `kernel_emulated`, `namespace`.
+  The tiers: `hardware`, `kernel_emulated`, `namespace`.
 
-  O sandbox nasce com workspace em `/workspace`, e é ele que SOBREVIVE à
-  suspensão. Destruir é irreversível e leva o workspace junto.
+  The sandbox is born with a workspace at `/workspace`, and that is what SURVIVES
+  the suspension. Destroying is irreversible and takes the workspace with it.
 }

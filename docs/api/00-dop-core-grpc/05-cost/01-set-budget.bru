@@ -31,12 +31,12 @@ body:grpc {
 }
 
 docs {
-  Valor em MICROS (10⁻⁶ da moeda), inteiro — nunca float. Um token custa fração
-  de centavo; em centavos todo registro arredondaria para zero, e float acumula
-  erro em soma de milhões de linhas.
+  The value is in MICROS (10⁻⁶ of the currency), an integer — never a float. A
+  token costs a fraction of a cent; in cents every record would round to zero, and
+  a float accumulates error over a sum of millions of rows.
 
-  `limit_micros: 0` é SEM TETO, não teto zero.
+  `limit_micros: 0` is NO CEILING, not a zero ceiling.
 
-  Estourar o orçamento PAUSA a demanda e vira item da caixa de atenção — não
-  mata trabalho em andamento (ADR-0011 §2).
+  Exceeding the budget PAUSES the demand and becomes an item in the attention box —
+  it does not kill work in progress (ADR-0011 §2).
 }

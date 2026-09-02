@@ -1,0 +1,28 @@
+meta {
+  name: Create an organization
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{bffUrl}}/accounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "handle": "acme",
+    "display_name": "ACME Ltda",
+    "legal_id": "12.345.678/0001-90"
+  }
+}
+
+docs {
+  Any user creates their own organization — which is why no role is required. What
+  is required is an ACTIVE account: the creation happens from a context (SP-0), and
+  whoever creates it is born its owner.
+
+  The personal account, that one nobody creates: it is born together with the user
+  on the first sign-in (ADR-0002).
+}

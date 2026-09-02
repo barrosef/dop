@@ -26,10 +26,10 @@ body:grpc {
 }
 
 docs {
-  O pacote que o agente recebe, já cortado por orçamento de tokens (ADR-0012).
+  The package the agent receives, already cut to the token budget (ADR-0012).
 
-  **Olhe o `dropped`**: ele conta o que ficou de FORA, por camada. "O pacote
-  coube" e "o pacote coube porque jogamos fora metade da memória relevante" são
-  fatos diferentes, e só o segundo explica um agente que não sabia o que devia
-  saber. O mapa vem sempre, inclusive zerado.
+  **Look at `dropped`**: it counts what was left OUT, per layer. "The package fit"
+  and "the package fit because we threw away half the relevant memory" are
+  different facts, and only the second explains an agent that did not know what it
+  should have known. The map always comes, even at zero.
 }

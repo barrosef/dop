@@ -1,0 +1,27 @@
+meta {
+  name: emulator — sign in
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{authEmulator}}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=fake-api-key
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}",
+    "returnSecureToken": true
+  }
+}
+
+script:post-response {
+  if (res.body.idToken) bru.setEnvVar("idToken", res.body.idToken);
+}
+
+assert {
+  res.status: eq 200
+}

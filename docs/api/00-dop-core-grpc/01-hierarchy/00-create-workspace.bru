@@ -22,18 +22,19 @@ body:grpc {
     {
       "name": "csptech",
       "key": "CSP",
-      "description": "Workspace de exemplo",
-      "tags": ["cliente", "ativo"],
+      "description": "An example workspace",
+      "tags": ["customer", "active"],
       "idempotency_key": "{{$guid}}"
     }
   ]
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  Cadastro enxuto de propósito: nome, chave, descrição e tags. Workspace agrupa
-  projetos — quem configura repositório é o projeto.
+  A lean registration on purpose: a name, a key, a description and tags. A
+  workspace groups projects — the one that configures a repository is the project.
 }

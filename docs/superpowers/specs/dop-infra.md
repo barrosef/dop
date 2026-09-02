@@ -1,216 +1,217 @@
-# `dop-infra` — infraestrutura da plataforma DOP
+# `dop-infra` — the DOP platform's infrastructure
 
-> **Status:** Aprovada para revisão · **Data:** 2026-08-29 · **Projeto:** plataforma DOP
+> **Status:** Approved for review · **Date:** 2026-08-29 · **Project:** the DOP platform
 >
-> **Responde:** onde vive a infraestrutura, como QA/stage/prod nascem sem duplicar
-> declaração, e como um desenvolvedor sobe as dependências localmente.
+> **Answers:** where the infrastructure lives, how QA/stage/prod are born without duplicating a
+> declaration, and how a developer brings the dependencies up locally.
 >
-> **Não responde:** qual é o alvo de computação (P-4), qual é o banco (SP-3), qual é a
-> topologia de componentes (SP-1). Ver [`ROADMAP.md`](../../ROADMAP.md).
+> **Does not answer:** what the compute target is (P-4), what the database is (SP-3), what the
+> component topology is (SP-1). See [`ROADMAP.md`](../../ROADMAP.md).
 
-Decisão de base: [ADR-0001](../../adr/0001-infraestrutura-atras-de-portas.md) — é ela que
-define o que precisa de emulador e o que não precisa.
+The base decision: [ADR-0001](../../adr/0001-infrastructure-behind-ports.md) — it is what
+defines what needs an emulator and what does not.
 
-## 1. Estado desta entrega
+## 1. This delivery's state
 
-O `dop-infra` nasce com **duas velocidades deliberadamente diferentes**:
+`dop-infra` is born with **two deliberately different speeds**:
 
-| Parte | Estado nesta entrega |
+| Part | State in this delivery |
 |---|---|
-| **Terraform** | **Estrutura, sem resources.** Ainda não há projeto encorpado para publicar versão; provisionar agora seria construir para jogar fora |
-| **Ambiente local (k3s)** | **Funcional.** Os emuladores sobem, e um desenvolvedor consegue trabalhar contra eles |
+| **Terraform** | **Structure, with no resources.** There is no fleshed-out project to publish a version of yet; provisioning now would be building to throw away |
+| **The local environment (k3s)** | **Working.** The emulators come up, and a developer can work against them |
 
-A assimetria é intencional: a estrutura do Terraform é problema conhecido e vale fixar
-cedo, mas seu conteúdo depende de decisões que ainda não foram tomadas. O ambiente local
-não depende de nenhuma delas — as dependências de infraestrutura já são conhecidas.
+The asymmetry is intentional: Terraform's structure is a known problem and worth fixing early,
+but its content depends on decisions that have not been taken yet. The local environment
+depends on none of them — the infrastructure dependencies are already known.
 
-## 2. Estrutura do repositório
+## 2. The repository's structure
 
 ```
 dop-infra/
 ├── README.md
-├── Makefile                    mínimo: guarda de contexto + atalhos; ENV obrigatório no Terraform
+├── Makefile                    minimal: the context guard + shortcuts; ENV mandatory in Terraform
 ├── terraform/
-│   ├── bootstrap/              projetos, bucket de estado, SAs do CI — aplicado uma vez
-│   ├── modules/                blocos reutilizáveis; nenhum valor de ambiente dentro
-│   │   ├── project-baseline/   APIs, IAM base, logging, orçamento
-│   │   ├── identity/           Firebase Auth + provedores OAuth
+│   ├── bootstrap/              projects, the state bucket, the CI's SAs — applied once
+│   ├── modules/                reusable blocks; no environment value inside
+│   │   ├── project-baseline/   APIs, base IAM, logging, budget
+│   │   ├── identity/           Firebase Auth + OAuth providers
 │   │   ├── secrets/            Secret Manager + Workload Identity
 │   │   ├── network/
-│   │   ├── runtime-service/    aguarda SP-5 / P-4
-│   │   └── data/               aguarda SP-3
+│   │   ├── runtime-service/    awaiting SP-5 / P-4
+│   │   └── data/               awaiting SP-3
 │   └── stacks/
-│       └── platform/           ÚNICO root module
+│       └── platform/           the ONLY root module
 │           ├── main.tf  variables.tf  outputs.tf  versions.tf  backend.tf
 │           └── envs/
 │               ├── qa.tfvars      qa.backend.hcl
 │               ├── stage.tfvars   stage.backend.hcl
 │               └── prod.tfvars    prod.backend.hcl
 ├── k3s/
-│   ├── emulators/              SÓ o que não tem adaptador nativo
+│   ├── emulators/              ONLY what has no native adapter
 │   │   └── firebase-auth/
-│   ├── services/               serviços reais de apoio ao desenvolvimento
+│   ├── services/               real services supporting development
 │   │   ├── minio/
 │   │   └── mongodb/
-│   └── overlays/local/         composição do ambiente local
+│   └── overlays/local/         the local environment's composition
 └── docs/
 ```
 
-## 3. Terraform — organização
+## 3. Terraform — the organization
 
-**Um projeto GCP por ambiente:** `dop-qa`, `dop-stage`, `dop-prod`. IAM, cotas,
-faturamento e limites de API isolados de verdade; erro em QA não alcança produção por
-acidente.
+**One GCP project per environment:** `dop-qa`, `dop-stage`, `dop-prod`. IAM, quotas, billing
+and API limits genuinely isolated; a mistake in QA does not reach production by accident.
 
-**Um único root module.** Os arquivos `qa.tfvars`, `stage.tfvars` e `prod.tfvars` mudam
-**valores**, nunca declarações. Um resource novo aparece uma vez, dentro de um módulo, e
-os três ambientes o ganham juntos. É o requisito de "não duplicidade de resources".
+**A single root module.** The `qa.tfvars`, `stage.tfvars` and `prod.tfvars` files change
+**values**, never declarations. A new resource appears once, inside a module, and all three
+environments gain it together. It is the "no duplication of resources" requirement.
 
-**Estado por ambiente via `-backend-config`**, num arquivo `.backend.hcl` por ambiente.
-Não se usa `terraform workspace`: workspaces compartilham configuração de backend e
-credenciais, e "esqueci de trocar de workspace" é um modo de falha que aplica QA em
-produção. Com projeto por ambiente, o alvo tem que estar **explícito no comando**.
+**State per environment through `-backend-config`**, in a `.backend.hcl` file per environment.
+`terraform workspace` is not used: workspaces share the backend's configuration and
+credentials, and "I forgot to switch workspace" is a failure mode that applies QA in
+production. With a project per environment, the target has to be **explicit in the command**.
 
-**Proteções desde já**, mesmo sem resources: `prevent_destroy` previsto nos módulos de
-dado, `deletion_protection` ligado em `prod.tfvars`, service account de CI por ambiente
-com permissão apenas no projeto dela, e um `Makefile` que recusa executar sem `ENV`.
+**Protections from the start**, even with no resources: `prevent_destroy` foreseen in the data
+modules, `deletion_protection` turned on in `prod.tfvars`, a CI service account per environment
+with permission only on its own project, and a `Makefile` that refuses to run without `ENV`.
 
-**O que "vazio" significa exatamente:** os diretórios, `versions.tf`, `backend.tf` e as
-declarações de variável existem; **não há bloco `resource`**. O esqueleto precisa passar
-em `terraform fmt -check` e `terraform validate` — estrutura válida que não provisiona
-nada. `bootstrap/` fica documentado e **não aplicado**.
+**What "empty" means exactly:** the directories, `versions.tf`, `backend.tf` and the variable
+declarations exist; there is **no `resource` block**. The skeleton has to pass
+`terraform fmt -check` and `terraform validate` — a valid structure that provisions nothing.
+`bootstrap/` is documented and **not applied**.
 
-**Dois módulos nascem só com interface.** `runtime-service/` e `data/` recebem variáveis e
-outputs, sem implementação, até que SP-5 decida onde a execução roda e SP-3 decida o
-banco. Módulo com fronteira definida e miolo pendente é honesto; módulo chutado é dívida.
+**Two modules are born with an interface only.** `runtime-service/` and `data/` get variables
+and outputs, with no implementation, until SP-5 decides where the execution runs and SP-3
+decides the database. A module with a defined boundary and a pending core is honest; a guessed
+module is debt.
 
-## 4. Ambiente local — o que sobe
+## 4. The local environment — what comes up
 
-### 4.1 O cluster
+### 4.1 The cluster
 
-**Não existe cluster local na máquina hoje** — nem k3s, k3d, kind ou minikube. Há
-`kubectl` (com Kustomize embutido, dispensando o binário avulso) e `docker`.
+**There is no local cluster on the machine today** — no k3s, k3d, kind or minikube. There is
+`kubectl` (with Kustomize built in, making the standalone binary unnecessary) and `docker`.
 
-O cluster é provisionado com **k3d**: é o próprio k3s empacotado para rodar em Docker.
-Instala-se com um binário, cria e destrói em segundos, e mantém a fidelidade ao k3s que
-a portabilidade da ADR-0001 pressupõe. Instalar k3s nativo exigiria systemd e privilégio
-de root, tomando a rede do host — custo desproporcional para um ambiente de
-desenvolvimento descartável.
+The cluster is provisioned with **k3d**: it is k3s itself packaged to run in Docker. It is
+installed with one binary, it is created and destroyed in seconds, and it keeps the fidelity to
+k3s that ADR-0001's portability presupposes. Installing native k3s would require systemd and
+root privilege, taking over the host's network — a disproportionate cost for a disposable
+development environment.
 
-Cluster `dop-local`, que produz o contexto `k3d-dop-local`.
+The `dop-local` cluster, which produces the `k3d-dop-local` context.
 
-### 4.2 Guarda de contexto — requisito rígido
+### 4.2 The context guard — a hard requirement
 
-O `kubectl` desta máquina aponta hoje para **`sar-sicar-prod`, namespace de produção de
-um projeto de cliente sem relação com o DOP**, num cluster OKD remoto. Um `apply`
-descuidado implantaria os emuladores em produção alheia.
+This machine's `kubectl` today points at **`sar-sicar-prod`, the production namespace of a
+customer project unrelated to DOP**, in a remote OKD cluster. A careless `apply` would deploy
+the emulators into somebody else's production.
 
-**A única automação que existe é a guarda de contexto**, num `Makefile` mínimo: cada
-alvo que fala com cluster verifica antes que `kubectl config current-context` seja
-exatamente `k3d-dop-local` e **recusa executar** caso não seja — antes do comando, nunca
-como aviso. Não é conveniência: é a diferença entre um ambiente de desenvolvimento e um
-incidente. Fora essa guarda, nada de script; comando composto só nasce quando a repetição
-doer de verdade.
+**The only automation that exists is the context guard**, in a minimal `Makefile`: every target
+that talks to a cluster first checks that `kubectl config current-context` is exactly
+`k3d-dop-local` and **refuses to run** if it is not — before the command, never as a warning.
+It is not a convenience: it is the difference between a development environment and an
+incident. Beyond that guard, no scripts; a composed command is only born when the repetition
+really hurts.
 
-### 4.3 Os componentes
+### 4.3 The components
 
-Namespace `dop-local`, composto por Kustomize. **Construído e testado em 2026-08-31.**
+The `dop-local` namespace, composed with Kustomize. **Built and tested on 2026-08-31.**
 
-| Componente | Papel | Porta |
+| Component | Role | Port |
 |---|---|---|
-| **PostgreSQL 17 + pgvector** | Estado, log de eventos e busca semântica (ADR-0018) | 5432 |
-| **NATS JetStream** | Broker de eventos (ADR-0019) | 4222 · monitor 8222 |
-| **Emuladores Firebase** | Auth e Storage — mesmo SDK da produção (ADR-0020) | 9099 · 9199 · hub 4400 |
+| **PostgreSQL 17 + pgvector** | State, the event log and semantic search (ADR-0018) | 5432 |
+| **NATS JetStream** | The event broker (ADR-0019) | 4222 · monitor 8222 |
+| **The Firebase emulators** | Auth and Storage — the same SDK as production (ADR-0020) | 9099 · 9199 · hub 4400 |
 
-**Kustomize, não Helm** — conjunto pequeno e interno; sem linguagem de template a
-aprender, e o overlay `local` expressa literalmente "a base mais os emuladores".
+**Kustomize, not Helm** — a small, internal set; no template language to learn, and the `local`
+overlay literally expresses "the base plus the emulators".
 
-**Tudo é declarativo — não há script de orquestração.** O que num ambiente de
-`docker compose` exigiria um `dev.sh` (criar diretório de dados, importar condicional,
-esperar ficar pronto, dar tempo ao encerramento, resetar volume root-owned) o Kubernetes
-resolve em manifesto:
+**Everything is declarative — there is no orchestration script.** What in a `docker compose`
+environment would require a `dev.sh` (creating the data directory, a conditional import,
+waiting for readiness, giving the shutdown time, resetting a root-owned volume) Kubernetes
+solves in a manifest:
 
-| Necessidade | Recurso |
+| Need | Resource |
 |---|---|
-| persistência entre reinícios | PVC |
-| `--import` condicional | `if` no `command` do container — a lógica vive no pod |
-| tempo para o `--export-on-exit` concluir | `terminationGracePeriodSeconds: 30` |
-| configuração compartilhada com o deploy | ConfigMap a partir dos arquivos versionados |
-| reset dos dados | `kubectl delete pvc` — sem malabarismo de permissão |
-| esperar ficar pronto | `readinessProbe` |
+| persistence across restarts | a PVC |
+| a conditional `--import` | an `if` in the container's `command` — the logic lives in the pod |
+| time for `--export-on-exit` to finish | `terminationGracePeriodSeconds: 30` |
+| configuration shared with the deploy | a ConfigMap from the versioned files |
+| resetting the data | `kubectl delete pvc` — no permission juggling |
+| waiting for readiness | a `readinessProbe` |
 
-Operação do dia a dia: `kubectl apply -k`, `k3d cluster start/stop` e **k9s** para logs,
-exec e inspeção.
+Day-to-day operation: `kubectl apply -k`, `k3d cluster start/stop` and **k9s** for logs, exec
+and inspection.
 
-**A imagem do emulador é construída aqui, não puxada da comunidade.** O Firebase não
-publica container oficial só do emulador de Auth; a alternativa seria confiar numa imagem
-de terceiro. Constrói-se uma imagem fina sobre Node com `firebase-tools` **em versão
-fixada** — coerente com a postura de cadeia de suprimentos que o `dop-app` já adota, onde
-o `pnpm-workspace.yaml` impõe idade mínima de release contra ataque de supply chain.
+**The emulator's image is built here, not pulled from the community.** Firebase publishes no
+official container of the Auth emulator alone; the alternative would be trusting a third
+party's image. A thin image is built on Node with `firebase-tools` at a **pinned version** —
+coherent with the supply chain posture `dop-app` already adopts, where `pnpm-workspace.yaml`
+imposes a minimum release age against a supply chain attack.
 
-**Consumo medido:** ~958 MB no total (cluster 935 + LB 10 + registry 13). O emulador é o
-mais pesado por ser Java; `k3d cluster stop` devolve tudo preservando os dados.
+**Measured consumption:** ~958 MB in total (the cluster 935 + the LB 10 + the registry 13). The
+emulator is the heaviest because it is Java; `k3d cluster stop` gives everything back while
+preserving the data.
 
-## 5. Emulador não é adaptador
+## 5. An emulator is not an adapter
 
-A distinção que governa o que entra em `k3s/emulators/`, e que é fácil de errar:
+The distinction that governs what goes into `k3s/emulators/`, and that is easy to get wrong:
 
-| Serviço | Nuvem | Local | Por quê |
+| Service | Cloud | Local | Why |
 |---|---|---|---|
-| Identidade | Firebase Auth | **Emulador** | Emissão e verificação de token não se reimplementa |
-| Segredos | Secret Manager | **Secret do k8s** | Já é adaptador da ADR-0001. Emular seria duplicar trabalho |
-| Objetos | GCS / Firebase Storage | **Emulador Firebase Storage** | Mesmo SDK e semântica da produção; MinIO só se surgir cliente sem GCP |
-| Banco | Cloud SQL Postgres | container real | Banco roda igual local; não é emulação |
-| Serviços | a decidir | container no k3s | Cloud Run não tem emulador; container é o denominador comum |
+| Identity | Firebase Auth | **An emulator** | Issuing and verifying a token is not reimplemented |
+| Secrets | Secret Manager | **A k8s Secret** | It is already an ADR-0001 adapter. Emulating would duplicate work |
+| Objects | GCS / Firebase Storage | **The Firebase Storage emulator** | The same SDK and semantics as production; MinIO only if a customer without GCP appears |
+| Database | Cloud SQL Postgres | a real container | A database runs the same locally; it is not emulation |
+| Services | to be decided | a container in k3s | Cloud Run has no emulator; a container is the common denominator |
 
-**Regra: só entra em `emulators/` o que não tem adaptador nativo.** Hoje a lista tem
-**um item** — o Emulator Suite do Firebase, que cobre Auth e Storage no mesmo processo.
+**The rule: only what has no native adapter goes into `emulators/`.** Today the list has **one
+item** — Firebase's Emulator Suite, which covers Auth and Storage in the same process.
 
-**Armadilhas resolvidas na construção** (detalhadas em `dop-infra/docs/ambiente-local.md`):
-`HOME` gravável para usuário arbitrário; JARs baixados na build; JDK 21; a probe checa o
-**hub (4400)**, não a UI (que só sobe se algum emulador tiver UI); e tag de imagem
-versionada, porque reconstruir com a mesma tag não garante que o pod puxe a nova camada.
+**Traps solved during the construction** (detailed in `dop-infra/docs/local-environment.md`): a
+writable `HOME` for an arbitrary user; JARs downloaded at build time; JDK 21; the probe checks
+the **hub (4400)**, not the UI (which only comes up if some emulator has a UI); and a versioned
+image tag, because rebuilding with the same tag does not guarantee the pod pulls the new layer.
 
-## 6. Absorção do `infra/` da raiz
+## 6. Absorbing the root's `infra/`
 
-O meta-repositório tem `infra/` com um `docker-compose.yml` esqueleto e dois Dockerfiles,
-criados no bootstrap do projeto e nunca preenchidos.
+The meta-repository has an `infra/` with a skeleton `docker-compose.yml` and two Dockerfiles,
+created at the project's bootstrap and never filled in.
 
-**O `dop-infra` assume o ambiente local e o `infra/` da raiz é removido.** Manter os dois
-garante que um desatualiza em silêncio, e não há investimento a preservar. O k3s local
-também é mais próximo do alvo de produção do que o compose, encurtando a distância entre
-"funciona na minha máquina" e "funciona no cluster".
+**`dop-infra` takes over the local environment and the root's `infra/` is removed.** Keeping
+both guarantees one goes stale in silence, and there is no investment to preserve. The local
+k3s is also closer to the production target than compose, shortening the distance between "it
+works on my machine" and "it works on the cluster".
 
-## 7. Repositório
+## 7. The repository
 
-`Digital-Business-One/dop-infra`, privado, **submodule** em `repos/dop-infra` — consistente
-com `dop-api`, `dop-app` e `dop-cli`, todos componentes da plataforma.
+`Digital-Business-One/dop-infra`, private, a **submodule** at `repos/dop-infra` — consistent
+with `dop-api`, `dop-app` and `dop-cli`, all of them components of the platform.
 
-## 8. Verificação
+## 8. Verification
 
-O critério é assimétrico, como a entrega:
+The criterion is asymmetric, like the delivery:
 
-**Terraform** — `terraform fmt -check` e `terraform init -backend=false && terraform
-validate` passam no stack `platform`. Nada é aplicado.
+**Terraform** — `terraform fmt -check` and `terraform init -backend=false && terraform validate`
+pass on the `platform` stack. Nothing is applied.
 
-**Local** — o overlay sobe num k3s real e os três componentes respondem:
+**Local** — the overlay comes up on a real k3s and the three components answer:
 
-0. A guarda de contexto **recusa** executar quando o contexto ativo não é
-   `k3d-dop-local` — testado deliberadamente antes de qualquer outra coisa.
-1. `make up` (guarda de contexto + `kubectl apply -k`) deixa os pods `Running`.
-2. O emulador Firebase Auth responde na 9099.
-3. O MinIO aceita criação de bucket.
-4. O MongoDB aceita conexão e um `ping`.
-5. `make down` remove o namespace sem deixar resíduo; `make reset` apaga os PVCs.
+0. The context guard **refuses** to run when the active context is not `k3d-dop-local` — tested
+   deliberately before anything else.
+1. `make up` (the context guard + `kubectl apply -k`) leaves the pods `Running`.
+2. The Firebase Auth emulator answers on 9099.
+3. MinIO accepts creating a bucket.
+4. MongoDB accepts a connection and a `ping`.
+5. `make down` removes the namespace leaving no residue; `make reset` deletes the PVCs.
 
-## 9. Riscos e pendências
+## 9. Risks and open items
 
 | # | |
 |---|---|
-| R-1 | **Emulador de Auth não é Firebase.** Diferenças de comportamento aparecem sob autenticação federada e account linking — exatamente o que a spec de identidade exige desde o dia um. O emulador valida fluxo, não equivalência |
-| R-2 | **Imagem própria do emulador exige manutenção** — `firebase-tools` fixado envelhece e precisa de atualização deliberada |
-| R-3 | **Contexto de `kubectl` apontando para produção alheia.** O estado atual da máquina é exatamente esse. Mitigado pela guarda de §4.2, que é obrigatória em todo alvo |
-| R-4 | **k3d não é idêntico a um k3s nativo** em rede e armazenamento. Suficiente para as dependências desta spec; deixa de ser quando o plano de execução (P-4) entrar |
-| R-5 | **Terraform vazio por muito tempo apodrece.** Estrutura sem uso não é exercitada; quando os resources chegarem, a organização pode não servir. Mitigação: `validate` no CI desde já |
-| P-4 | Alvo de computação — Cloud Run × cluster. Bloqueia `modules/runtime-service/` |
-| SP-3 | Escolha do banco. Bloqueia `modules/data/` e confirma ou troca o MongoDB local |
+| R-1 | **The Auth emulator is not Firebase.** Behaviour differences show up under federated authentication and account linking — exactly what the identity spec requires from day one. The emulator validates the flow, not equivalence |
+| R-2 | **Our own emulator image requires maintenance** — a pinned `firebase-tools` ages and needs a deliberate update |
+| R-3 | **`kubectl`'s context pointing at somebody else's production.** The machine's current state is exactly that. Mitigated by §4.2's guard, which is mandatory in every target |
+| R-4 | **k3d is not identical to a native k3s** in networking and storage. Enough for this spec's dependencies; it stops being so when the execution plane (P-4) comes in |
+| R-5 | **Terraform empty for too long rots.** An unused structure is not exercised; when the resources arrive, the organization may not serve. The mitigation: `validate` in CI from now on |
+| P-4 | The compute target — Cloud Run × a cluster. It blocks `modules/runtime-service/` |
+| SP-3 | The choice of database. It blocks `modules/data/` and confirms or replaces the local MongoDB |

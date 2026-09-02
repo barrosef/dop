@@ -21,17 +21,17 @@ body:grpc {
   [
     {
       "project": { "id": "{{projectId}}" },
-      "query": "por que a consulta de pedidos está lenta",
+      "query": "why the orders query is slow",
       "limit": 5
     }
   ]
 }
 
 docs {
-  Busca na memória compartilhada do projeto. Com serviço de embedding ligado é
-  semântica (pgvector); sem ele, cai no caminho lexical por trigrama — e a
-  diferença é declarada, não silenciosa.
+  A search in the project's shared memory. With the embedding service on it is
+  semantic (pgvector); without it, it falls back to the lexical trigram path — and
+  the difference is declared, not silent.
 
-  Isolamento por conta é constraint: memória de outra conta não aparece, e o
-  filtro vem do CONTEXTO, não do chamador.
+  Isolation per account is a constraint: another account's memory does not show up,
+  and the filter comes from the CONTEXT, not from the caller.
 }

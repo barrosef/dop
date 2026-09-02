@@ -1,0 +1,30 @@
+meta {
+  name: Link a board to the project
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{bffUrl}}/api/v1/projects/{{projectId}}/task-manager
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "integration_id": "{{integrationId}}",
+    "external_space_id": "sp-901",
+    "external_project_id": "pj-42",
+    "card_types": ["bug", "feature"]
+  }
+}
+
+docs {
+  In the CORE, UpdateProject is a replacement: sending the project without the
+  fields you do not want to lose erases them. The edge reads the current project,
+  overlays only the link and resends it — which is why here you send only the board,
+  and the name, the description and the rules survive.
+
+  `card_types` comes from the provider and is dynamic: the platform imposes no card
+  vocabulary (ADR-0013).
+}

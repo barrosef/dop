@@ -28,11 +28,12 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  Resolve o fluxo efetivo pela cadeia `plataforma ◁ conta ◁ workspace ◁ projeto ◁
-  demanda` e **congela a versão** (ADR-0014). Mudança de fluxo acima não afeta
-  demanda em voo.
+  It resolves the effective flow along the chain `platform ◁ account ◁ workspace ◁
+  project ◁ demand` and **freezes the version** (ADR-0014). A change to a flow
+  above does not affect a demand in flight.
 }

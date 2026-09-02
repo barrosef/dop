@@ -1,101 +1,100 @@
-# Plataforma DOP — decomposição e estado
+# The DOP platform — decomposition and state
 
-Índice do projeto. Toda spec aponta para cá em vez de repetir o recorte.
+The project's index. Every spec points here instead of repeating the scope.
 
-## Subprojetos
+## Subprojects
 
-| | Subprojeto | Decide | Estado |
+| | Subproject | Decides | State |
 |---|---|---|---|
-| **SP-0** | Identidade, contas e tenancy | Quem é o usuário, o que é uma conta, como se possui e se isola, onde vivem as integrações, hierarquia conta → workspace → projeto | ✅ desenhado |
-| **SP-4** | Modelo de trabalho: specs e autonomia | O que a plataforma faz; o que substitui as etapas; onde o humano decide, aprova e dá contexto | ✅ desenhado — subsistemas (ADRs 0006–0012) + **núcleo fechado pela ADR-0014** (fluxo dinâmico tipado e herdável); resta P-8 (sintaxe dos critérios) |
-| **SP-1** | Topologia de componentes e repositórios | Quais componentes existem e o papel de cada um | ✅ desenhado — ADRs 0016–0020 + spec de arquitetura de backend |
-| **SP-3** | Modelo de domínio e persistência | Workspace, projeto, card, artefato, evento; banco | ✅ decidido — ADR-0018/0019 + schema na spec de backend |
-| **SP-2** | Contrato e protocolos | Fonte da verdade do contrato; REST, gRPC e streaming | ✅ decidido — ADR-0017 (proto); resta escrever os `.proto` |
-| **SP-5** | Runtime, ambiente e IDE | Terminal, execução paralela, implantação | ⬜ |
-| **SP-6** | Integração com o Claude | Agente, chat como canal de comando | ⬜ |
+| **SP-0** | Identity, accounts and tenancy | Who the user is, what an account is, how ownership and isolation work, where the integrations live, the account → workspace → project hierarchy | ✅ designed |
+| **SP-4** | The work model: specs and autonomy | What the platform does; what replaces the stages; where the human decides, approves and gives context | ✅ designed — subsystems (ADRs 0006–0012) + **the core closed by ADR-0014** (a dynamic, typed and inheritable flow); P-8 remains (the criteria's syntax) |
+| **SP-1** | Component and repository topology | Which components exist and each one's role | ✅ designed — ADRs 0016–0020 + the backend architecture spec |
+| **SP-3** | The domain model and persistence | Workspace, project, card, artifact, event; the database | ✅ decided — ADR-0018/0019 + the schema in the backend spec |
+| **SP-2** | Contract and protocols | The contract's source of truth; REST, gRPC and streaming | ✅ decided — ADR-0017 (proto); the `.proto` files remain to be written |
+| **SP-5** | Runtime, environment and IDE | The terminal, parallel execution, deployment | ⬜ |
+| **SP-6** | Integration with Claude | The agent, the chat as a command channel | ⬜ |
 
-**Ordem:** SP-0 → SP-4 → SP-1 → SP-3 → SP-2 → SP-5 → SP-6.
+**The order:** SP-0 → SP-4 → SP-1 → SP-3 → SP-2 → SP-5 → SP-6.
 
-SP-0 é o mais a montante: todo o resto opera dentro de uma conta. SP-4 vem logo depois
-porque define *o que a plataforma faz* — SP-3 e SP-2 existem para servir isso, e decidir
-schema ou contrato antes seria decidir no escuro.
+SP-0 is the furthest upstream: everything else operates inside an account. SP-4 comes right
+after because it defines *what the platform does* — SP-3 and SP-2 exist to serve that, and
+deciding a schema or a contract before would be deciding in the dark.
 
-## Documentos
+## Documents
 
-| Documento | Responde |
+| Document | Answers |
 |---|---|
-| [`GLOSSARIO.md`](GLOSSARIO.md) | O que cada palavra significa |
-| [`adr/`](adr/) | Por que cada decisão estruturante foi tomada |
-| [`superpowers/specs/`](superpowers/specs/) | Como cada subsistema é |
-| [`superpowers/plans/`](superpowers/plans/) | Em que ordem se constrói |
+| [`GLOSSARY.md`](GLOSSARY.md) | What each word means |
+| [`adr/`](adr/) | Why each structuring decision was taken |
+| [`superpowers/specs/`](superpowers/specs/) | What each subsystem is |
+| [`superpowers/plans/`](superpowers/plans/) | In which order it is built |
 
-## Faseamento do SP-0
+## SP-0's phasing
 
-**Modelo completo desde o primeiro dia, construção parcial.**
+**A complete model from day one, a partial construction.**
 
-**Nasce no schema agora, mesmo sem tela:** `Account` com `kind`, `Membership` com papel,
-`Integration` com `accountId`, tabela de concessões e `Invite`. Toda entidade de domínio
-carrega conta, workspace e projeto desde a primeira migração. A borda autentica toda
-chamada e resolve conta ativa desde a primeira rota.
+**Born in the schema now, even with no screen:** `Account` with `kind`, `Membership` with a
+role, `Integration` with an `accountId`, the grants table and `Invite`. Every domain entity
+carries account, workspace and project from the first migration. The edge authenticates every
+call and resolves an active account from the first route.
 
-**Constrói-se agora:** autenticação pelos quatro métodos, conta pessoal automática no
-cadastro, integrações pessoais com o `SecretStore` atrás da porta e os dois adaptadores,
-e a hierarquia workspace → projeto.
+**Built now:** authentication by the four methods, an automatic personal account at sign-up,
+personal integrations with the `SecretStore` behind the port and both adapters, and the
+workspace → project hierarchy.
 
-**Fica para a fase seguinte:** criação de organização, autofill por CNPJ, convite e
-vínculo de membros, edição de papéis e concessões, verificação de domínio, credencial de
-organização.
+**Left to the next phase:** creating an organization, the autofill by company registration
+number, inviting and linking members, editing roles and grants, domain verification, the
+organization credential.
 
-A fase 2 entra **sem migração** — é o que justifica modelar tudo agora. A fase 1 já
-exercita o multi-tenant de verdade, porque toda consulta filtra por conta desde o início;
-a conta simplesmente é sempre pessoal.
+Phase 2 comes in **with no migration** — that is what justifies modelling everything now.
+Phase 1 already exercises multi-tenancy for real, because every query filters by account from
+the start; the account simply is always personal.
 
-## Ordem combinada
+## The agreed order
 
-1. Terminar estrutura/arquitetura — **ferramentas do agente** (a peça que falta
-   para a plataforma executar em vez de só modelar) e **cockpit**.
-   O foco de provedor é **Anthropic**; a porta multi-provedor (ADR-0022)
-   permanece e o adaptador OpenAI existe, mas sem investimento agora.
-   Em seguida, **Claude Code hospedado** (P-25) como segunda frente.
-2. **Discussão** antes das user stories: comunicação (P-11), provisionamento de
-   sandbox (P-24) e o modelo de conta/cobrança do agente (P-23).
+1. Finish the structure/architecture — the **agent's tools** (the piece missing for the
+   platform to execute instead of only modelling) and the **cockpit**. The provider focus is
+   **Anthropic**; the multi-provider port (ADR-0022) stays and the OpenAI adapter exists, but
+   with no investment now. Next, **hosted Claude Code** (P-25) as the second front.
+2. **A discussion** before the user stories: communication (P-11), sandbox provisioning (P-24)
+   and the agent's account/billing model (P-23).
 3. User stories.
 
-## Pendências transversais
+## Cross-cutting open items
 
-Levantadas na revisão do SP-0, cada uma exigindo decisão própria e provável ADR:
+Raised in SP-0's review, each requiring its own decision and a probable ADR:
 
-| # | Pendência | Onde dói |
+| # | Open item | Where it hurts |
 |---|---|---|
-| ~~P-1~~ | **Resolvida pela ADR-0006** — auditoria é projeção do log de eventos da demanda | — |
-| P-2 | **Transições de `status` da integração** — quem detecta `expired`, com que frequência, o que acontece com trabalho em andamento | SP-0 integrações + SP-5 execução |
-| P-3 | **LGPD** — retenção, exclusão e residência, com CPF e CNPJ no escopo | Transversal; afeta exclusão de conta |
-| ~~P-4~~ | **Resolvida** — plano de controle no Cloud Run; plano de execução em cluster (GKE/k3s). Spec de arquitetura de backend §1 | — |
-| P-5 | **Custo da renomeação** *workspace → projeto* em código, rotas, i18n, mocks e documentação | Execução; vira tarefa de plano |
-| P-6 | **Recuperação de organização órfã não verificada** — sem domínio provado, não há evidência disponível para reivindicar posse | SP-0 identidade |
-| P-7 | **Calibrar o ModelRouter** — a tabela tarefa→(modelo, effort) da ADR-0011 nasce como palpite informado; calibra com telemetria real (F-7) e com os campos de cache dos eventos de custo | ADR-0011/0012 |
-| P-8 | **Sintaxe dos critérios executáveis** dentro do artefato `spec` — a ADR-0007 fixa a exigência e a ADR-0014 fixa onde vivem | spec de fluxo |
-| P-9 | **⭐ Compartilhamento externo de fluxos** (entre contas / catálogo comunitário) — **estratégica**: aguarda, não dorme; candidata a motor de popularização da plataforma. Revisitar a cada ciclo de planejamento | ADR-0014 §7 |
-| ~~P-11~~ | **E-mail entregue — ADR-0025.** Gatilho separado do canal, `Mailer` com SendGrid e SMTP, resumo de atenção com atraso. **SMS e push seguem fora**: entram como portas próprias (`Pusher`, `SMSer`) quando houver, porque canais não têm a mesma forma | — |
-| P-12 | **Campo `ctx` sem efeito nos protos** — toda requisição declara `CallContext ctx = 1`, e o servidor ignora: autoriza só pela metadata (ADR-0017, conv. 5). Contrato que declara campo sem efeito ensina o errado a quem lê. Remover em passe dedicado, reservando o número 1 | ADR-0017; toca os 10 protos |
-| P-13 | **Emulador de Storage pendura com `application/json`** e cai sob ~16 operações simultâneas — guardar JSON no object store trava o ambiente local. Achado pela suíte de contrato do ObjectStore; não é defeito do adaptador (o de arquivos passa nos 13 subtestes). Decidir entre esperar correção do emulador, gravar JSON com outro Content-Type, ou usar `uploadType=multipart` | dop-infra/docs/ambiente-local.md |
-| ~~P-14~~ | **Resolvida** — Dois adaptadores (GitHub e GitLab) com suíte de contrato, e o provedor resolvido POR REPOSITÓRIO (ADR-0013), não no boot | — |
-| ~~P-15~~ | **Resolvida** — Launcher confere os isolamentos no boot e recusa subir sem saber; varredura de ociosos ligada ao scheduler | — |
-| P-16 | **Artefato por etapa** — sem armazenamento de artefato, a spec fica fora do pacote de contexto (o pacote perde a spec, não fica incorreto) e o `ValidateFlow` não consegue exigir artefato de verdade | ADR-0014; domínios workflow/demand/knowledge |
-| P-17 | **Emulador PRÓPRIO do Secret Manager** — hoje usamos um da comunidade (13 estrelas, mantenedor único), fixado por digest e isolado por NetworkPolicy. Decisão do dono: destravar agora, trocar pelo nosso depois. Escrito dos protos oficiais do googleapis, ~200 linhas, como já fazemos com a imagem do emulador do Firebase | dop-infra |
-| P-18 | **Autenticar o chamador entre BFF e núcleo** — o núcleo confia em `x-actor-id`/`x-account-id` da metadata (ADR-0016). A NetworkPolicy faz a suposição valer, mas não é o mesmo que autenticar. Sandboxes rodam código de agente no mesmo cluster | dop-core + dop-infra; ADR-0016 |
-| ~~P-19~~ | **Parcialmente resolvida** — `ListFindings`, `Contributors`/`Origins`, `dropped` e `currency` entraram no contrato. Resta a **consulta de evidência de verde**: `Evidence.Missing()` existe no domínio, mas `DeliveryService` não expõe, então a tela do PR não mostra o pacote que a ADR-0007 §4 exige | dop-core |
-| ~~P-20~~ | **Resolvida** — Os quatro contornos saíram; o do `dropped` estava QUEBRADO, não funcionando | — |
-| ~~P-21~~ | **Resolvida** — Caixa na borda, reusando o SSE existente; `AttentionUpdate` ganhou `event_id` para a retomada | — |
-| ~~P-22~~ | **Resolvida** — Virou TESTE: varre `app/` atrás de cofre, chave de provedor e SDK de modelo | — |
-| P-23 | **⭐ De quem é a conta do agente — e quem paga o quê.** **Termos da Anthropic VERIFICADOS em 2026-08-31** (`code.claude.com/docs/en/legal-and-compliance`), e eles fecham metade das opções: (a) **OAuth na conta do usuário — PROIBIDO.** *"Anthropic does not permit third-party developers to offer Claude.ai login into their own applications, or to route requests through Free, Pro, or Max plan credentials on behalf of their users"*, e *"developers may not collect, store, or intermediate Claude.ai credentials or session tokens"*. (b) **Revenda por conta enterprise do DOP — PROIBIDO.** *"Customers may not pay for, resell, or intermediate Claude usage on their end users' behalf. Each end user must authenticate with their own Anthropic API key, Claude subscription plan credentials, or 3P inference provider credential"*. (c) **BYOK — PERMITIDO, e descrito quase literalmente como o que já construímos**: *"configuring an API key in a development environment, secrets manager, or machine image for use by the customer's own authorized users — provided the resulting usage is billed to the key owner"*. (d) **Hospedar o Claude Code no sandbox e o usuário assinar com a própria assinatura — PERMITIDO com condições**: binário NÃO modificado, nenhum método de autenticação removido, sem pagar/revender/intermediar, e restrição de marca (não usar o nome nas nossas telas). **Falta verificar os termos dos OUTROS fornecedores** antes de generalizar | **discussão**, antes das user stories |
-| ~~P-24~~ | **Decidida — ADR-0024.** microVM por DEMANDA (não por thread: as threads de uma demanda são agentes da mesma conta, e a fronteira dura é entre contas e demandas), com **um worktree compartilhado**, e **pod efêmero por execução de verificação**. Fica em aberto só o GATILHO do provisionamento — hoje é chamada explícita | — |
-| P-25 | **⭐ Claude Code hospedado no sandbox** — a segunda frente decidida, depois do caminho de API. O sandbox roda o binário e o usuário assina com a PRÓPRIA assinatura, pelo fluxo da Anthropic: resolve o "pago duas vezes" sem intermediar credencial. Condições dos termos, verificadas: binário **não modificado**, nenhum método de autenticação removido ou restringido, sem pagar/revender/intermediar uso, e **restrição de marca** — dá para dizer em texto simples que o produto roda Claude Code, mas não usar o nome nem o logo no nome do nosso produto, no nosso logo, nem de forma que sugira parceria. Consequência de arquitetura: o **laço de ferramentas passa a ser do Claude Code**, não nosso — os dois modelos de execução convivem, e é isso que permite comparar na prática qual serve melhor | após o caminho de API |
-| P-26 | **Gatilho de provisionamento** — o que sobrou de P-24. Hoje o sandbox sobe por chamada explícita. A opção discutida foi provisionar quando a demanda entra numa etapa cujo TIPO exige execução (`implementação`, `teste`), o que faria demanda parada na aprovação da spec nunca acender ambiente | ADR-0024 |
-| P-27 | **Ambiente de verificação efêmero** — a ADR-0024 decidiu, falta construir: pod por execução, montado a partir de um COMMIT, com Service e Ingress próprios e vida só durante o teste. Implica o agente commitar antes de verificar, e `EndpointURL` precisa de endereço por EXECUÇÃO — hoje ele é por demanda, e duas verificações da mesma demanda colidiriam | dop-core + dop-infra |
-| P-28 | **Validar o isolamento `hardware`** — o k3d não tem RuntimeClass de Kata, então a suíte prova só `namespace`. A recusa é honesta hoje (pedir hardware onde não há dá erro, não isolamento menor), mas o caminho de microVM nunca foi exercitado | dop-infra |
-| P-29 | **⭐ Reação a evento como DADO, não como código** — hoje cada consumidor decide em Go o que fazer quando um evento chega (`attention.Apply` é um `switch`). O dono do produto quer que a reatividade seja uma ESTRUTURA DE DADOS mapeando evento → ação(ões), e que as ações não sejam só e-mail: disparar outros processos também. Discussão adiada de propósito; o que já foi acordado é que a comunicação nasça no formato que essa mudança vai exigir — decisor separado do executor, ação endereçável por nome, e chave de idempotência derivada de (evento, regra, ação) e não só do evento | **discussão**, depois da comunicação |
-| ~~P-30~~ | ~~**O convite não leva link de aceite**~~ — **RESOLVIDO** pela ADR-0026: o convite deixou de ter token. O `id` da linha viaja em texto claro porque não concede nada sozinho — o aceite exige que o e-mail VERIFICADO da sessão seja o do convite. O e-mail agora leva `/convites/{invite_id}`. Fechou de quebra um buraco independente: antes, qualquer usuário autenticado de posse do link entrava na conta | ✅ ADR-0026 |
-| P-31 | **Assunto trocado entre tipos de notificação não é detectável** — dois textos escritos por gente, trocados entre si, passam em qualquer teste. A redundância que resolveria seria o assunto morar DENTRO do template, o que o SendGrid não permite enquanto guardar assunto separado do corpo. Fica como limite conhecido | dop-core |
-| P-32 | **Não existe caminho de aceite de convite** — `identity.AcceptInvite` existe e está coberto, mas nada chega nele: o BFF não expõe rota e o cockpit não tem a tela `/convites/:id` para onde o e-mail aponta. Hoje o link do convite leva a 404. Precisa de rota no BFF, tela no cockpit e das duas recusas com texto próprio (e-mail não verificado × convite de outra pessoa) | dop-api + dop-app; ADR-0026 |
-| P-10 | **Explorar o Overview** — forma final do nível acima do task header; já definido: item Arquitetura do projeto (análises gerais sob demanda: stacks, integrações, forças/fraquezas, propostas de melhoria em diagramas e gráficos) | spec de navegação §3 |
+| ~~P-1~~ | **Resolved by ADR-0006** — auditing is a projection of the demand's event log | — |
+| P-2 | **The integration's `status` transitions** — who detects `expired`, how often, what happens to work in progress | SP-0 integrations + SP-5 execution |
+| P-3 | **Data protection law** — retention, deletion and residency, with personal and company registration numbers in scope | Cross-cutting; it affects account deletion |
+| ~~P-4~~ | **Resolved** — the control plane on Cloud Run; the execution plane on a cluster (GKE/k3s). The backend architecture spec §1 | — |
+| P-5 | **The cost of the *workspace → project* renaming** in code, routes, i18n, mocks and documentation | Execution; it becomes a task in a plan |
+| P-6 | **Recovering an unverified orphaned organization** — with no proven domain, there is no evidence available to claim ownership | SP-0 identity |
+| P-7 | **Calibrating the ModelRouter** — ADR-0011's task→(model, effort) table is born as an informed guess; it is calibrated with real telemetry (F-7) and with the cost events' cache fields | ADR-0011/0012 |
+| P-8 | **The syntax of the executable criteria** inside the `spec` artifact — ADR-0007 fixes the requirement and ADR-0014 fixes where they live | the workflow spec |
+| P-9 | **⭐ External sharing of flows** (between accounts / a community catalogue) — **strategic**: it waits, it does not sleep; a candidate engine for popularizing the platform. Revisit every planning cycle | ADR-0014 §7 |
+| ~~P-11~~ | **E-mail delivered — ADR-0025.** The trigger separated from the channel, a `Mailer` with SendGrid and SMTP, an attention digest with a delay. **SMS and push stay out**: they come in as ports of their own (`Pusher`, `SMSer`) when they exist, because channels do not have the same shape | — |
+| P-12 | **The `ctx` field with no effect in the protos** — every request declares `CallContext ctx = 1`, and the server ignores it: it authorizes only by the metadata (ADR-0017, convention 5). A contract that declares a field with no effect teaches the wrong thing to whoever reads it. Remove it in a dedicated pass, reserving number 1 | ADR-0017; it touches all 10 protos |
+| P-13 | **The Storage emulator hangs with `application/json`** and falls over at around 16 concurrent operations — keeping JSON in the object store locks up the local environment. Found by the ObjectStore contract suite; it is not the adapter's defect (the file one passes all 13 subtests). Decide between waiting for a fix in the emulator, writing JSON with another Content-Type, or using `uploadType=multipart` | dop-infra/docs/local-environment.md |
+| ~~P-14~~ | **Resolved** — two adapters (GitHub and GitLab) with a contract suite, and the provider resolved PER REPOSITORY (ADR-0013), not at boot | — |
+| ~~P-15~~ | **Resolved** — the launcher checks the isolations at boot and refuses to come up without knowing; the idle sweep is wired to the scheduler | — |
+| P-16 | **An artifact per stage** — with no artifact storage, the spec stays out of the context package (the package loses the spec, it does not become incorrect) and `ValidateFlow` cannot really require an artifact | ADR-0014; the workflow/demand/knowledge domains |
+| P-17 | **OUR OWN Secret Manager emulator** — today we use a community one (13 stars, a single maintainer), pinned by digest and isolated by a NetworkPolicy. The owner's decision: unblock now, swap for ours later. Written from googleapis' official protos, ~200 lines, as we already do with the Firebase emulator's image | dop-infra |
+| P-18 | **Authenticating the caller between the BFF and the core** — the core trusts the metadata's `x-actor-id`/`x-account-id` (ADR-0016). The NetworkPolicy makes the assumption hold, but that is not the same as authenticating. Sandboxes run agent code in the same cluster | dop-core + dop-infra; ADR-0016 |
+| ~~P-19~~ | **Partly resolved** — `ListFindings`, `Contributors`/`Origins`, `dropped` and `currency` entered the contract. What remains is the **query for the evidence of green**: `Evidence.Missing()` exists in the domain, but `DeliveryService` does not expose it, so the PR's screen does not show the package ADR-0007 §4 requires | dop-core |
+| ~~P-20~~ | **Resolved** — the four workarounds are out; the `dropped` one was BROKEN, not working | — |
+| ~~P-21~~ | **Resolved** — the box at the edge, reusing the existing SSE; `AttentionUpdate` gained an `event_id` for the resume | — |
+| ~~P-22~~ | **Resolved** — it became a TEST: it sweeps `app/` for a vault, a provider key and a model SDK | — |
+| P-23 | **⭐ Whose the agent's account is — and who pays for what.** **Anthropic's terms VERIFIED on 2026-08-31** (`code.claude.com/docs/en/legal-and-compliance`), and they close half the options: (a) **OAuth on the user's account — FORBIDDEN.** *"Anthropic does not permit third-party developers to offer Claude.ai login into their own applications, or to route requests through Free, Pro, or Max plan credentials on behalf of their users"*, and *"developers may not collect, store, or intermediate Claude.ai credentials or session tokens"*. (b) **Reselling through DOP's enterprise account — FORBIDDEN.** *"Customers may not pay for, resell, or intermediate Claude usage on their end users' behalf. Each end user must authenticate with their own Anthropic API key, Claude subscription plan credentials, or 3P inference provider credential"*. (c) **BYOK — ALLOWED, and described almost literally as what we have already built**: *"configuring an API key in a development environment, secrets manager, or machine image for use by the customer's own authorized users — provided the resulting usage is billed to the key owner"*. (d) **Hosting Claude Code in the sandbox with the user signing in with their own subscription — ALLOWED with conditions**: an UNMODIFIED binary, no authentication method removed, no paying/reselling/intermediating, and a branding restriction (not using the name in our screens). **The OTHER vendors' terms still have to be checked** before generalizing | **a discussion**, before the user stories |
+| ~~P-24~~ | **Decided — ADR-0024.** A microVM per DEMAND (not per thread: a demand's threads are agents of the same account, and the hard boundary is between accounts and demands), with **one shared worktree**, and an **ephemeral pod per verification run**. Only the provisioning TRIGGER stays open — today it is an explicit call | — |
+| P-25 | **⭐ Claude Code hosted in the sandbox** — the second front decided, after the API path. The sandbox runs the binary and the user signs in with their OWN subscription, through Anthropic's flow: it solves the "paying twice" problem without intermediating a credential. The terms' conditions, verified: an **unmodified** binary, no authentication method removed or restricted, no paying/reselling/intermediating usage, and a **branding restriction** — we may say in plain text that the product runs Claude Code, but not use the name or the logo in our product's name, in our logo, or in a way that suggests a partnership. An architectural consequence: the **tool loop becomes Claude Code's**, not ours — the two execution models coexist, and that is what allows comparing in practice which one serves better | after the API path |
+| P-26 | **The provisioning trigger** — what was left of P-24. Today the sandbox comes up on an explicit call. The option discussed was provisioning when the demand enters a stage whose TYPE requires execution (`implementation`, `test`), which would mean a demand parked at the spec's approval never lights up an environment | ADR-0024 |
+| P-27 | **The ephemeral verification environment** — ADR-0024 decided it, it remains to be built: a pod per run, built from a COMMIT, with its own Service and Ingress and a life lasting only the test. It implies the agent commits before verifying, and `EndpointURL` needs an address per RUN — today it is per demand, and two verifications of the same demand would collide | dop-core + dop-infra |
+| P-28 | **Validating the `hardware` isolation** — k3d has no Kata RuntimeClass, so the suite only proves `namespace`. The refusal is honest today (asking for hardware where there is none gives an error, not a lesser isolation), but the microVM path has never been exercised | dop-infra |
+| P-29 | **⭐ Reaction to an event as DATA, not as code** — today each consumer decides in Go what to do when an event arrives (`attention.Apply` is a `switch`). The product owner wants the reactivity to be a DATA STRUCTURE mapping event → action(s), and the actions not to be only e-mail: triggering other processes too. The discussion is deliberately deferred; what has already been agreed is that the communication is born in the shape that change will require — the decider separated from the executor, an action addressable by name, and an idempotency key derived from (event, rule, action) and not from the event alone | **a discussion**, after communication |
+| ~~P-30~~ | ~~**The invite carries no acceptance link**~~ — **RESOLVED** by ADR-0026: the invite stopped having a token. The row's `id` travels in plain text because on its own it grants nothing — acceptance requires the session's VERIFIED e-mail to be the invite's. The e-mail now carries `/invites/{invite_id}`. It closed an independent hole into the bargain: before, any authenticated user holding the link got into the account | ✅ ADR-0026 |
+| P-31 | **A subject swapped between notification kinds is not detectable** — two texts written by people, swapped with each other, pass any test. The redundancy that would solve it would be the subject living INSIDE the template, which SendGrid does not allow while it keeps the subject separate from the body. It stays as a known limit | dop-core |
+| P-32 | **There is no invite acceptance path** — `identity.AcceptInvite` exists and is covered, but nothing reaches it: the BFF exposes no route and the cockpit has no `/invites/:id` screen for the e-mail to point at. Today the invite's link leads to a 404. It needs a route in the BFF, a screen in the cockpit and the two refusals with their own text (an unverified e-mail × somebody else's invite) | dop-api + dop-app; ADR-0026 |
+| P-10 | **Exploring the Overview** — the final shape of the level above the task header; already defined: a Project architecture item (general analyses on demand: stacks, integrations, strengths/weaknesses, improvement proposals in diagrams and charts) | the navigation spec §3 |

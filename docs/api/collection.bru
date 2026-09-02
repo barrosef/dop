@@ -11,63 +11,64 @@ auth:bearer {
 }
 
 script:pre-request {
-  // Conta ativa em toda chamada: requisição sem ela é inválida (SP-0).
+  // The active account on every call: a request without it is invalid (SP-0).
   const account = bru.getEnvVar("accountId");
   if (account) req.setHeader("x-account-id", account);
 }
 
 docs {
-  # DOP — coleções de API
+  # DOP — the API collections
 
-  ## Como esta árvore é organizada
+  ## How this tree is organized
 
-  Toda pasta e todo arquivo começa com um índice de dois dígitos, e a ordem é a
-  de EXECUÇÃO, não a alfabética — ver `README.md` ao lado. Em `identity`,
-  `ensure-user` vem antes de `list-accounts` porque não há conta para listar
-  antes do primeiro login.
+  Every folder and every file starts with a two-digit index, and the order is the
+  EXECUTION order, not the alphabetical one — see the `README.md` next to it. In
+  `identity`, `ensure-user` comes before `list-accounts` because there is no
+  account to list before the first sign-in.
 
-  Duas superfícies, dois protocolos (ADR-0016):
+  Two surfaces, two protocols (ADR-0016):
 
-  - **dop-api-rest** — REST do BFF, consumido pelo cockpit
-  - **dop-api-grpc** — gRPC do BFF: MESMOS casos de uso, outro transporte
-  - **dop-core-grpc** — gRPC do núcleo, consumido pelo BFF, pelo CLI e pelos agentes
+  - **dop-api-rest** — the BFF's REST, consumed by the cockpit
+  - **dop-api-grpc** — the BFF's gRPC: the SAME use cases, another transport
+  - **dop-core-grpc** — the core's gRPC, consumed by the BFF, the CLI and the agents
 
-  As duas primeiras chamam exatamente o mesmo código no BFF — há teste de
-  paridade que quebra se alguém reimplementar um caso de uso numa das pontas.
+  The first two call exactly the same code in the BFF — there is a parity test that
+  breaks if somebody reimplements a use case at one of the ends.
 
-  ## Como cada superfície identifica quem chama
+  ## How each surface identifies the caller
 
-  No **REST** e no **gRPC do BFF** a identidade vem do token
-  (`authorization: Bearer`), e a conta ativa do metadado `x-account-id`. O BFF
-  não confia em nada que venha no corpo: conta ativa é seletor de interface,
-  não campo que o cliente possa forjar dentro da mensagem.
+  In **REST** and in the **BFF's gRPC** the identity comes from the token
+  (`authorization: Bearer`), and the active account from the `x-account-id`
+  metadata. The BFF trusts nothing that comes in the body: the active account is an
+  interface selector, not a field the client can forge inside the message.
 
-  No **gRPC do núcleo** não há token: o núcleo confia no BFF. Quem chama e em
-  qual conta vão na **metadata** — `x-actor-id` e `x-account-id` — e cada
-  requisição da coleção traz esse bloco (ADR-0017, conv. 5). As mensagens ainda
-  declaram um campo `ctx`, resquício de uma tentativa anterior: o servidor o
-  **ignora**, e usá-lo dá a falsa impressão de estar escopando a chamada.
+  In the **core's gRPC** there is no token: the core trusts the BFF. Who is calling
+  and in which account go in the **metadata** — `x-actor-id` and `x-account-id` —
+  and every request in the collection carries that block (ADR-0017, convention 5).
+  The messages still declare a `ctx` field, a remnant of an earlier attempt: the
+  server **ignores** it, and using it gives the false impression of scoping the
+  call.
 
-  Preencha `actorId` e `accountId` no ambiente com o que `EnsureUser` e
-  `ListAccounts` devolverem — `EnsureUser` é a única que roda sem os dois, por
-  ser justamente o primeiro login.
+  Fill in `actorId` and `accountId` in the environment with what `EnsureUser` and
+  `ListAccounts` return — `EnsureUser` is the only one that runs without both,
+  being precisely the first sign-in.
 
-  ## O que ainda não responde
+  ## What it does not answer yet
 
-  As requisições em `dop-core-grpc/demand/` documentam contrato já fechado, mas
-  o `DemandService` ainda não está registrado no servidor: elas devolvem
-  `Unimplemented`. Estão aqui porque o contrato é a fonte da verdade (ADR-0017)
-  e o cliente pode ser escrito contra ele antes do servidor existir.
+  The requests in `dop-core-grpc/demand/` document a contract that is already
+  closed, but `DemandService` is not registered in the server yet: they return
+  `Unimplemented`. They are here because the contract is the source of truth
+  (ADR-0017) and the client can be written against it before the server exists.
 
-  ## Como obter um token no ambiente local
+  ## How to get a token in the local environment
 
-  Rode a requisição `health/emulador-signup` (ou `signin`) da coleção REST: ela
-  fala com o emulador do Firebase Auth e grava `idToken` no ambiente
-  automaticamente. Todas as demais requisições já saem autenticadas.
+  Run the `health/emulator-signup` (or `signin`) request of the REST collection: it
+  talks to the Firebase Auth emulator and writes `idToken` into the environment
+  automatically. Every other request comes out authenticated.
 
-  ## Portas
+  ## Ports
 
-  Para alcançar o cluster a partir da máquina:
+  To reach the cluster from the machine:
 
   ```
   kubectl port-forward -n dop-local svc/dop-api  8000:8000
@@ -75,7 +76,7 @@ docs {
   kubectl port-forward -n dop-local svc/dop-core 9090:9090
   ```
 
-  Os **emuladores** dispensam port-forward: respondem pelo loadbalancer do k3d,
-  em `http://auth.localtest.me:8080` e `http://storage.localtest.me:8080`.
-  Prefira esse caminho — o port-forward cai sob rajada de conexões.
+  The **emulators** need no port-forward: they answer through k3d's load balancer,
+  at `http://auth.localtest.me:8080` and `http://storage.localtest.me:8080`. Prefer
+  that path — a port-forward drops under a burst of connections.
 }

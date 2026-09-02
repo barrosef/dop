@@ -1,5 +1,5 @@
 meta {
-  name: CreateThread — lançar subagente
+  name: CreateThread — launch a subagent
   type: grpc
   seq: 2
 }
@@ -23,7 +23,7 @@ body:grpc {
       "demand_id": "dem-1",
       "key": "forense-db",
       "card": {
-        "purpose": "Análise forense do banco: divergência na parcela 12",
+        "purpose": "A forensic reading of the database: a divergence in instalment 12",
         "tools": ["mcp:mysql"],
         "model": "claude-haiku-4-5",
         "effort": "medium",
@@ -35,13 +35,14 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  Lança um subagente com ficha própria: propósito, ferramentas, modelo e fatia
-  do orçamento (ADR-0010).
+  It launches a subagent with its own card: purpose, tools, model and a slice of
+  the budget (ADR-0010).
 
-  O modelo vem do cardápio das integrações de agente da conta; quem escolhe é o
-  `ModelRouter` (ADR-0011). Thread própria — sem misturar timelines.
+  The model comes from the menu of the account's agent integrations; the one who
+  chooses is the `ModelRouter` (ADR-0011). Its own thread — no mixed timelines.
 }

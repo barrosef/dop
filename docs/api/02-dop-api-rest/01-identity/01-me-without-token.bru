@@ -1,0 +1,20 @@
+meta {
+  name: me — with no token (401)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{bffUrl}}/api/v1/me
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  A negative proof: a route not marked `@public` refuses whoever has not
+  authenticated.
+}

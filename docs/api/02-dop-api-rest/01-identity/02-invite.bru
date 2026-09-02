@@ -1,0 +1,32 @@
+meta {
+  name: Invite to the active account
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{bffUrl}}/invites
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "pessoa@empresa.com",
+    "role": "developer",
+    "grants": []
+  }
+}
+
+docs {
+  It requires the owner or admin role in the active account.
+
+  **The invite has NO token.** The `id` in the response is what the e-mail's link
+  carries, and it grants nothing on its own: acceptance requires the VERIFIED
+  e-mail of whoever is signed in to be the invite's. That is what allowed the id to
+  travel in plain text in the event, in the timeline and in the e-mail — before, a
+  bearer token turned any log read into a valid invite.
+
+  `grants` goes up empty on purpose: a resource grant has no default (ADR-0013).
+  Whoever invites decides what to share, explicitly.
+}

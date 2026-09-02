@@ -20,7 +20,7 @@ metadata {
 body:grpc {
   [
     {
-      "subject": "sub-do-emulador",
+      "subject": "emulator-subject",
       "email": "dev@dop.local",
       "email_verified": true,
       "name": "Dev Local",
@@ -31,12 +31,13 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  Idempotente por desenho: é chamada em TODO primeiro login. Repetir com a mesma
-  `idempotency_key` devolve o mesmo usuário, sem duplicar (ADR-0017).
+  Idempotent by design: it is called on EVERY first sign-in. Repeating it with the
+  same `idempotency_key` returns the same user, with no duplicate (ADR-0017).
 
-  O `subject` é o do principal normalizado — não o `uid` cru do Firebase.
+  The `subject` is the normalized principal's — not Firebase's raw `uid`.
 }

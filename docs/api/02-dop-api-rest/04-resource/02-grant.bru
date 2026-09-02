@@ -1,0 +1,28 @@
+meta {
+  name: Grant access to a resource
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{bffUrl}}/api/v1/grants
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resource_id": "{{integrationId}}",
+    "user_id": "{{granteeId}}",
+    "level": "use"
+  }
+}
+
+docs {
+  It requires owner or admin. `level` accepts only `use` or `manage` — the edge
+  refuses any other value with a 422, before spending a trip to the core.
+
+  A resource with a credential is CLOSED by default: with no explicit grant nobody
+  beyond owner/admin sees it. Content (a skill, a flow) is open within the
+  organization, but changing it requires a grant (ADR-0013).
+}

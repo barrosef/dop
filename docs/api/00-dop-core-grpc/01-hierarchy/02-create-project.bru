@@ -22,17 +22,18 @@ body:grpc {
     {
       "workspace": { "id": "{{workspaceId}}" },
       "name": "Cockpit",
-      "description": "Projeto de exemplo",
+      "description": "An example project",
       "idempotency_key": "{{$guid}}"
     }
   ]
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5).
 
-  A criação é enxuta de propósito: repositórios, recursos e o vínculo com o
-  quadro entram por `UpdateProject`. A conta NÃO é informada — ela é herdada do
-  workspace, e deixar o chamador informá-la seria abrir caminho para projeto
-  nascer numa conta que não é a do seu workspace.
+  The creation is lean on purpose: repositories, resources and the link to the
+  board come in through `UpdateProject`. The account is NOT given — it is
+  inherited from the workspace, and letting the caller give it would open the way
+  for a project to be born in an account that is not its workspace's.
 }

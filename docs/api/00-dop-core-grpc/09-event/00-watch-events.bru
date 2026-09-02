@@ -26,16 +26,16 @@ body:grpc {
 }
 
 docs {
-  Streaming ao vivo dos eventos da conta — é daqui que saem a timeline e a
-  caixa de atenção.
+  Live streaming of the account's events — it is where the timeline and the
+  attention box come from.
 
-  `since_event_id` vazio traz só o que vier daqui pra frente. Preenchido, o
-  núcleo DRENA o log a partir daquele ponto e emenda com o ao vivo, sem buraco
-  e sem duplicata.
+  An empty `since_event_id` brings only what comes from here on. Filled in, the
+  core DRAINS the log from that point and joins it to the live stream, with no gap
+  and no duplicate.
 
-  Isolamento por conta vale inclusive para evento com conta nula: ele não vai
-  para ninguém.
+  Isolation per account holds even for an event with a null account: it goes to
+  nobody.
 
-  Assinante lento cai com `Unavailable` e a instrução de reconectar com cursor
-  — um cliente que não consome não pode travar os outros.
+  A slow subscriber is dropped with `Unavailable` and the instruction to reconnect
+  with a cursor — a client that does not consume cannot block the others.
 }

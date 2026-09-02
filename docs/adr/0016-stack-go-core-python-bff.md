@@ -1,57 +1,57 @@
-# ADR-0016 — Núcleo em Go, BFF em Python, e a fronteira entre eles
+# ADR-0016 — A core in Go, a BFF in Python, and the boundary between them
 
-- **Status:** Aceita
-- **Data:** 2026-08-30
-- **Refina:** [ADR-0001](0001-infraestrutura-atras-de-portas.md) · **Resolve:** F-14 (motor de agente atrás de porta)
+- **Status:** Accepted
+- **Date:** 2026-08-30
+- **Refines:** [ADR-0001](0001-infrastructure-behind-ports.md) · **Resolves:** F-14 (the agent engine behind a port)
 
-## Contexto
+## Context
 
-A plataforma tem duas naturezas de trabalho muito diferentes: **domínio, estado e
-transações** (identidade, recursos, fluxos, demandas, entrega, custo) e **conversa com
-modelos de IA** (sessões longas, streaming de tokens, ferramentas, embeddings). Forçar
-as duas no mesmo idioma cobra em algum lugar: gRPC e concorrência em Python são
-desconfortáveis; o ecossistema de agentes e embeddings em Go é raso.
+The platform has two very different natures of work: **domain, state and transactions**
+(identity, resources, flows, demands, delivery, cost) and **conversation with AI models**
+(long sessions, token streaming, tools, embeddings). Forcing both into the same language
+charges somewhere: gRPC and concurrency in Python are uncomfortable; the agent and embedding
+ecosystem in Go is shallow.
 
-## Decisão
+## Decision
 
-**`dop-core` em Go. `dop-api` (BFF) em Python.**
+**`dop-core` in Go. `dop-api` (the BFF) in Python.**
 
 | | dop-core (Go) | dop-api (Python) |
 |---|---|---|
-| Responsabilidade | domínio, estado, transações, eventos, orquestração | protocolo, sessão de agente, conversa com modelos |
-| Fala | gRPC (servidor) · Postgres · NATS · API do k8s | REST+SSE (app) · gRPC (CLI, sandbox) · **cliente gRPC do core** |
-| Modos | `serve` · `worker` · `sched` · `launcher` (um binário) | um processo ASGI |
+| Responsibility | domain, state, transactions, events, orchestration | protocol, agent session, conversation with models |
+| It speaks | gRPC (server) · Postgres · NATS · the k8s API | REST+SSE (the app) · gRPC (the CLI, the sandbox) · **the core's gRPC client** |
+| Modes | `serve` · `worker` · `sched` · `launcher` (one binary) | one ASGI process |
 
-**A fronteira, em uma regra: o BFF não tem banco.** Nenhuma conexão do Python ao
-Postgres — nem "só para uma consulta rápida". Dois donos do schema é como a fronteira
-morre. Quando o BFF precisa registrar algo, **chama o core**, que grava estado e evento
-na mesma transação.
+**The boundary, in one rule: the BFF has no database.** No connection from Python to
+Postgres — not even "just for a quick query". Two owners of the schema is how the boundary
+dies. When the BFF needs to record something, it **calls the core**, which writes state and
+event in the same transaction.
 
-**~~O `AgentRuntime` vive no BFF~~ — SUBSTITUÍDA pela [ADR-0023](0023-runtime-de-agente-no-nucleo.md): o runtime passou para o núcleo, porque a credencial do provedor não pode chegar à camada exposta à internet.** ~~O `AgentRuntime` vive no BFF~~ (ADR-0015 §7 do substrato): o core decide *o quê*
-(fluxo, ficha, orçamento, roteamento — ADR-0011); o BFF executa a conversa com o modelo
-e devolve eventos ao core. O sandbox fala **apenas com o BFF**, o que mantém a
-allowlist de egress mínima (F-10).
+**~~The `AgentRuntime` lives in the BFF~~ — REPLACED by [ADR-0023](0023-agent-runtime-in-the-core.md): the runtime moved to the core, because the provider's credential cannot reach the layer exposed to the internet.** ~~The `AgentRuntime` lives in the BFF~~ (the substrate's ADR-0015 §7): the core decides *what*
+(flow, card, budget, routing — ADR-0011); the BFF runs the conversation with the model and
+returns events to the core. The sandbox talks **only to the BFF**, which keeps the egress
+allowlist minimal (F-10).
 
-## Alternativas consideradas
+## Alternatives considered
 
-**Tudo em Python.** Continuidade com o repertório existente e um só idioma. Descartada
-para o núcleo: o core é servidor gRPC com consumidores de evento e um daemon de
-Kubernetes — trabalho em que Go é materialmente melhor (binário único, startup
-instantâneo no scale-to-zero, concorrência barata).
+**Everything in Python.** Continuity with the existing repertoire and a single language.
+Rejected for the core: the core is a gRPC server with event consumers and a Kubernetes
+daemon — work at which Go is materially better (a single binary, instant startup on
+scale-to-zero, cheap concurrency).
 
-**Tudo em Go.** Coerente no backend, mas o BFF perderia o ecossistema de IA (SDK de
-agente, embeddings, tokenização) — que é justamente o miolo do produto.
+**Everything in Go.** Coherent on the backend, but the BFF would lose the AI ecosystem (the
+agent SDK, embeddings, tokenization) — which is precisely the product's core.
 
-**TypeScript no backend inteiro** (um idioma com o frontend). Descartada pelo mesmo
-motivo: as bibliotecas de agente e embedding mais completas são Python.
+**TypeScript across the whole backend** (one language with the frontend). Rejected for the
+same reason: the most complete agent and embedding libraries are Python.
 
-## Consequências
+## Consequences
 
-- ➕ Cada peça no idioma em que o trabalho dela é natural.
-- ➕ A fronteira "core é dono do estado" força a arquitetura limpa por construção.
-- ➕ O sandbox tem um só interlocutor (BFF) — superfície de segurança menor.
-- ➖ Dois idiomas: dois toolchains, dois lint/test, dois pipelines de imagem.
-- ➖ Toda chamada do BFF ao core é rede — exige deadline, retry e idempotência
-  (o proto carrega `idempotency_key` em toda escrita).
-- ➖ Tipos duplicados nas duas pontas, mitigado por gerar ambos do mesmo proto
-  ([ADR-0017](0017-proto-como-fonte-da-verdade.md)).
+- ➕ Each piece in the language in which its work is natural.
+- ➕ The "the core owns the state" boundary forces a clean architecture by construction.
+- ➕ The sandbox has a single interlocutor (the BFF) — a smaller security surface.
+- ➖ Two languages: two toolchains, two lint/test setups, two image pipelines.
+- ➖ Every call from the BFF to the core is network — it requires a deadline, a retry and
+  idempotency (the proto carries an `idempotency_key` on every write).
+- ➖ Types duplicated at both ends, mitigated by generating both from the same proto
+  ([ADR-0017](0017-proto-as-source-of-truth.md)).

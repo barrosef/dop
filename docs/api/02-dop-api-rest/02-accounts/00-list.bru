@@ -1,0 +1,23 @@
+meta {
+  name: list accounts
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{bffUrl}}/api/v1/accounts
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  // Facilita o fluxo: adota a primeira conta como ativa.
+  if (Array.isArray(res.body) && res.body.length && !bru.getEnvVar("accountId")) {
+    bru.setEnvVar("accountId", res.body[0].id);
+  }
+}
+
+docs {
+  The user's accounts — personal and organizations. It feeds the cockpit's active
+  account selector.
+}

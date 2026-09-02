@@ -1,0 +1,35 @@
+meta {
+  name: Create a workspace
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{bffUrl}}/api/v1/workspaces
+  body: json
+  auth: inherit
+}
+
+headers {
+  Idempotency-Key: {{$guid}}
+}
+
+body:json {
+  {
+    "name": "Plataforma",
+    "key": "PLAT",
+    "description": "An example workspace",
+    "tags": ["ativo"]
+  }
+}
+
+docs {
+  It requires the owner or admin role: creating a workspace reorganizes the whole
+  account.
+
+  The key is short and UPPERCASE — it is what prefixes a demand's identifier, and
+  the core refuses any other form.
+
+  **A workspace is OUR concept.** The task provider's "space" is something else, and
+  it appears as `external_space_id` in the project's link.
+}

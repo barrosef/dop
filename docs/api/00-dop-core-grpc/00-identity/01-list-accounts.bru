@@ -26,10 +26,11 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  Toda RPC do domínio carrega `CallContext` — quem, em qual conta. A borda
-  preenche; o domínio confia (ADR-0016).
+  Every RPC of the domain carries a `CallContext` — who, in which account. The
+  edge fills it in; the domain trusts it (ADR-0016).
 }

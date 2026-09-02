@@ -1,5 +1,5 @@
 meta {
-  name: CreateResource — integração git
+  name: CreateResource — a git integration
   type: grpc
   seq: 1
 }
@@ -21,7 +21,7 @@ body:grpc {
   [
     {
       "kind": "KIND_INTEGRATION",
-      "name": "github-da-org",
+      "name": "org-github",
       "config": {
         "category": "git",
         "provider": "github",
@@ -33,14 +33,15 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  A categoria é uma string minúscula — `git`, `task_manager` ou `agent` — e não
-  um enum: quem manda no vocabulário de provedor é o provedor (ADR-0013).
+  The category is a lowercase string — `git`, `task_manager` or `agent` — and not
+  an enum: the one who rules the provider vocabulary is the provider (ADR-0013).
 
-  Cria a integração SEM credencial. O segredo entra por `SetCredential`, que o
-  grava no `SecretStore` e devolve apenas a REFERÊNCIA — o valor nunca volta
-  numa leitura (ADR-0001).
+  It creates the integration WITHOUT a credential. The secret comes in through
+  `SetCredential`, which writes it into the `SecretStore` and returns only the
+  REFERENCE — the value never comes back in a read (ADR-0001).
 }

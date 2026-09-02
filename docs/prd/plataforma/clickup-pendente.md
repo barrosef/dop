@@ -42,3 +42,54 @@ especificado — e a organização por épicos serviu justamente para expor isso
 
 Os épicos 06 (agentes), 07 (substrato), 10 (comunicação) e 13 (operação) ficaram com
 1 ou 2 histórias cada: são as áreas mais decididas nesta semana e as menos escritas.
+
+---
+
+## Dependência criada pela regra de idioma (2026-09-01)
+
+O `LinkPath` da tabela de notificação passou a ser **em inglês**:
+`/invites/{invite_id}` e `/attention`. As rotas do cockpit hoje estão em
+português (`/projetos`, `/demandas`, `/workspaces`) e precisam acompanhar —
+`/projects`, `/demands`, `/workspaces`, mais `/invites/:id` e `/attention`,
+que ainda não existem.
+
+Não há quebra hoje: as duas rotas que o e-mail aponta nunca existiram no
+cockpit (é o P-32). Mas quando a tela de aceite for construída, ela tem que
+nascer em `/invites/:id`, não em `/convites/:id` — senão o link do e-mail leva
+a 404 de novo, pelo motivo oposto.
+
+## i18n que exige mudança de contrato (registrado em 2026-09-01)
+
+A regra de i18n foi aplicada onde a mudança é ADITIVA e barata: `errs.Error`
+ganhou `Code`+`Params`, a caixa de atenção ganhou `TitleKey`+`Params` (migração
+0014), e as recusas de validação de hierarquia, identidade e recurso carregam
+chave.
+
+Ficaram DE FORA, porque exigem mudar o `.proto` e regerar os dois lados — é
+trabalho próprio, não tradução, e meter meio caminho deixaria campo decorativo:
+
+- **`workflow.Report`** — `Errors` e `Warnings` são `repeated string` no proto.
+  São as mensagens que a pessoa lê ao escrever um fluxo ("etapa X é de validação
+  humana e não tem portão"), e há ~15 delas. Precisa virar `Finding{key, params}`
+  no domínio e no contrato.
+- **`agent` — `Warnings`** de montagem de ficha, mesma forma.
+- **`workflow.Scope.Label()`** — devolve rótulo de tela ("plataforma", "conta").
+  Virou inglês na tradução; o rótulo em si é do cockpit, não do núcleo.
+- **`EffectiveFlow.ResolvedFrom`** — a frase do rastro ("projeto ◂ workspace ◂
+  conta — etapas: …") é montada no núcleo e exibida na tela. Ou vira dado
+  estruturado que o cockpit compõe, ou continua sendo frase pronta em um idioma.
+  A primeira é a certa.
+
+- **`agent.TruncationNotice`** — a frase que vai para a THREAD quando o contexto
+  veio truncado. É lida por gente, então deveria ser chave. Não é: ela viaja
+  como mensagem simples na thread, e transformá-la em chave exige dar forma
+  estruturada às mensagens. Traduzida para inglês; registrada aqui.
+
+- **Idioma da resposta do agente.** O contrato do runtime (`RuntimeContract`)
+  passou a ser inglês, porque é código. Para que isso não decidisse por efeito
+  colateral em que idioma o produto fala, o contrato ganhou uma linha explícita:
+  *"Write `reply` in the language of the conversation. These instructions are in
+  English because the code is; the person you are answering may not be."* É a
+  correção certa, mas vale confirmar que é o comportamento desejado — a
+  alternativa seria passar o locale do usuário como parâmetro, o que muda o
+  prefixo e o cache.

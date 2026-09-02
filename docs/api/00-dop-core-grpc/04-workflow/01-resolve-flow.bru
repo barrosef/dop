@@ -1,5 +1,5 @@
 meta {
-  name: ResolveFlow — a herança
+  name: ResolveFlow — the inheritance
   type: grpc
   seq: 2
 }
@@ -27,12 +27,12 @@ body:grpc {
 }
 
 docs {
-  O coração do domínio: a cadeia `plataforma ◁ conta ◁ workspace ◁ projeto ◁
-  demanda` resolvida (ADR-0014). O nível mais específico vence, e o resultado
-  diz DE ONDE cada etapa veio.
+  The domain's heart: the chain `platform ◁ account ◁ workspace ◁ project ◁ demand`
+  resolved (ADR-0014). The most specific level wins, and the result says WHERE each
+  stage came from.
 
-  Repare em `origins` e `contributors`: a procedência viaja ESTRUTURADA, além
-  da frase em `resolved_from`. A frase existe para log e mensagem de erro;
-  contrato que obriga o consumidor a interpretar texto quebra no dia em que
-  alguém melhora a redação.
+  Notice `origins` and `contributors`: the provenance travels STRUCTURED, beyond
+  the sentence in `resolved_from`. The sentence exists for a log and an error
+  message; a contract that forces the consumer to interpret text breaks on the day
+  somebody improves the wording.
 }

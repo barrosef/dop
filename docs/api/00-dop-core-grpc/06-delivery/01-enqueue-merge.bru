@@ -1,5 +1,5 @@
 meta {
-  name: EnqueueMerge — sem verde não entra
+  name: EnqueueMerge — no green, no entry
   type: grpc
   seq: 2
 }
@@ -28,12 +28,11 @@ body:grpc {
 }
 
 docs {
-  A ADR-0007 no ponto onde ela vale. Sem PR aberto, ou sem evidência de verde
-  do commit que o PR carrega, a resposta é `FailedPrecondition` listando ITEM
-  POR ITEM o que falta.
+  ADR-0007 at the point where it holds. With no open PR, or with no evidence of
+  green for the commit the PR carries, the answer is `FailedPrecondition` listing
+  ITEM BY ITEM what is missing.
 
-  A evidência não é booleano: é execução de verificação com commit, suíte,
-  contagens, sandbox e rastro de log. O parecer do crítico é uma execução como
-  as outras. Um "sem verde sem PR" que aceita um booleano do chamador não vale
-  nada.
+  The evidence is not a boolean: it is a verification run with a commit, a suite,
+  counts, a sandbox and a log trail. The critic's opinion is a run like the others.
+  A "no green, no PR" that accepts a boolean from the caller is worth nothing.
 }

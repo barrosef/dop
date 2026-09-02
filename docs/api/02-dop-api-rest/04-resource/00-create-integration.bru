@@ -1,0 +1,33 @@
+meta {
+  name: Create an integration
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{bffUrl}}/api/v1/resources
+  body: json
+  auth: inherit
+}
+
+headers {
+  Idempotency-Key: {{$guid}}
+}
+
+body:json {
+  {
+    "kind": "integration",
+    "name": "GitHub da org",
+    "config": {
+      "category": "git",
+      "provider": "github"
+    }
+  }
+}
+
+docs {
+  It creates it WITHOUT a credential — the secret comes in through the next request.
+
+  `category` is a lowercase string: `git`, `task_manager` or `agent`. The one who
+  rules the vocabulary is the provider, not the platform (ADR-0013).
+}

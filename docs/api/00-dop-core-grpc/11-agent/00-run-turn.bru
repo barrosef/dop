@@ -1,5 +1,5 @@
 meta {
-  name: RunTurn — o agente age
+  name: RunTurn — the agent acts
   type: grpc
   seq: 1
 }
@@ -22,7 +22,7 @@ body:grpc {
     {
       "demand_id": "{{demandId}}",
       "thread_id": "{{threadId}}",
-      "text": "por que a consulta de pedidos está lenta?",
+      "text": "why is the orders query slow?",
       "task_kind": "investigation",
       "resource_id": "{{agentResourceId}}",
       "idempotency_key": "{{$guid}}"
@@ -31,17 +31,18 @@ body:grpc {
 }
 
 docs {
-  Um turno do agente. O runtime vive no NÚCLEO (ADR-0023): a credencial do
-  provedor sai do cofre e é usada no mesmo processo, sem atravessar rede.
+  One turn of the agent. The runtime lives in the CORE (ADR-0023): the provider's
+  credential leaves the vault and is used in the same process, without crossing the
+  network.
 
-  `resource_id` vazio usa a única integração de categoria `agent` da conta;
-  havendo mais de uma, o núcleo RECUSA com a lista em vez de escolher.
+  An empty `resource_id` uses the account's only integration of category `agent`;
+  with more than one, the core REFUSES with the list instead of choosing.
 
-  **A chave de idempotência é obrigatória e a borda não inventa uma:** turno
-  gasta dinheiro, e uma chave gerada transformaria retry de rede em consumo em
-  dobro.
+  **The idempotency key is mandatory and the edge does not invent one:** a turn
+  spends money, and a generated key would turn a network retry into double
+  consumption.
 
-  Com sandbox provisionado, o agente AGE — o laço de ferramentas roda comando
-  dentro do ambiente isolado da demanda, com teto de 8 voltas e consumo
-  registrado a cada uma.
+  With a provisioned sandbox, the agent ACTS — the tool loop runs a command inside
+  the demand's isolated environment, with a ceiling of 8 rounds and consumption
+  recorded on each one.
 }

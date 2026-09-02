@@ -24,18 +24,18 @@ body:grpc {
 }
 
 docs {
-  A fila única de "onde eu sou necessário, e em que ordem", entre TODAS as
-  demandas da conta ativa.
+  The single queue of "where am I needed, and in what order", across ALL the active
+  account's demands.
 
-  **Não existe RPC para marcar como lido ou descartar**, e a ausência é
-  desenho: item nasce de um evento e morre de outro. Item que some sem o
-  problema ter sido resolvido é mentira confortável, e caixa que mente vira
-  caixa ignorada.
+  **There is no RPC to mark as read or dismiss**, and the absence is design: an item
+  is born of an event and dies of an event. An item that vanishes without the
+  problem having been solved is a comfortable lie, and a box that lies becomes a box
+  that is ignored.
 
-  `priority` é DERIVADA (impacto do tipo, depois idade) e calculada na LEITURA
-  — idade muda sozinha, e prioridade materializada ficaria velha em silêncio.
-  Menor número = mais urgente.
+  `priority` is DERIVED (the kind's impact, then age) and computed on the READ — age
+  changes on its own, and a materialized priority would go stale in silence. A lower
+  number = more urgent.
 
-  `open_total` é o número do badge: contar a página daria um badge que muda ao
-  paginar.
+  `open_total` is the badge's number: counting the page would give a badge that
+  changes when you paginate.
 }

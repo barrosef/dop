@@ -20,7 +20,7 @@ metadata {
 body:grpc {
   [
     {
-      "email": "novo.dev@empresa.com",
+      "email": "new.dev@company.com",
       "role": "ROLE_DEVELOPER",
       "grants": [
         { "resource": { "id": "res-github" }, "level": "use" }
@@ -31,12 +31,13 @@ body:grpc {
 }
 
 docs {
-  Quem chama e em qual conta vão na METADATA, nunca no corpo (ADR-0017, conv. 5).
-  O campo `ctx` que as mensagens ainda declaram é ignorado pelo servidor — não o
-  use: ele dá a falsa impressão de escopar a chamada.
+  Who is calling and in which account go in the METADATA, never in the body
+  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  by the server — do not use it: it gives the false impression of scoping the
+  call.
 
-  Papel e concessões são compostos NO CONVITE — não há default (ADR-0013).
-  Quem convida escolhe: tudo, nada ou uma seleção.
+  The role and the grants are composed IN THE INVITE — there is no default
+  (ADR-0013). Whoever invites chooses: everything, nothing or a selection.
 
-  O convite expira em 14 dias e é revogável enquanto pendente.
+  The invite expires in 14 days and is revocable while pending.
 }

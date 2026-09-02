@@ -1,0 +1,22 @@
+meta {
+  name: The active account's tree
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{bffUrl}}/api/v1/tree
+  body: none
+  auth: inherit
+}
+
+docs {
+  What the cockpit's sidebar draws, in a single response.
+
+  Fetching workspaces and then one ListProjects per workspace would make the
+  navigation flicker over N requests — aggregating is precisely the BFF's job.
+
+  A project WITHOUT a board returns `task_manager: null`, not a link of empty
+  fields: a zeroed link would make the screen show "a board is configured" where
+  there is no board at all.
+}

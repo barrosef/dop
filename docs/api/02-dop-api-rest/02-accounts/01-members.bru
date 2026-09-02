@@ -1,0 +1,20 @@
+meta {
+  name: the active account's members
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{bffUrl}}/api/v1/accounts/current/members
+  body: none
+  auth: inherit
+}
+
+docs {
+  It requires an active account (`@account_scoped`) AND a management role
+  (`@require_role`).
+
+  - with no `x-account-id` → **400**
+  - with the `developer` role → **403**
+  - with the `owner`/`admin` role → **200**
+}
