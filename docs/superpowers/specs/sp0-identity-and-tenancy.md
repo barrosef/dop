@@ -187,6 +187,15 @@ operation that violates it, with an explicit message.
 - A personal account has exactly one membership, `owner`, not removable. Deleting it is
   deleting the user — see P-3 in `ROADMAP.md`.
 
+**Taking somebody out of an account** (implemented on 2026-09-02) removes the membership and,
+with it, **every grant the person held in that account** — a grant outliving the membership is
+access with nothing left to justify it. The sweep runs FIRST: if it fails, nothing is removed.
+
+What is NOT touched: the person's user, their personal account and everything in it — they were
+never in this account. Nor is what they **created** here: a resource belongs to the ACCOUNT, and
+`created_by` keeps the trail of who made it. An account that lost its resources when somebody
+left would be punishing the account for the person's departure.
+
 **Recovering an orphaned organization** — the only `owner` became unreachable (they left the
 company, lost access, died):
 

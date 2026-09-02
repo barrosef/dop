@@ -35,15 +35,18 @@ Mandatory conventions:
 4. Compatibility validated in CI (`buf breaking`): a field changes neither its number nor its
    type.
 5. **Who is calling and in which account travels in the metadata**, not in the body —
-   `x-actor-id`, `x-account-id`, `x-request-id`, resolved by an interceptor before any use
-   case. Context is a cross-cutting concern: in the body, every RPC would have to remember to
-   check, and the one that forgot would become an isolation hole.
+   `x-actor-id`, `x-account-id`, `x-actor-kind`, `x-session-id`, `x-request-id`, resolved by an
+   interceptor before any use case. Context is a cross-cutting concern: in the body, every RPC
+   would have to remember to check, and the one that forgot would become an isolation hole.
 
-   *A recorded debt:* the request messages still declare a `CallContext ctx = 1` field from an
-   earlier attempt. The server **ignores** that field — it authorizes only by the metadata. A
-   contract that declares a field with no effect teaches the wrong thing to whoever reads it
-   and makes the client believe it is scoping the call when it is not. The field leaves the
-   protos (number 1 reserved, so as not to break compatibility) in a dedicated pass.
+   *The debt was paid on 2026-09-02.* The request messages used to declare a `CallContext
+   ctx = 1` from an earlier attempt, which the server **ignored**. A contract that declares a
+   field with no effect teaches the wrong thing to whoever reads it and makes the client believe
+   it is scoping the call when it is not — and it had already spread on its own into every new
+   proto, the second factor's included. The field left the 12 protos, **number 1 is reserved** in
+   every message that carried it, the `CallContext` message is gone from `common.proto`, and the
+   BFF stopped building one. Two tests that asserted the field was in the body now assert the
+   opposite, which is what stops it coming back.
 
 ## Alternatives considered
 
