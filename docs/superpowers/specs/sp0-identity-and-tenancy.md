@@ -114,6 +114,11 @@ kept hashed. Without them a lost phone becomes a support ticket, and support bec
 personal account, but does not operate THAT one. For a personal account, enrolment is offered,
 not imposed — a recorded assumption, open to the product's veto.
 
+**Built on 2026-09-02**, end to end: the `secondfactor` domain with the three verifiers, TOTP in
+the standard library (RFC 6238, with the published vectors in the test), the `SMSer` port with
+two adapters and a contract suite, the gate on inviting, revoking, changing a role and writing a
+credential, and the cockpit's screens. What is missing is the enrolment's QR code (P-36).
+
 Enrolment, confirmation, success, failure, cool-off and recovery-code use are events (ADR-0006):
 the timeline shows them, and no failure becomes an item in the attention box — a failed attempt
 is not a decision for a human.

@@ -213,5 +213,9 @@ The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0
    `FIREBASE_AUTH_EMULATOR_HOST` was missing from the environment. Documented in the BFF's
    README.
 
-**What the foundation does not have yet:** the implementation of the domain services (the
-`.proto` files exist, the servers are a skeleton), the `AgentRuntime`, and the sandbox launcher.
+**What the foundation did not have on 2026-08-31, and has since:** the domain services are
+implemented and registered (`internal/app/register.go`), the `AgentRuntime` lives in the core
+with two provider adapters (ADR-0023), and the sandbox launcher has its Kubernetes adapter. The
+sentence that used to stand here — "the servers are a skeleton" — was true for about a day and
+then kept misleading planning; it is corrected rather than deleted, because knowing that the
+foundation shipped faster than the document is itself worth recording.

@@ -6,7 +6,7 @@ missing, both batches blocked by **ClickUp's API rate limit**.
 
 - First block: 2026-09-01 15:30 -04 (~23 h).
 - Second block: hit again on 2026-09-02 11:45 -04 while creating the 2FA cards; the API answered
-  "wait 180 minutes", so it lifts around **14:45 -04 on 2026-09-02**. A read
+  "wait 180 minutes", and a retry at 14:29 answered "wait 17 minutes". A read
   (`get_workspace_hierarchy`) went through; a filter and a create did not — the quota is shared
   and nearly exhausted.
 
@@ -32,6 +32,10 @@ and the criteria that the ADR fixed. Nine cards.
 | US-2.9 | List, name, add and revoke factors; revoking the last one in an account that requires 2FA is refused |
 | US-2.10 | A failure says only that it failed; five in a row put the factor in a cool-off. Every attempt is an event |
 | US-4.4 | An organization requires a second factor of its members (`require_second_factor`), and may disable SMS |
+
+**All nine are IMPLEMENTED** (2026-09-02), in the core, the BFF and the cockpit — the cards are
+the record of what was decided and built, not a plan. US-2.3 carries one caveat: the enrolment's
+QR code does not exist yet (P-36).
 
 Full text: [`user-stories.md`](user-stories.md) §2 and §4.4. Everything the card needs to say is
 there — the ADR reference, the criteria and the reason each refusal exists.
@@ -61,6 +65,15 @@ there — the ADR reference, the criteria and the reason each refusal exists.
 
 ### Epic 13 ⚙️ The spine, the environment and operation — list `1000350000004932`
 - US-8.6.1 — The demand's timeline, filterable by agents, git, gates and cost
+
+## Batch C — the invite's path, also epic 01
+
+**List:** `1000350000004920`. Implemented on 2026-09-02, closing P-32.
+
+| Card | Summary |
+|---|---|
+| US-5.2 | Accept the invite through the link: `/invites/:id` outside the shell, the preview with no e-mail, the two refusals as different screens |
+| US-5.3 | Edit a role and revoke an invite; the account is never left with no active owner |
 
 ## Still with no story written
 Epic **11 💰 Cost and governance** was left EMPTY on purpose: there is a domain in the core and
