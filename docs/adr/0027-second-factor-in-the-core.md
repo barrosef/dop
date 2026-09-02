@@ -133,6 +133,19 @@ Reading is not gated. A second factor at every request would be theatre: it
 would cost a round trip and teach people to answer challenges without reading
 them.
 
+**Confirming an enrolment steps the session up.** The person proved possession
+seconds ago, in this session; asking again would add nothing and would cost a
+second message. This does not contradict "an enrolment challenge does not
+authenticate": what steps up is the CONFIRMATION — an operation that names the
+factor and activates it — and not answering the enrolment's challenge through
+`Verify`, which stays refused.
+
+**Revoking a factor drops every step-up of that person**, in every session.
+Whoever revokes is saying "the device I had is no longer mine"; leaving a
+session open would keep the door the removal was meant to close. It is all of
+them and not the ones that used that factor, because the step-up records the
+METHOD, not which factor answered.
+
 ### 6. Recovery codes are not optional
 
 Ten single-use codes, shown ONCE at enrolment, kept **hashed** — the platform
@@ -162,6 +175,27 @@ Enrolment, confirmation, success, failure, lockout and recovery-code use are
 events (ADR-0006). Five consecutive failures put the factor in a cool-off. The
 attention box gains no item for a failure — a failed attempt is not a decision
 for a human — but the timeline shows it, which is what auditing asks for.
+
+### 9. A ceiling on sending, distinct from the ceiling on attempts
+
+Five failures cool the factor off, but that only counts ANSWERS. Asking for a
+code sends a message, and with SMS a message is money: without a second
+ceiling, a loop that never answers costs nothing to whoever runs it.
+
+So the send has two limits, both per factor: **60 s between messages** and
+**5 per hour**. The two answer different attacks — the interval is against the
+second click and against the loop, the hourly count is against a script that
+walks the clock forward between requests.
+
+The interval hangs off the most recent **PENDING** challenge, not the most
+recent one. The floor exists so a second click does not send a second message
+while the first is still in flight; once a code has been used, asking for
+another is legitimate, and making the person wait would be charging them for
+having succeeded. The hourly count, by contrast, counts everything: a consumed
+message cost the same as an unanswered one.
+
+TOTP is not limited. It sends nothing, so a limit there would make the screen
+refuse for no reason.
 
 ## Alternatives considered
 
