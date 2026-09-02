@@ -38,9 +38,15 @@ role, `Integration` with an `accountId`, the grants table and `Invite`. Every do
 carries account, workspace and project from the first migration. The edge authenticates every
 call and resolves an active account from the first route.
 
-**Built now:** authentication by the four methods, an automatic personal account at sign-up,
-personal integrations with the `SecretStore` behind the port and both adapters, and the
-workspace → project hierarchy.
+**Built now:** authentication by the four methods, the **second factor** with its three
+verifiers (TOTP, e-mail, SMS — ADR-0027), an automatic personal account at sign-up, personal
+integrations with the `SecretStore` behind the port and both adapters, and the workspace →
+project hierarchy.
+
+The second factor is in phase 1 on purpose: it is a security gate, and a gate added later has to
+be retrofitted onto sessions and sensitive operations that were already written without it. The
+`require_second_factor` policy per account is modelled now and enforced when organizations
+arrive.
 
 **Left to the next phase:** creating an organization, the autofill by company registration
 number, inviting and linking members, editing roles and grants, domain verification, the
@@ -97,4 +103,7 @@ Raised in SP-0's review, each requiring its own decision and a probable ADR:
 | ~~P-30~~ | ~~**The invite carries no acceptance link**~~ — **RESOLVED** by ADR-0026: the invite stopped having a token. The row's `id` travels in plain text because on its own it grants nothing — acceptance requires the session's VERIFIED e-mail to be the invite's. The e-mail now carries `/invites/{invite_id}`. It closed an independent hole into the bargain: before, any authenticated user holding the link got into the account | ✅ ADR-0026 |
 | P-31 | **A subject swapped between notification kinds is not detectable** — two texts written by people, swapped with each other, pass any test. The redundancy that would solve it would be the subject living INSIDE the template, which SendGrid does not allow while it keeps the subject separate from the body. It stays as a known limit | dop-core |
 | P-32 | **There is no invite acceptance path** — `identity.AcceptInvite` exists and is covered, but nothing reaches it: the BFF exposes no route and the cockpit has no `/invites/:id` screen for the e-mail to point at. Today the invite's link leads to a 404. It needs a route in the BFF, a screen in the cockpit and the two refusals with their own text (an unverified e-mail × somebody else's invite) | dop-api + dop-app; ADR-0026 |
+| P-33 | **The SMS provider and the second adapter of `SMSer`** — the port is born with ADR-0001's discipline (two adapters + a contract suite); WHICH second provider, and at what per-message cost, is open. It brings along the abuse ceiling: SMS is the only factor that costs money per attempt, so rate limiting per destination is part of the decision | ADR-0027; dop-core + dop-infra |
+| P-34 | **Accepting a second factor asserted by the identity provider** — somebody with 2FA on their Google account does ours as well, and that is real friction. Recognizing the assertion (`amr`, `acr`) means normalizing it in the `IdentityProvider` port, in every adapter, and letting the account's policy decide whether it counts. Rejected in v1 to keep a single ruler; worth revisiting with usage data | ADR-0027; ADR-0001 |
+| P-35 | **The second factor in the local environment** — TOTP runs identically everywhere (it is pure code), e-mail goes through the mailer's dry run, and SMS has no emulator: the adapter prints the code. The path is exercised, the delivery is not. Decide whether that is enough or whether a fake gateway is worth it | ADR-0027; dop-infra |
 | P-10 | **Exploring the Overview** — the final shape of the level above the task header; already defined: a Project architecture item (general analyses on demand: stacks, integrations, strengths/weaknesses, improvement proposals in diagrams and charts) | the navigation spec §3 |

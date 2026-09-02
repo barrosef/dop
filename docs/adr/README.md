@@ -34,3 +34,4 @@ rejected, or when somebody six months from now is going to ask "why like this?".
 | [0024](0024-sandbox-per-demand-and-ephemeral-verification.md) | A microVM per demand, a single worktree, verification in an ephemeral pod | Accepted |
 | [0025](0025-communication-trigger-and-channel.md) | Communication: the trigger and the channel are born together | Accepted |
 | [0026](0026-invite-without-token.md) | The invite has no secret: identity in place of a bearer | Accepted |
+| [0027](0027-second-factor-in-the-core.md) | The second factor is the platform's, with three verifiers | Accepted |

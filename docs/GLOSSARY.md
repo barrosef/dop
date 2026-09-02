@@ -11,6 +11,9 @@ disambiguation convention is recorded.
 | **User** | A person's identity. It exists once on the platform, regardless of how many accounts they reach |
 | **Membership** | The link between a user and an account, carrying a role. The role lives in the membership, not in the person |
 | **Grant** | A user's authorization over a specific integration, with level `use` or `manage`. Orthogonal to the role |
+| **Second factor** | The second step of a sign-in, the platform's and not the identity provider's (ADR-0027). Three kinds: `totp` (an authenticator app), `email` and `sms` |
+| **Step-up** | The state of a session that has already answered the second factor, with an expiry. It is what gates a sign-in and the sensitive operations, never a read |
+| **Recovery code** | One of ten single-use codes, shown once and kept hashed, which recover an account when the factor is lost. It is what stops support from becoming the bypass |
 | **Workspace** | Level 1. It groups projects. It has a name, a key, a description and a tag schema |
 | **Project** | Level 2. Where the repositories and the task manager's space live, consumed from the owning account's integrations |
 | **Resource** | The account's unit of ownership and sharing: an integration, a skill, a human↔agent workflow or a git flow. A `use`/`manage` grant per user |

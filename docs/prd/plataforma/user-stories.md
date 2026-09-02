@@ -26,7 +26,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   land in the same account.
   - account linking active from day 1; the links are visible in the profile
 
-## 2. Sign in **[F1]**
+## 2. Sign in and the second factor **[F1]**
 
 - **US-2.1** As a dev, I want to sign in through any linked method and land **in the last
   cockpit I was in**, with the demand that was selected.
@@ -34,6 +34,37 @@ invites are [F2] and come later in the numbering, even though they exist in the 
 - **US-2.2** As a dev, I want the active account, the project and the selected card to survive a
   sign-out/sign-in and to be shareable by URL.
   - `/:account/:workspace/:project?card=` restores the exact state
+
+> The second factor is the PLATFORM's, not the identity provider's (ADR-0027): one mechanism,
+> three verifiers. It is [F1] because a security gate added later has to be retrofitted onto
+> sessions and operations already written without it.
+
+- **US-2.3** As a dev, I want to register an **authenticator app** as my second factor, reading
+  a QR code and confirming the first code.
+  - the `otpauth://` URI is shown ONCE; the seed goes into the vault, never into the cockpit
+  - the factor is born `pending` and only becomes `active` after the confirmation
+- **US-2.4** As a dev, I want to register my **e-mail** as a second factor and receive a
+  6-digit code, valid for 10 minutes and single use.
+  - it requires a VERIFIED address — an unproven address is not a second factor
+- **US-2.5** As a dev, I want to register my **phone** and receive the code by SMS, with the
+  same validity.
+  - the number is shown masked (`+55 ** ****-9012`) everywhere it appears
+- **US-2.6** As a dev, I want to be asked for the second factor **when I sign in**, and for the
+  session to stay stepped up for a while — not on every request.
+  - a challenge on every screen is theatre: it teaches people to answer without reading
+- **US-2.7** As a dev, I want a fresh challenge **before a sensitive operation**: writing a
+  credential, changing a role, inviting, revoking and deleting an account.
+  - reading is never gated
+- **US-2.8** As a dev, I want **ten recovery codes** at enrolment, shown once, to get back in if
+  I lose the factor.
+  - kept hashed: the platform cannot show them again, and that is the point
+  - without them the recovery path is a conversation with support — the weakest link
+- **US-2.9** As a dev, I want to see my registered factors, name them ("iPhone", "work e-mail"),
+  add another and revoke one, always with a fresh challenge.
+  - revoking the LAST active factor in an account that requires 2FA is refused with a message
+- **US-2.10** As a dev, I want a failed attempt to say only that it failed, and a sequence of
+  failures to put the factor in a cool-off.
+  - five consecutive failures; every attempt is an event on the timeline (ADR-0006)
 
 ## 3. The account's resources **[F1 in the core]**
 
@@ -80,6 +111,10 @@ invites are [F2] and come later in the numbering, even though they exist in the 
 - **US-4.3** As a dev, I want to switch between the personal account and organizations in a
   single selector, changing the whole tree with one click.
   - everything you see is the active account's; a request with no active account is invalid
+- **US-4.4** As an owner, I want to **require a second factor** of my organization's members.
+  - a member with no active factor still signs in and operates their PERSONAL account; what is
+    blocked is operating in THIS one
+  - the policy may disable SMS: it is the weakest of the three (ADR-0027)
 
 ## 5. Invites and access **[F2]**
 
@@ -214,3 +249,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   visual editors of both.
 - The organization credential (a GitHub App etc.) — [F2], the integrations spec §4.
 - Notifications outside the platform (e-mail/push) — future projections of the attention box.
+- Recognizing a second factor asserted by the identity provider (P-34) — in v1 somebody with 2FA
+  at Google does ours as well, and that is the price of a single ruler.
+- WebAuthn/passkeys as a fourth verifier: the three asked for come first, and the domain is born
+  with room for a fourth `kind`.

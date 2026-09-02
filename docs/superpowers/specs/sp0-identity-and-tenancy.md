@@ -12,7 +12,8 @@
 The base decisions: [ADR-0002](../../adr/0002-account-as-unit-of-ownership.md) (the account as
 the unit of ownership), [ADR-0005](../../adr/0005-multi-tenant-platform.md) (multi-tenant),
 [ADR-0004](../../adr/0004-organization-verification-by-domain.md) (verification by domain),
-[ADR-0001](../../adr/0001-infrastructure-behind-ports.md) (ports).
+[ADR-0001](../../adr/0001-infrastructure-behind-ports.md) (ports),
+[ADR-0027](../../adr/0027-second-factor-in-the-core.md) (the second factor).
 
 ## 1. Identity
 
@@ -20,7 +21,8 @@ the unit of ownership), [ADR-0005](../../adr/0005-multi-tenant-platform.md) (mul
 providers. It exists once on the platform, regardless of how many accounts they reach.
 
 Authentication uses **Firebase Authentication** as the `IdentityProvider` port's first adapter,
-with four methods: e-mail and password, Google, GitHub and LinkedIn.
+with four methods: e-mail and password, Google, GitHub and LinkedIn. That is the **first**
+factor; the second is the platform's (§3, ADR-0027).
 
 Per ADR-0001, the adapter returns a **normalized principal** — `subject`, `email`,
 `emailVerified`, linked providers. A Firebase claim does not cross the domain's boundary.
@@ -78,7 +80,45 @@ account is invalid.
 
 The selector lists the personal account plus every organization the user has a membership in.
 
-## 3. The membership's cycle
+## 3. The second factor
+
+The platform is born with a second factor, and it is **the platform's** — the identity provider
+does the first one and nothing else (ADR-0027). Three options, one mechanism:
+
+| kind | How it verifies | Channel |
+|---|---|---|
+| `totp` | RFC 6238, 30 s, 6 digits, a ±1 window | none — the seed lives in the vault |
+| `email` | a 6-digit code, 10 minutes, single use | the `Mailer` port (ADR-0025) |
+| `sms` | the same code, the same validity | the `SMSer` port, born with this feature |
+
+**Enrolment proves possession**: `enroll → challenge → confirm`. The factor is born `pending`
+and only becomes `active` when the person returns the code — a factor registered without being
+proven is a lock whose key nobody has tested. An `email` factor requires a **verified** address
+(the `IdentityProvider`'s guarantee 5, the same one ADR-0026 leans on).
+
+**Verification runs in the core**, because the TOTP seed is a credential and lives in the vault
+(ADR-0023): the BFF forwards the challenge and the answer, and stores neither seed nor code. The
+core records the step-up per (user, session) with an expiry, and the session identifier travels
+in the metadata, alongside `x-actor-id` and `x-account-id`.
+
+**What requires a fresh step-up, in v1:** signing in (when there is an active factor), writing a
+credential (`SetCredential`), changing a role, inviting, revoking, and deleting an account.
+Reading is not gated — a challenge on every request is theatre, and it teaches people to answer
+without reading.
+
+**Recovery codes are part of the feature, not a refinement.** Ten single-use codes, shown once,
+kept hashed. Without them a lost phone becomes a support ticket, and support becomes the bypass.
+
+**The account's policy.** An organization account may require a second factor of its members
+(`require_second_factor`): a member with no active factor still signs in and operates their
+personal account, but does not operate THAT one. For a personal account, enrolment is offered,
+not imposed — a recorded assumption, open to the product's veto.
+
+Enrolment, confirmation, success, failure, cool-off and recovery-code use are events (ADR-0006):
+the timeline shows them, and no failure becomes an item in the attention box — a failed attempt
+is not a decision for a human.
+
+## 4. The membership's cycle
 
 A membership is born of an **invite**. There is no other way in, except the automatic entry by
 a verified organization's domain (§6).
@@ -104,7 +144,7 @@ The rules:
 - **Revocable while `pending`.**
 - An invite to an e-mail that is already a member of that account is refused.
 
-## 4. Roles and grants
+## 5. Roles and grants
 
 Two independent axes.
 
@@ -132,7 +172,7 @@ scenario where nobody can fix a broken integration.
 **There is no default.** Access is what was composed in the invite and what was edited
 afterwards.
 
-## 5. Succession and an orphaned account
+## 6. Succession and an orphaned account
 
 **An invariant: every account has at least one active `owner`.** The system refuses any
 operation that violates it, with an explicit message.
@@ -152,7 +192,7 @@ company, lost access, died):
 
 That reuse is one more argument for domain verification: it pays twice.
 
-## 6. Organizations
+## 7. Organizations
 
 **Creation.** A name and a company registration number; the number fills in the legal name and
 the address automatically and already confirms the company exists and is active. The account is
@@ -168,12 +208,12 @@ value, the user publishes a TXT record in the company domain's DNS, the platform
 - the **verified badge**, with the domain in plain sight;
 - **contesting a handle** taken by a third party.
 
-And it serves as proof when recovering an orphaned account (§5).
+And it serves as proof when recovering an orphaned account (§6).
 
 Everything else works without the verification. An unverified organization is fully usable — it
 just cannot make claims about itself that it has not proven.
 
-## 7. The hierarchy
+## 8. The hierarchy
 
 ```
 The platform (level 0)   the catalogue of providers, templates, skills — it belongs to nobody
@@ -191,16 +231,19 @@ projects.
 which credential was this done?" would stop being trivial — and that question is the dossier's
 foundation.
 
-## 8. Risks
+## 9. Risks
 
 | # | |
 |---|---|
-| R-1 | **A handle shared between individuals and companies** creates name contention. Mitigated by the contestation through a verified organization (§6) |
+| R-1 | **A handle shared between individuals and companies** creates name contention. Mitigated by the contestation through a verified organization (§7) |
 | R-2 | **Badly configured account linking creates duplicate users**, and a duplicate in multi-tenant becomes an access problem. It has to be active from day one (§1) |
 | R-3 | **An invite by e-mail is a vector for internal phishing.** Acceptance has to require an authenticated session and show clearly which account is being entered |
 | R-4 | **The `workspace → project` renaming** cuts across code, routes, i18n, mocks and documentation. Done halfway, it costs more than done in one go (P-5) |
+| R-5 | **SMS is the weakest of the three factors** (SIM swap, interception) and the only one that costs money per attempt, which makes it the abuse surface: rate limiting per destination is a requirement, not a refinement (ADR-0027) |
+| R-6 | **A forged session identifier skips the step-up.** The core trusts the BFF's metadata; the NetworkPolicy makes the assumption hold, and that is not the same as authenticating (P-18, which this feature promotes from background item to prerequisite) |
+| R-7 | **A second factor with no recovery path locks people out**, and the workaround becomes a human being talked into resetting it. The recovery codes are what stop support from becoming the bypass |
 
-## 9. Open items
+## 10. Open items
 
 Recorded in [`ROADMAP.md`](../../ROADMAP.md), each with its own decision:
 
@@ -208,3 +251,7 @@ Recorded in [`ROADMAP.md`](../../ROADMAP.md), each with its own decision:
 - **P-3** — data protection law: retention, deletion and residency, with personal and company
   registration numbers in scope.
 - **P-6** — recovering an **unverified** orphaned organization.
+- **P-18** — authenticating the caller between the BFF and the core, now load-bearing (R-6).
+- **P-33** — the SMS provider and its second adapter, plus the cost and abuse ceiling.
+- **P-34** — accepting a second factor asserted by the identity provider, when the account's
+  policy allows it.
