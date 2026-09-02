@@ -1,65 +1,92 @@
-# dop — meta-repositório do produto
+# dop — the product's meta-repository
 
-**DOP** é uma ferramenta auxiliar ao desenvolvimento de software *IA-first*, onde um
-**Dev** e o agente **Claude** colaboram para conduzir demandas de ponta a ponta. Este
-repositório **raiz** orquestra o produto (infra local + docs) e agrega os componentes
-como repositórios independentes em `repos/`.
+**DOP** is an *AI-first* tool that assists software development, where a **Dev** and the
+**Claude** agent collaborate to run demands end to end. This **root** repository orchestrates the
+product (documentation + the local environment's pointer) and aggregates the components as
+independent repositories under `repos/`.
 
-## Estrutura
+## Structure
 
 ```
 dop/
-├── docs/                 # docs de PRODUTO 1.0 (PRD, specs, prompt Replit, decisões)
-├── infra/                # stack LOCAL do DOP (docker-compose + Dockerfiles)
-└── repos/                # componentes como SUBMODULES git (repos independentes, fixados por commit)
-    ├── dop-cli/          # CLI Python — congelada em v0.5.0, instalável e funcional
-    ├── dop-api/          # núcleo + API HTTP (Python) — onde a lógica migra da CLI
-    └── dop-app/          # frontend (React/Vite) — construído pelo Replit + Claude
+├── docs/                 # the 1.0 PRODUCT's docs (the PRD, ADRs, specs, the API collections)
+├── infra/                # a leftover skeleton compose — superseded by dop-infra
+└── repos/                # the components as git SUBMODULES (independent repos, pinned by commit)
+    ├── dop-core/         # the core in Go — domain, state, transactions, events
+    ├── dop-api/          # the BFF in Python — REST+SSE for the app, gRPC for the CLI and the sandbox
+    ├── dop-app/          # the frontend (React/Vite) — the cockpit
+    ├── dop-infra/        # infrastructure: Terraform + the local k3s environment
+    ├── dop-cli/          # reserved for the platform's CLI
+    └── dop-cmd/          # the operational tool in use (v0.7.1) — NOT a submodule
 ```
 
-## Clonar
+## Cloning
 
-Os componentes são **submodules git** (cada um fixado num commit específico). Clone
-com `--recursive`:
+The components are **git submodules** (each pinned at a specific commit). Clone with
+`--recursive`:
 
 ```bash
 git clone --recursive git@github.com:Digital-Business-One/dop.git
-# ou, após um clone simples:
+# or, after a plain clone:
 git submodule update --init --recursive
 ```
 
-Para atualizar um componente ao último commit do seu `main` e fixar o novo ponteiro:
+To update a component to its `main`'s latest commit and pin the new pointer:
 
 ```bash
-git -C repos/<componente> pull origin main
-git add repos/<componente> && git commit -m "chore: bump <componente>"
+git -C repos/<component> pull origin main
+git add repos/<component> && git commit -m "chore: bump <component>"
 ```
 
-## Componentes
+**`dop-cmd` is not a submodule** and therefore does not come in the recursive clone. Get it
+separately:
 
-- **dop-cli** (`repos/dop-cli`) — a CLI atual (v0.5.0). Permanece **instalável e
-  funcionando** para os projetos que já a usam, durante toda a reestruturação 1.0.
-  Instalação: `pip install 'git+ssh://git@github.com/Digital-Business-One/dop-cli.git@v0.5.0'`.
-- **dop-api** (`repos/dop-api`) — núcleo do produto + API HTTP. **Única fonte de
-  verdade**; acessa workspace/ferramentas e detém o estado. A lógica de negócio migra
-  da CLI para cá; a CLI 1.0 vira **cliente fino** desta API.
-- **dop-app** (`repos/dop-app`) — frontend onde o Dev trabalha (workspaces, demandas,
-  tela de execução, chat). Mock-first; ver o prompt em
-  [`docs/prd/dop-1.0-mvp/replit-frontend-prompt.md`](docs/prd/dop-1.0-mvp/replit-frontend-prompt.md).
+```bash
+git clone git@github.com:Digital-Business-One/dop-cmd.git repos/dop-cmd
+```
 
-## Documentação
+## Components
 
-- **PRD base do 1.0:** [`docs/prd/dop-1.0-mvp/README.md`](docs/prd/dop-1.0-mvp/README.md)
-- **Prompt do frontend (Replit):** [`docs/prd/dop-1.0-mvp/replit-frontend-prompt.md`](docs/prd/dop-1.0-mvp/replit-frontend-prompt.md)
-- Docs internos da CLI 0.5.x vivem em `repos/dop-cli/docs/` (ADRs, referências).
+- **dop-core** (`repos/dop-core`) — the core in Go: the domain, the state, the transactions and
+  the event log. One binary, four modes (`serve`, `worker`, `sched`, `launcher`). It owns the
+  schema and the vault; it is the only source of truth (ADR-0016, ADR-0023).
+- **dop-api** (`repos/dop-api`) — the BFF in Python: REST+SSE for the cockpit, gRPC for the CLI
+  and the sandbox. It has no database and no secret — every write goes through the core.
+- **dop-app** (`repos/dop-app`) — the cockpit where the Dev works (the attention box, the tree of
+  workspaces and projects, the demand's cockpit).
+- **dop-infra** (`repos/dop-infra`) — the platform's infrastructure: Terraform for GCP and the
+  local k3s (k3d) environment with Postgres, NATS and the Firebase emulators.
+- **dop-cli** (`repos/dop-cli`) — reserved for the platform's CLI. No implementation yet.
+- **dop-cmd** (`repos/dop-cmd`) — the **operational tool in use** (v0.7.1). It reaches the
+  workspace directly and answers for the environment: multi-platform git/PR, a docker-compose
+  runtime, e2e/AAA and Allure. **A project of its own**, independent of the platform.
+  Installation: `pip install 'git+ssh://git@github.com/Digital-Business-One/dop-cmd.git'`.
 
-## Ambiente local
+## Documentation
 
-A stack roda **exclusivamente local** via `docker compose` (sem deploy em nuvem nem
-CI/CD nesta fase). Ver [`infra/`](infra/). O `infra/docker-compose.yml` é um
-**esqueleto** que será finalizado conforme as stacks de `dop-api`/`dop-app`.
+- **The index of everything:** [`docs/ROADMAP.md`](docs/ROADMAP.md) — the subprojects, the
+  phasing and the cross-cutting open items.
+- **Architecture decisions:** [`docs/adr/`](docs/adr/) — 26 ADRs in the MADR format.
+- **Subsystem specs:** [`docs/superpowers/specs/`](docs/superpowers/specs/).
+- **Vocabulary:** [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
+- **API collections:** [`docs/api/`](docs/api/) — Bruno, the core's gRPC and the BFF's REST/gRPC.
+- **The 1.0 base PRD:** [`docs/prd/dop-1.0-mvp/README.md`](docs/prd/dop-1.0-mvp/README.md).
+- The operational tool's internal docs (ADRs, references, architecture) live in
+  `repos/dop-cmd/docs/`.
 
-## Estado
+## The local environment
 
-- ✅ `dop-cli` v0.5.0 (congelada, instalável).
-- 🚧 `dop-api` e `dop-app` — em construção para o **1.0 (MVP)**.
+The local environment is **dop-infra**'s: a k3d cluster with Postgres + pgvector, NATS JetStream
+and the Firebase emulators, composed with Kustomize. See
+[`repos/dop-infra/docs/local-environment.md`](repos/dop-infra/docs/local-environment.md).
+
+The `infra/` directory at the root is the skeleton `docker compose` from the project's bootstrap
+and was superseded by dop-infra (the dop-infra spec §6); it is kept only until it is removed.
+
+## State
+
+- ✅ The foundation: contracts, ports, the event spine, the schema and the local environment up
+  (the backend architecture spec §9).
+- 🚧 `dop-core`, `dop-api`, `dop-app` and `dop-infra` — the platform's components, under
+  construction.
+- ✅ `dop-cmd` v0.7.1 — the operational tool in use, installable and maintained.

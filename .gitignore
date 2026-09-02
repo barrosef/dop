@@ -5,6 +5,6 @@ infra/.env
 .venv/
 node_modules/
 
-# artefatos de sessão de browser/captura — não são do projeto
+# browser session/capture artifacts — not part of the project
 .playwright-mcp/
 cockpit-real.png
