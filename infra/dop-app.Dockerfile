@@ -1,6 +1,6 @@
-# Esqueleto — imagem do dop-app (frontend React/Vite, servido por nginx).
-# A ser finalizado quando o Replit entregar o frontend.
-# Exemplo (TODO):
+# A skeleton — the dop-app image (a React/Vite frontend, served by nginx).
+# To be finalized once Replit delivers the frontend.
+# An example (TODO):
 # FROM node:20-alpine AS build
 # WORKDIR /app
 # COPY package*.json ./
@@ -12,4 +12,4 @@
 # COPY --from=build /app/dist /usr/share/nginx/html
 # EXPOSE 80
 FROM nginx:alpine
-RUN echo 'dop-app: esqueleto — aguardando build do frontend' > /usr/share/nginx/html/index.html
+RUN echo 'dop-app: a skeleton — awaiting the frontend build' > /usr/share/nginx/html/index.html

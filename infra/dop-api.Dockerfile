@@ -1,5 +1,5 @@
-# Esqueleto — imagem da dop-api (Python). A ser finalizado com a stack do dop-api.
-# Exemplo (TODO: ajustar à stack escolhida):
+# A skeleton — the dop-api image (Python). To be finalized with dop-api's stack.
+# An example (TODO: adjust it to the chosen stack):
 FROM python:3.11-slim
 WORKDIR /app
 # COPY pyproject.toml ./
@@ -7,4 +7,4 @@ WORKDIR /app
 # COPY . .
 # EXPOSE 8787
 # CMD ["python", "-m", "dop_api"]
-CMD ["python", "-c", "print('dop-api: esqueleto — defina a stack')"]
+CMD ["python", "-c", "print('dop-api: a skeleton — define the stack')"]

@@ -1,6 +1,7 @@
-# docker-compose EXCLUSIVO do DOP — ambiente LOCAL (sem deploy em nuvem / sem CI-CD).
-# Esqueleto inicial: serviços, portas, imagens e env serão finalizados quando as stacks
-# de dop-api e dop-app estiverem definidas.
+# A docker-compose EXCLUSIVE to DOP — the LOCAL environment (no cloud deploy / no CI-CD).
+# An initial skeleton: services, ports, images and env will be finalized once the
+# dop-api and dop-app stacks are defined.
+# Superseded by dop-infra (the dop-infra spec §6); kept until it is removed.
 name: dop
 
 services:
@@ -8,7 +9,7 @@ services:
     build:
       context: ../repos/dop-api
       dockerfile: ../../infra/dop-api.Dockerfile
-    # ports: ["8787:8787"]        # TODO: porta da API
+    # ports: ["8787:8787"]        # TODO: the API's port
     # env_file: [./.env]
     # depends_on: [db]
     profiles: ["full"]
@@ -17,11 +18,11 @@ services:
     build:
       context: ../repos/dop-app
       dockerfile: ../../infra/dop-app.Dockerfile
-    # ports: ["5180:80"]          # TODO: porta do frontend (nginx)
+    # ports: ["5180:80"]          # TODO: the frontend's port (nginx)
     # depends_on: [dop-api]
     profiles: ["full"]
 
-  # Persistência do próprio DOP (placeholder — decisão técnica D4 em aberto).
+  # DOP's own persistence (a placeholder — technical decision D4 is open).
   # db:
   #   image: postgres:16-alpine
   #   environment:
