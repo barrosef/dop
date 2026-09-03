@@ -35,3 +35,4 @@ rejected, or when somebody six months from now is going to ask "why like this?".
 | [0025](0025-communication-trigger-and-channel.md) | Communication: the trigger and the channel are born together | Accepted |
 | [0026](0026-invite-without-token.md) | The invite has no secret: identity in place of a bearer | Accepted |
 | [0027](0027-second-factor-in-the-core.md) | The second factor is the platform's, with three verifiers | Accepted |
+| [0028](0028-project-knowledge-as-a-git-repository.md) | The project's knowledge is a git repository, hosted by the platform | Accepted |
