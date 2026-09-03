@@ -68,7 +68,42 @@ Legend — **C** conflicts (must change) · **D** drift (doc and code already di
 | k3s services | no git server | **G** | A git server (bare repositories on a PVC behind smart-HTTP), its NetworkPolicy, the sandbox egress rule |
 | NetworkPolicy of the sandbox namespace | not present in this repo's sandbox setup | **G** | The egress allowlist the substrate spec §6.1 promises, with the git server in it |
 
-## 5. Order of the work
+## 5. Status — 2026-09-03
+
+**Steps 1 and 2 are done.** Every row above marked C or D has been applied:
+
+- **Docs (step 1):** ADR-0003 (the commit rules, for every repository, `author` = the dev and
+  `committer` = the thread), ADR-0028 (scope narrowed to structure; the token as a projected
+  file), ADR-0009 (the rejected folder was a REPLACEMENT; text in git, bytes in the bucket),
+  ADR-0024 (the knowledge boundary is the project; the ephemeral pod withdrawn by P-27),
+  ADR-0014 and ADR-0007 (an artefact has an address), the two specs, the glossary and US-7.4.
+- **Code (step 2):** the `ProjectRepository` port with eight guarantees and TWO adapters
+  (`Local`, which hosts, and `Remote`, which speaks to a hosting process) — both green under
+  one contract suite; the git server (bare repositories + `git http-backend` + HMAC tokens +
+  push fan-out + mirror); `SandboxSpec.Documents` replaced by `Repository`; the loader, the
+  stdin protocol, `documents.go` and `WriteMessage` removed; the sandbox's guarantees rewritten
+  to 18–23 and green on Docker; `knowledge` commits the text and regenerates the manifest on
+  push; `execution` mints the clone URL and the token; a push became an event.
+- **Infra (step 3, partly):** `git` in the core's and the devbox's images, the devbox
+  entrypoint that clones, the system-wide git config, the repositories' PVC, and worker/sched
+  pointed at the hosting mode.
+
+**What is left:** the sandboxes' egress NetworkPolicy naming the git server (the substrate spec
+§6.1 promises it and this repo never had one), the BFF and cockpit surface for the shelf, and
+P-41 — the agent committing into `memory/` at the end of a demand.
+
+### Two things learned in the build, worth keeping
+
+1. **`WWW-Authenticate: Bearer` breaks git.** Git only answers a **Basic** challenge — with
+   Bearer it gives up without ever calling the credential helper, and the sandbox comes up with
+   no shelf for a reason nothing in the log explains. The server answers Basic; the token is
+   the password.
+2. **`exec` does not inherit the entrypoint's environment.** Whatever the entrypoint exports is
+   invisible to `docker exec` and `pods/exec` — so git's configuration (`safe.directory`, the
+   credential helper) has to live in `/etc/gitconfig`, written at build time. The arbitrary
+   non-root user OKD assigns has no home to hold a `~/.gitconfig` either.
+
+## 6. Order of the work
 
 1. **Docs first, one commit:** the ADR amendments (0009, 0024, 0003, 0014, 0007, 0028 §2/§3), the two specs, the glossary, the stories. After this commit no document contradicts another.
 2. **Code removal WITH its replacement, one change:** the port (`Repository`, guarantees 18–23), both adapters, the contract suite, `execution`, `knowledge`. Removing the loader before the clone exists would leave the guarantees pointing at nothing — the suite has to flip in one move.
