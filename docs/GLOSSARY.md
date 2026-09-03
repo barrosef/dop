@@ -35,7 +35,10 @@ disambiguation convention is recorded.
 | **Subagent** | A specialist agent launched inside the demand, in the same sandbox, with a card of its own (purpose, tools, model, budget) |
 | **Thread** | The conversation timeline with one of the demand's agents. One per agent; queryable by its siblings |
 | **Finding** | A structured result published by an agent on concluding an investigation. It becomes an event, a dossier entry and a memory |
-| **Context package** | The luggage assembled per demand: the spec + the rules + the index of the repos involved + the relevant memories |
+| **Context package** | The luggage assembled per TURN into the prompt: the spec + the rules + the index of the repos involved + the relevant memories. Curated and budgeted — not the shelf |
+| **Root repository** | A project's own git repository, born with the project in the platform's git server, holding its knowledge as files (`rules/`, `index/`, `memory/`, `demand/<id>/`). Every sandbox of the project clones it at `/project`; the user may attach a remote of theirs as a mirror (ADR-0028) |
+| **Shelf** | The clone of the root repository inside the sandbox: complete, read-write, with a generated `README.md` as its manifest. Costs nothing until a file is opened — the opposite of the package |
+| **Artefact** | A file at `demand/<id>/<kind>.md` in the root repository — spec, plan, test plan, report — declared by a flow's stage (ADR-0014). Rendered bytes stay in the ObjectStore, referenced from the file |
 | **Critic** | An independent instance that reviews diff × spec before the human. A strong model, a clean context |
 | **Evidence package** | What accompanies the PR: acceptance, tests, the critic's opinion, links to the trace |
 | **Merge queue** | A per-repository queue that reapplies each PR over the current main and re-verifies before merging, one at a time |

@@ -129,7 +129,7 @@ workspaces(account_id) · projects(workspace_id) · project_resources
 -- flow and demand
 flows(owner_scope, owner_id, version, spec JSONB)       -- the inheritance chain
 demands(project_id, external_key, flow_version_frozen, status)
-demand_stages(demand_id, key, type, status, artifact_ref)
+demand_stages(demand_id, key, type, status, artifact_path)   -- a path in the root repository (ADR-0028); not in migration 0006 yet
 threads(demand_id, kind, agent_card JSONB) · messages · findings
 
 -- the spine
@@ -138,7 +138,8 @@ outbox(event_id, published_at NULL)
 idempotency(key, request_hash, response, expires_at)
 
 -- knowledge
-knowledge_artifacts(project_id, kind, version, object_ref, meta JSONB)
+knowledge_artifacts(project_id, kind, path, commit, meta JSONB)   -- an INDEX over the root repository; the text is in git (ADR-0028)
+project_repositories(project_id, clone_url, mirror_url, mirror_credential_ref)
 knowledge_embeddings(artifact_id, embedding vector(1536))
 
 -- delivery and cost
@@ -196,7 +197,7 @@ The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0
 | | |
 |---|---|
 | Contracts | 10 `.proto`, 9 services, 65 RPCs; `buf lint` clean, Go generated |
-| Ports | `SecretStore` (k8s + memory), `ObjectStore` (real/emulated GCS), `IdentityProvider` (Firebase), `EventBus` (NATS JetStream) |
+| Ports | `SecretStore` (k8s + memory), `ObjectStore` (real/emulated GCS), `IdentityProvider` (Firebase), `EventBus` (NATS JetStream), `ProjectRepository` (the platform's git server + a local bare-repo adapter — ADR-0028) |
 | The spine | A transactional outbox + a relay with `FOR UPDATE SKIP LOCKED`; `events` partitioned by month |
 | The schema | 16 tables applied in the local Postgres; the owner invariant as a **trigger** |
 | Cross-cutting | 5 decorators in the BFF; JSON logging with identical canonical fields in both processes |

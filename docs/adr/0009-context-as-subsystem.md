@@ -39,6 +39,14 @@ and **how** it is assembled per demand.
 **A raw document folder in the sandbox.** Rejected: with no curation and no assembly, the
 agent digs — and digging is what the package exists to eliminate.
 
+> **Revised by [ADR-0028](0028-project-knowledge-as-a-git-repository.md) (2026-09-03).** What
+> was rejected here was a folder AS A REPLACEMENT for the package. ADR-0028 keeps the package
+> exactly as this ADR defines it — the curated, budgeted luggage that goes into the prompt —
+> and ADDS the shelf: the project's root repository, complete, cloned into the sandbox, with
+> a generated `README.md` so the agent does not dig. The package is paid for on every turn;
+> the shelf costs nothing until a file is opened. The "raw" in the rejection was the point,
+> and the manifest is what removes it.
+
 **Everything embedded in the prompt.** Rejected: it blows the context window and grows with
 the project, not with the demand.
 
@@ -53,3 +61,11 @@ starting there is buying infrastructure before having content.
   work for the orchestrator.
 - ➖ Per-account storage with fine-grained permission — one more surface for the
   `SecretStore`/`ObjectStore` contract tests to cover.
+
+## Revised on 2026-09-03 — where the text lives
+
+Decision 2 said "over `ObjectStore`". With [ADR-0028](0028-project-knowledge-as-a-git-repository.md),
+**text lives in the project's root repository (git)** and the `ObjectStore` keeps BYTES —
+diagrams, exports, anything a repository is bad at. The three layers, the port and the
+package are unchanged; only the storage of the text moved, and it moved to gain attribution
+and history, which a bucket does not give.

@@ -66,7 +66,7 @@ the design does not depend on it.
 | **Agents** | 1 main + N subagents (ADR-0010), through the `AgentRuntime` port (§7) |
 | **The workspace** | Worktrees of the demand's branches, in a PVC |
 | **The internal Docker** | `docker compose -p <demand>`: its own network and DNS — `backend` resolves within that composition. It builds locally; no shared BuildKit/registry needed |
-| **The context package** | Assembled at provisioning ([`context-and-knowledge.md`](context-and-knowledge.md)), read-only |
+| **The project's root repository** | Cloned at `/project` at provisioning, **read-write** — the agent commits, pushes, pulls ([ADR-0028](../../adr/0028-project-knowledge-as-a-git-repository.md)). The context package is a different thing: assembled per TURN, into the prompt ([`context-and-knowledge.md`](context-and-knowledge.md)) |
 | **Caches** | A volume **per account** — never global: a cache shared between accounts is a side channel |
 
 ## 5. Access and credentials
@@ -77,15 +77,19 @@ the design does not depend on it.
   to be reachable for the agent to work.
 - **Credentials:** nothing baked into an image, nothing persisted. The `SecretStore` resolves
   the account's credential and the sandbox receives a **short-lived derived token** (a 1h
-  installation token for selected repositories — ADR-0003), as a projected volume.
+  installation token for selected repositories — ADR-0003), as a projected volume. The token
+  to the platform's git server (ADR-0028 §3) has the same shape: per demand, opens exactly
+  the project's root repository, a projected file, dies with the sandbox. The mirror's
+  credential — the user's remote — is never in a sandbox.
 
 ## 6. The sandbox's security
 
 The agent has the full triad — it reads untrusted content, it carries a credential, it has an
 exit through git (F-10). Defence in layers, mandatory:
 
-1. **An egress allowlist per sandbox**: only the demand's provider's git, the BFF and the
-   model endpoints. Everything else denied by a NetworkPolicy.
+1. **An egress allowlist per sandbox**: only the demand's provider's git, the platform's git
+   server (ADR-0028), the BFF and the model endpoints. Everything else denied by a
+   NetworkPolicy.
 2. **The card and the repository's content are untrusted input** — marked as such in every
    agent's context.
 3. **Secret redaction in every output** of an agent and of a log.

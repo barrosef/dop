@@ -3,6 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-08-29
 - **Resolves:** F-3 — see `docs/analysis/2026-08-29-platform-critical-review.md`
+- **Refined by:** [ADR-0028](0028-project-knowledge-as-a-git-repository.md) — the `spec` artefact the executable criteria live in now has an address: `demand/<id>/spec.md` in the project's root repository
 
 ## Context
 

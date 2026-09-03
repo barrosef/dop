@@ -162,7 +162,8 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   merge queue, the verification and the branch naming then obey — and a workflow/skills [F2] —
   which parameterize the agents.
 - **US-7.4** As a dev, I want to keep the project's rules and consult the accumulated knowledge
-  (the index, the memories) in the configuration (ADR-0009).
+  (the index, the memories) in the project's root repository, shown in the cockpit (ADR-0009,
+  ADR-0028).
 - **US-7.5** As a dev, I want to add/remove repositories and resources later, in a sliding
   panel, without recreating the project.
 - **US-7.6** As a dev, I want the project to have a **techlead agent** (ADR-0015), activated when

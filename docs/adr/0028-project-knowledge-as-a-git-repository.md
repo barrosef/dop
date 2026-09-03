@@ -2,8 +2,9 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-03
-- **Refines:** [ADR-0009](0009-knowledge-layers.md) (the three layers get a home on disk), [ADR-0024](0024-sandbox-per-demand.md) (the knowledge boundary moves up to the project; the workspace boundary stays), [ADR-0006](0006-event-log-is-the-truth.md) (attribution becomes the commit's author)
-- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0013](0013-resources-as-the-unit-of-ownership.md) (a repository is a resource)
+- **Refines:** [ADR-0009](0009-context-as-subsystem.md) (the three layers get a home on disk), [ADR-0024](0024-sandbox-per-demand-and-ephemeral-verification.md) (the knowledge boundary moves up to the project; the workspace boundary stays)
+- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (**every rule about commits, authorship and push lives there** — this ADR only references it), [ADR-0006](0006-demand-as-event-log.md) (a push is an event), [ADR-0013](0013-resource-as-unit-of-sharing.md) (a repository is a resource)
+- **Scope:** HOW the project's knowledge is structured and shared. Not how a commit is attributed or pushed — that is ADR-0003's, for this repository as for any other.
 
 ## Context
 
@@ -61,17 +62,19 @@ already have and write with `git commit` + `git push`. Sharing between demands
 is push/pull; a conflict is git's conflict, resolved by git's rules, and one
 the agent cannot resolve becomes an attention item.
 
-**The commit's author is the THREAD** — the agent's identity, never a person's
-borrowed by an agent. That single convention is what turns the repository's
-history into the audit trail ADR-0006 asks for, and it is why attribution,
+How a commit is attributed — `author`, `committer`, what the push uses — is
+**ADR-0003's rule and is not repeated here**. What this ADR relies on is only
+the consequence: a repository's history is an attribution trail, which is why
 history and rollback come free where a volume gave none of them.
 
 ### 3. The sandbox authenticates with a token that opens exactly one repository
 
 The platform's git server is inside the cluster. At provisioning the core mints
 a **per-demand, short-lived token**, scoped to that project's root repository,
-read-write, expiring with the sandbox. It travels in the sandbox's `Env` and it
-is the only credential the sandbox holds.
+read-write, expiring with the sandbox. It reaches the sandbox **as a projected
+file** — the shape the execution substrate spec §5 already fixes for derived
+tokens — never as an environment variable, which every child process inherits.
+It is the only credential the sandbox holds.
 
 This is the one place a credential enters the sandbox, and the reason it is
 acceptable is what the token opens: **the agent's own workbench**, which the
@@ -115,8 +118,8 @@ type ProjectRepository interface {
     // IssueToken mints the sandbox's credential: one project, read-write,
     // a TTL. The token is the demand's identity to git.
     IssueToken(ctx, projectID, demandID string, ttl time.Duration) (Token, error)
-    // Commit writes files as the PLATFORM — rules from the cockpit, the
-    // regenerated README. Author is a platform identity, never a person's.
+    // Commit writes files on the platform's behalf — rules from the cockpit,
+    // the regenerated README. Attribution follows ADR-0003.
     Commit(ctx, projectID string, files []File, author Author, message string) (Commit, error)
     Read(ctx, projectID, path string) ([]byte, error)
     // SetMirror attaches the user's remote. Direction: platform → remote.

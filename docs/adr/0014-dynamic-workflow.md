@@ -30,6 +30,10 @@ vacant.
      { key, name, type, artifacts: [document|spec|plan|test_plan|…],
        gate: human | none, substages? } ] }
    ```
+   **Where an artefact lives (added 2026-09-03):** as a file at `demand/<id>/<kind>.md` in the
+   project's root repository — [ADR-0028](0028-project-knowledge-as-a-git-repository.md).
+   "Puts an artifact on the table" means that file exists at that path. Rendered bytes
+   (a diagram's export) stay in the `ObjectStore`, referenced from the file.
    No conditionals, no stage parallelism, no rules DSL — they evolve over the same structure.
 3. **A resolution chain with inheritance:** `platform ◁ account ◁ workspace ◁ project ◁
    demand` — the nearest level wins; it is inherited by omission, overridden by declaration.

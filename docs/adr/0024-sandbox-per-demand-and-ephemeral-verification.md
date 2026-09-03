@@ -28,7 +28,9 @@ run**.
 ### A microVM per demand
 
 The boundary that has to be hard is between **accounts** and between **demands** — and that
-is the one the per-demand sandbox guarantees. A demand's threads are agents of the same
+is the one the per-demand sandbox guarantees. (For the WORKSPACE. For KNOWLEDGE the boundary
+is the project, by design: every sandbox of a project shares its root repository —
+[ADR-0028](0028-project-knowledge-as-a-git-repository.md). The workspace stays per demand.) A demand's threads are agents of the same
 account working on the same problem: mutually trusted. Spending a microVM between them would
 be using a security tool to solve a coordination problem.
 
@@ -92,3 +94,12 @@ returns only `namespace`, because k3d has no Kata RuntimeClass. The contract sui
 `namespace` tier in both adapters; the `hardware` tier will only be exercised where there is
 Kata. Meanwhile, the refusal is honest — asking for `hardware` where there is none returns an
 error, not a lesser isolation in silence.
+
+## Superseded in part — 2026-09-03
+
+**"An ephemeral pod per verification run", with its own Service and Ingress, is withdrawn.**
+The owner's decision (P-27): the address stays **per demand** — `<service>--<demand>.<domain>`
+— and when a demand needs parallel verification runs, **they queue**. It trades latency inside
+one demand for simplicity, and it removes the per-run address `EndpointURL` would have needed.
+The argument for honest evidence stands: a verification still runs from a COMMIT
+(`VerificationRun.Commit`), it just runs in the demand's sandbox, one at a time.
