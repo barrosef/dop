@@ -13,7 +13,7 @@ The sibling project (spartacus) solves it by writing a document into a Firestore
 which triggers a function that sends through SendGrid. Three things from there transfer — the
 local rehearsal with no key (it prints instead of sending), the state in the record (`sent` /
 `sent_local` / `error`) and templates versioned in the repository. The trigger does not
-transfer: here the event spine already exists (ADR-0019), and the spec says communication is
+transfer: here the event spine already exists (ADR-0018), and the spec says communication is
 *"a consumer of the event spine, not a system apart"*.
 
 ## Decision
@@ -112,7 +112,7 @@ by design. The key is born composite, even with a single action today.
 
 ### It runs in the core
 
-SendGrid's key is a credential, it lives in the vault, and the BFF has no secret (ADR-0023). It
+SendGrid's key is a credential, it lives in the vault, and the BFF has no secret (ADR-0022). It
 is one more consumer in the worker, next to the timeline and the attention box.
 
 ## Consequences

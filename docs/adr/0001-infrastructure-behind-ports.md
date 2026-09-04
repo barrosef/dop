@@ -61,6 +61,49 @@ Cases already decided:
 - **Firebase claims do not cross the boundary.** `IdentityProvider` returns a normalized
   principal: `subject`, `email`, `emailVerified`, linked providers.
 
+### When an adapter cannot meet a guarantee, the ADAPTER pays — it does not lower the bar
+
+*(absorbed from ADR-0021, 2026-09-04; that number is retired and never reused)*
+
+`SecretStore` promises **read-after-write**. The promise was born from the k8s adapter, where
+it is true. The second production adapter — GCP Secret Manager — could not meet it: Google's
+documentation is explicit that only `AddSecretVersion` followed by access **by the version
+number** is strongly consistent, while access by an alias, `latest` included, converges
+*"typically within minutes, but may take a few hours"*. And `SecretRef` is flat — account,
+kind, owner — with nowhere to keep a version.
+
+The consequence was the worst possible for a vault: on real GCP a `Get` right after a `Put`
+could return `(nil, nil)`, which by the port means "it does not exist". A credential just
+written would show up as absent, silently, and the caller would conclude the integration had
+never been configured. In the local emulator the same case passes in 0.01 s — exactly the kind
+of divergence, the local environment hiding the production path, that has already cost this
+platform two authentication failures.
+
+**The decision: the guarantee holds and the adapter pays.** The GCP adapter confirms the write
+by the version number, then waits for `latest` to catch up, with a configurable ceiling
+(`SECRET_PROPAGATION_SECONDS`, 30 s by default). If it does not converge, it **refuses** with
+an explicit `KindUnavailable`. Refusing is the part that matters: a `Put` that returns success
+while the following `Get` says "it does not exist" is worse than a `Put` that fails — the first
+produces a silently broken integration, the second produces an error somebody reads.
+
+Two ways out were rejected, and one is recorded as an evolution:
+
+- **Loosening the guarantee to "eventually consistent"** — rejected: it pushes onto every
+  caller the logic of rereading until it shows up, and the caller cannot tell "not propagated
+  yet" from "does not exist". A weak guarantee on a vault's port is one nobody uses properly.
+- **Caching the value in the process after the `Put`** — rejected: a second place where the
+  credential exists, with its own invalidation. It trades a consistency problem for a security
+  one.
+- **Making `Get` read by version number** — the strongly consistent path. It requires
+  `SecretRef` to carry the version, i.e. `Put` returning an identifier the caller keeps. That
+  changes the PORT, not one adapter: recorded as an evolution, not rejected.
+
+The residue, written down so it is not a surprise: a `Put` on GCP is slower and may fail on
+non-convergence, behaviour the emulator never reproduces — the local test does **not** cover
+that path; and if somebody disables or destroys a version from outside, `latest` diverges
+between the two (the emulator falls back, real GCP fails), as documented in
+`dop-infra/docs/local-environment.md`.
+
 ## Alternatives considered
 
 **Couple to GCP and port later.** Faster at the start. Rejected because "later" is when the

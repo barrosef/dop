@@ -1,7 +1,7 @@
 # ADR-0020 — Firebase emulators in the local environment; Terraform as the single owner
 
 - **Status:** Accepted
-- **Date:** 2026-08-30
+- **Date:** 2026-08-30 · **slimmed 2026-09-04** (the operational recipe moved to the `dop-infra` spec, §4.4)
 - **Refines:** the `dop-infra` spec (it replaces MinIO in the local environment)
 
 ## Context
@@ -21,24 +21,18 @@ third adapter of the `ObjectStore` port when there is a self-hosted customer wit
 `functions`, `pubsub` and `eventarc` are available in the same emulator if some case comes
 up — a latent capability, not a component (our messaging is NATS and the worker is the core).
 
-**2. Persistence across restarts** — the combination that works:
-- `--export-on-exit <dir>` **plus** a **conditional** `--import <dir>` (only pass the flag if
-  the directory exists; otherwise the first start fails);
-- **`stop_grace_period: 30s`** on the container — without it, SIGKILL arrives before the
-  export finishes and the data is lost exactly when stopping;
-- `reset` removes the directory **through the container** (it is born root-owned and the user
-  cannot delete it).
+**2. The emulator keeps its data across restarts, and its configuration is versioned.** The
+mechanics — export on exit, a conditional import, the grace period, the environment-variable
+bridge — are operational and live in the `dop-infra` spec, §4.4. What is decided here is that
+the local environment **must** survive a restart: an emulator that loses data on every stop
+pushes developers back to the cloud for anything that takes more than one session.
 
 **3. The emulator's configuration is the deploy's configuration.** `firebase.json`,
 `.firebaserc` and the rules stay **versioned in the repository** and are mounted **read-only**
 into the emulator — the same files the deploy uses. An emulator with its own configuration
 lies about production.
 
-**4. An environment-variable bridge.** The Cloud Storage SDK reads `STORAGE_EMULATOR_HOST`;
-the Firebase CLI exposes `FIREBASE_STORAGE_EMULATOR_HOST`. **The application bridges them at
-boot** — without that, a local upload goes to the real bucket.
-
-**5. Terraform is the single owner of what it manages.** Resources created through the
+**4. Terraform is the single owner of what it manages.** Resources created through the
 console or the CLI stay out of the state and are reverted or deleted on the next `apply` — a
 silent loss of a feature, already observed in a sibling project. The rule: **nothing is
 created through the console**; what the Firebase CLI publishes (rules, indexes) lives in

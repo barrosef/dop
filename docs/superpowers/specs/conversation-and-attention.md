@@ -40,7 +40,7 @@ SUOPT-1315
   widens injection.
 - **An operator's intervention** in a thread (an instruction coming from the attention box)
   comes in as a `system` message in the middle of the conversation — it preserves the cached
-  prefix (ADR-0012).
+  prefix (ADR-0011).
 - **Investigation-thread hygiene:** once the finding is published, the raw tool results (dumps,
   logs) are cleaned from the transcript by context editing; the finding is the durable record.
 
@@ -54,7 +54,7 @@ and in what order". It is not the chat: it is what leads to the right chat.
 | An agent's question / a blocked thread | ADR-0010 | the thread |
 | A spec waiting for approval | the spec's cycle (SP-4's core) | the spec |
 | A PR waiting for review | ADR-0007 | the PR with its evidence |
-| A conflict escalated from the merge queue | ADR-0008 | the conflict's context |
+| A conflict escalated from the merge queue | ADR-0007 | the conflict's context |
 | **A cross-cutting situation detected by the techlead** — a dependency, an overlap, an interference — with ready directive options and a recommendation | ADR-0015 | the coordination decision |
 | A demand paused on budget | ADR-0011 | a spending decision |
 | The account's integration broken | the integrations spec, R-1 | the integration |

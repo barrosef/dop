@@ -44,7 +44,7 @@ N implementations of the same policy, diverging.
    governs as its own.
 4. **A project consumes the resources of the account that owns the workspace** — the
    integrations rule, unchanged, now holds for everything: the git flow attached to the
-   project parameterizes the merge queue (ADR-0008) and the verification; the skills and the
+   project parameterizes the merge queue (ADR-0007) and the verification; the skills and the
    workflow attached parameterize the agents (their cards, ADR-0010).
 
 ## Alternatives considered

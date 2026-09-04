@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-03
-- **Refines:** [ADR-0009](0009-context-as-subsystem.md) (the three layers get a home on disk), [ADR-0024](0024-sandbox-per-demand-and-ephemeral-verification.md) (the knowledge boundary moves up to the project; the workspace boundary stays)
+- **Refines:** [ADR-0009](0009-context-as-subsystem.md) (the three layers get a home on disk), [ADR-0024](0024-sandbox-per-demand.md) (the knowledge boundary moves up to the project; the workspace boundary stays)
 - **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (**every rule about commits, authorship and push lives there** — this ADR only references it), [ADR-0006](0006-demand-as-event-log.md) (a push is an event), [ADR-0013](0013-resource-as-unit-of-sharing.md) (a repository is a resource)
 - **Scope:** HOW the project's knowledge is structured and shared. Not how a commit is attributed or pushed — that is ADR-0003's, for this repository as for any other.
 
@@ -15,8 +15,7 @@ sends, no requests, no ConfigMaps. From the agent's point of view the content
 simply exists. The knowledge is SHARED and COLLABORATED between agents:
 transparent, practical, accessible, available and secure.*
 
-Two attempts preceded this decision and both were the wrong kind, recorded in
-[`analysis/2026-09-03-project-knowledge-availability.md`](../analysis/2026-09-03-project-knowledge-availability.md):
+Two attempts preceded this decision, and both were the wrong kind:
 
 1. **A ConfigMap projected as a volume** — config, not data; lives in etcd; caps
    at 1 MiB. Rejected by the owner on sight.
@@ -88,7 +87,7 @@ is weaker (spoofable inside the cluster) and harder to audit.
 A user may point the project at a remote of their own — GitHub, GitLab — at any
 moment. When they do, **the platform's repository stays the primary** and the
 user's remote becomes a **push mirror**: every push to the platform is pushed
-onward by the platform, with the user's credential from the vault (ADR-0023).
+onward by the platform, with the user's credential from the vault (ADR-0022).
 The sandbox never sees that credential.
 
 There is **no two-way sync in v1**. Two-way sync of a repository two parties

@@ -1,7 +1,10 @@
-# ADR-0024 — A microVM per demand, a single worktree, verification in an ephemeral pod
+# ADR-0024 — A microVM per demand, with a single shared worktree
 
-- **Status:** Accepted
-- **Date:** 2026-08-31
+- **Status:** Accepted, **superseded in part** — the third decision this ADR carried, *"an
+  ephemeral pod per verification run"*, was withdrawn (P-27) and then replaced by
+  [ADR-0030](0030-verification-runs-from-source.md). What still holds is the sandbox: one
+  microVM per demand, one worktree shared by its threads. See §"Superseded in part" below.
+- **Date:** 2026-08-31 · retitled 2026-09-04
 - **Resolves:** P-24 (sandbox provisioning) and the question of isolation between threads
 
 ## Context

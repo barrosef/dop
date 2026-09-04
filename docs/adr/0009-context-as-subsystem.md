@@ -31,7 +31,7 @@ and **how** it is assembled per demand.
    the agent's carry-on luggage — curated, not dumped.
 4. **A write-back at closing**: the demand's findings (ADR-0010) and lessons go into the
    memory layer. Context is a cycle, not a file.
-5. **The index updates on a merge event** (ADR-0006/0008), not on a cron: the map follows
+5. **The index updates on a merge event** (ADR-0006/0007), not on a cron: the map follows
    the real `main`.
 
 ## Alternatives considered

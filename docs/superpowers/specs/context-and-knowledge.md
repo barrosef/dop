@@ -56,9 +56,9 @@ A size discipline: the package grows with the **demand**, not with the project. 
 fit is on the shelf — the agent opens it with the one tool it has (`run_command`):
 `cat /project/index/<repo>.md`, `grep -r … /project/memory/`. There is no `search_memory` and
 no `read_index` tool, and there must not be: every named tool is a permanent cost in every
-turn's prefix (ADR-0023, `tools.go`), and the shelf makes them a `cat`.
+turn's prefix (ADR-0022, `tools.go`), and the shelf makes them a `cat`.
 
-**Two engineering requirements (ADR-0012):**
+**Two engineering requirements (ADR-0011):**
 
 - **Deterministic serialization.** The package goes into the prompt's cached prefix: a stable
   order, no timestamps, no volatile IDs. A changed byte invalidates the cache from there on —

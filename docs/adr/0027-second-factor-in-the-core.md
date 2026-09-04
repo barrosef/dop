@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-02
-- **Refines:** [ADR-0001](0001-infrastructure-behind-ports.md) (it creates the `SMSer` port), [ADR-0025](0025-communication-trigger-and-channel.md) (a channel without the Notifier), [ADR-0023](0023-agent-runtime-in-the-core.md) (the BFF has no secret)
+- **Refines:** [ADR-0001](0001-infrastructure-behind-ports.md) (it creates the `SMSer` port), [ADR-0025](0025-communication-trigger-and-channel.md) (a channel without the Notifier), [ADR-0022](0022-agent-provider-as-port.md) (the BFF has no secret)
 - **Depends on:** [ADR-0026](0026-invite-without-token.md) (a verified e-mail is already an identity requirement)
 
 ## Context
@@ -31,10 +31,10 @@ does have MFA. Three things make it a bad home here:
    Identity Platform, and the Auth emulator does not do TOTP enrolment. We would
    ship a security path that **is never run locally** — the exact divergence
    that already cost this platform two authentication failures and produced
-   [ADR-0021](0021-read-after-write-of-a-secret.md).
+   [ADR-0001](0001-infrastructure-behind-ports.md).
 
 **The platform's.** The TOTP seed is a credential; it belongs in the vault,
-which lives in the core (ADR-0023). The Mailer port already exists (ADR-0025).
+which lives in the core (ADR-0022). The Mailer port already exists (ADR-0025).
 The event log already exists (ADR-0006). What is missing is one domain and one
 channel.
 
@@ -113,7 +113,7 @@ fulfillable by every adapter stays out.
 
 ### 5. Where the gate is, and what it gates
 
-Verification runs in the **core**, because that is where the vault is (ADR-0023).
+Verification runs in the **core**, because that is where the vault is (ADR-0022).
 The BFF forwards the challenge and the answer; it stores no seed and no code.
 
 **The core records the step-up per (user, session), with an expiry.** The BFF

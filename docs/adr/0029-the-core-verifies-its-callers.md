@@ -2,8 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-03
-- **Refines:** [ADR-0016](0016-bff-without-database.md) (the edge stays the one that authenticates the person — what changes is that the core no longer takes its word for the conclusion), [ADR-0017](0017-proto-as-source-of-truth.md) (convention 5: identity travels in the metadata, not in the body — still true, and now the metadata is verified)
-- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (the `IdentityProvider` port already existed and does the heavy half), [ADR-0006](0006-event-log-is-the-truth.md) (an event's authorship is only worth what the actor behind it is worth)
+- **Refines:** [ADR-0016](0016-stack-go-core-python-bff.md) (the edge stays the one that authenticates the person — what changes is that the core no longer takes its word for the conclusion), [ADR-0017](0017-proto-as-source-of-truth.md) (convention 5: identity travels in the metadata, not in the body — still true, and now the metadata is verified)
+- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (the `IdentityProvider` port already existed and does the heavy half), [ADR-0006](0006-demand-as-event-log.md) (an event's authorship is only worth what the actor behind it is worth)
 - **Resolves:** P-18
 
 ## Context

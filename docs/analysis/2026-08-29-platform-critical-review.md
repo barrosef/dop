@@ -169,7 +169,7 @@ serves projections, it does not replace the log.
   requirement conflicts by construction.
 - An organization credential + human authorship (ADR-0003) — exactly the practice of serious CI
   bots.
-- Verification by domain (ADR-0004) — validated against what GitHub/GCP actually do.
+- Verification by domain (ADR-0002) — validated against what GitHub/GCP actually do.
 - Spec-driven as the method — aligned with the market's direction (Kiro, Spec Kit), and DOP was
   already converging on it before naming it.
 - The commit attribution rule (dop-app) — genuine domain discovered through the UI.

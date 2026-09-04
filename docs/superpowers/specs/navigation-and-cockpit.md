@@ -62,11 +62,11 @@ Unchanged since rev. 1. Outside the cockpit there is only Auth and First use.
 | Function | Panel | Centre |
 |---|---|---|
 | **Chat** | The demand's threads: `#main` + subagents, cards, findings, launching a subagent (ADR-0010) | **The effective flow's stage ruler** (ADR-0014), in tabs — artifacts, gates and a renderer per stage type |
-| **Repos** | The full git tree: repos → branches → PRs/MRs → files (modified, ignored, gitStatus) → **the merge queue** (ADR-0008) | The diff, the file, the PR's detail with its evidence package, the queue's state |
+| **Repos** | The full git tree: repos → branches → PRs/MRs → files (modified, ignored, gitStatus) → **the merge queue** (ADR-0007) | The diff, the file, the PR's detail with its evidence package, the queue's state |
 | **Infra** | Three groups: **applications** (the demand's pods/containers), **databases**, **remote services** — with their state | Streaming logs, a terminal, the resource's detail. **It reaches the application's environment, never the agent's microVM** |
 | **QA** | Quality groups: Acceptance (the spec's criteria) · Tests (aaa/e2e/integration) · Coverage · Allure reports · History/flakiness · **Standards & conformance · Duplication · Complexity & debt · Dependencies & vulnerabilities** (a Sonar-like stack in a container) | The selected group's panel |
 | **Architecture** | **The demands' architectural artifacts**, grouped per task and per type — diagrams (architectural, flow/operational), technical documents, opinions/executive reports — plus the project's map (the ADR-0009 index) in the project scope | An interactive canvas for diagrams (e.g. Claude Design), a viewer for documents. **Tied to the tasks and filtered by the task header**: in the demand scope, only that task's artifacts |
-| **Timeline** | Event filters/groupings: agents, git, gates, cost | The timeline (a projection of the log — ADR-0006): who did what, with which credential; cost and cache (ADR-0011/0012). It is where auditing and replay become visible |
+| **Timeline** | Event filters/groupings: agents, git, gates, cost | The timeline (a projection of the log — ADR-0006): who did what, with which credential; cost and cache (ADR-0011). It is where auditing and replay become visible |
 
 **The QA × Architecture split: QA measures, Architecture explains.** Every index — of product
 or of code — is QA; Architecture is a **product of the work**: its artifacts are born of the

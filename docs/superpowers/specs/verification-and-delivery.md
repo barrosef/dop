@@ -9,14 +9,16 @@
 > human review inside the provider (that is git's native gate, kept).
 
 The base decisions: [ADR-0007](../../adr/0007-no-green-no-pr.md),
-[ADR-0008](../../adr/0008-merge-queue-per-repository.md),
+[ADR-0030](../../adr/0030-verification-runs-from-source.md),
+[ADR-0007](../../adr/0007-no-green-no-pr.md),
 [ADR-0003](../../adr/0003-organization-credential-human-authorship.md).
 
 ## 1. The path, end to end
 
 ```
 the spec (executable criteria)
-  → the agent iterates in the sandbox to green   [a persistent failure → the attention box]
+  → the agent iterates on the BENCH to green     [a persistent failure → the attention box]
+  → a RUNNER verifies the commit from source     [clean environment, ADR-0030]
   → the critic reviews (a clean instance)        [rejected → back to the agent, with the opinion]
   → a PR with the evidence package               [the account's credential; author = the dev]
   → the repository's merge queue                 [rebase → re-verification → serial merge]
@@ -25,8 +27,13 @@ the spec (executable criteria)
 
 ## 2. Acceptance
 
-Criteria from the spec that a machine executes in the sandbox: test suites (unit/AAA/e2e over
-the internal compose stack) and checks derived from the spec. Each run's result is an event
+Criteria from the spec that a machine executes in a **runner** — an ephemeral environment that
+pulls the COMMIT and builds the application from source ([`verification-runner.md`](verification-runner.md),
+ADR-0030). Not on the bench: evidence produced where the agent worked speaks about the agent's
+environment, with whatever it installed along the way, and not about a clean one.
+
+The suites are the same (unit/AAA, e2e, integration); what changed is where they run and what
+that makes the green mean. Each run's result is an event
 (ADR-0006). ADR-0007's rule: **no PR opens with acceptance failing** — a persistent failure
 becomes a block with a question, never a broken PR.
 
@@ -34,7 +41,7 @@ becomes a block with a question, never a broken PR.
 
 - An independent instance with a clean context (it does not inherit the conversation of
   whoever implemented it); a **strong** model, **maximum** effort — there is no saving on the
-  brake (ADR-0011/0012).
+  brake (ADR-0011).
 - It receives: the full diff, the spec, the acceptance results, the demand's findings.
 - It issues a structured opinion: `approve | approve with reservations | reject (reasons)`. A
   rejection goes back to the agent with the opinion; an approval goes on to the PR with the

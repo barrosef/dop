@@ -17,7 +17,11 @@ The base decisions: [ADR-0001](../../adr/0001-infrastructure-behind-ports.md),
 ## 1. One demand, one sandbox
 
 Each active demand gets a **sandbox**: a microVM containing the agent(s), the code workspace
-and an internal Docker that brings up that demand's stack for testing and QA.
+and an internal Docker for what the agent's own commands need while it works.
+
+**The sandbox does not run the demand's application.** It exists only during a verification, or
+while a developer asked to look at it, and both happen in a runner
+([`verification-runner.md`](verification-runner.md) §4, ADR-0030).
 
 Kubernetes is the orchestration surface: **one namespace per demand** (`dop-<short-id>`, with
 account/workspace/project/demand in labels — hierarchical identification is a label, not a
@@ -30,7 +34,7 @@ name). Isolation goes up from a container to a VM through one line:
 | With neither | a strict securityContext | `namespace` |
 
 Two demands with the same repositories on different branches run with no interference: each
-sandbox has its own workspace, its own stack and its own compose network.
+sandbox has its own workspace and its own compose network.
 
 ## 2. The `ExecutionTarget` port
 
@@ -65,7 +69,7 @@ the design does not depend on it.
 |---|---|
 | **Agents** | 1 main + N subagents (ADR-0010), through the `AgentRuntime` port (§7) |
 | **The workspace** | Worktrees of the demand's branches, in a PVC |
-| **The internal Docker** | `docker compose -p <demand>`: its own network and DNS — `backend` resolves within that composition. It builds locally; no shared BuildKit/registry needed |
+| **The internal Docker** | For what the agent's own commands need while iterating — a container a test spins up, a tool that expects a daemon. **Not the demand's application:** that exists only in a runner, during a verification or a dev session (ADR-0030). Evidence produced here would speak about the agent's environment, with whatever it installed along the way, and not about a clean one |
 | **The project's root repository** | Cloned at `/project` at provisioning, **read-write** — the agent commits, pushes, pulls ([ADR-0028](../../adr/0028-project-knowledge-as-a-git-repository.md)). The context package is a different thing: assembled per TURN, into the prompt ([`context-and-knowledge.md`](context-and-knowledge.md)) |
 | **Caches** | A volume **per account** — never global: a cache shared between accounts is a side channel |
 
@@ -111,7 +115,7 @@ The first adapter: the Claude Agent SDK; one adapter per agent provider of the a
 tools, model, budget) comes from ADR-0010; the model, from the router (ADR-0011), **restricted
 to the menu of the account's agent integrations**.
 
-The port exposes the economy knobs (ADR-0012), filled in by the card: the **model**, the
+The port exposes the economy knobs (ADR-0011), filled in by the card: the **model**, the
 **effort**, the **budget** (a task budget — the agent sees the ceiling and paces itself) and
 the **cache policy** (a stable prefix layout; an operator's intervention through a `system`
 message mid-conversation, never by editing the top of the prompt). The event stream reports
@@ -121,8 +125,8 @@ message mid-conversation, never by editing the top of the prompt). The event str
 
 | # | |
 |---|---|
-| R-1 | Docker in a microVM with no cache pulls images on every demand — a per-account cache is a mandatory mitigation |
-| R-2 | Resuming brings the compose stack back up: real latency perceived by the dev |
+| R-1 | Docker in a microVM with no cache pulls images on every demand — a per-account cache is a mandatory mitigation, and the runner (ADR-0030) mounts the same volume |
+| R-2 | Resuming restores the bench, not an application — since 2026-09-04 the demand keeps none. What the dev perceives as latency moved to the dev session: asking to see the application means waiting for a build. The account's cache is what keeps that from being a wait each time |
 | R-3 | An ingress per demand multiplies objects/certificates in the controller |
 | R-4 | The Kata `RuntimeClass` is missing in many distributions — the adapter detects it and applies the tier policy (§2), it never degrades in silence |
 | R-5 | The egress allowlist breaks an unexpected legitimate dependency (e.g. a package registry) — the list is per project, editable, with audited changes |

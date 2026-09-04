@@ -2,8 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-04
-- **Supersedes:** [ADR-0024](0024-sandbox-per-demand-and-ephemeral-verification.md)'s "an ephemeral pod per verification run" — the argument stands, the mechanism changes
-- **Depends on:** [ADR-0007](0007-no-green-no-pr-native-verification-before-the-human.md) (evidence names the commit it ran on), [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (the credential that pulls the code)
+- **Supersedes:** [ADR-0024](0024-sandbox-per-demand.md)'s "an ephemeral pod per verification run" — the argument stands, the mechanism changes
+- **Depends on:** [ADR-0007](0007-no-green-no-pr.md) (evidence names the commit it ran on), [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (the credential that pulls the code)
 - **Refines:** P-27 (one address per demand; runs queue)
 
 ## Context
@@ -138,11 +138,16 @@ while nothing happens. Revisit with a measured start latency, not before.
   release cadence. It is the maintenance we accepted in §2.
 - **The project declares its dependencies**, in a few lines. It is a tax, and it
   is the smallest of the ones available.
-- **The developer's bench is now an open question of its own**: does a demand
-  keep a running application while the agent works, or does the application only
-  exist during a verification? The first costs a second environment per demand;
-  the second is cheaper and poorer.
-- **P-38's verification runner stops being undefined** — it now has a shape. It
-  is still not built.
+- **The demand keeps no running application** — decided 2026-09-04, closing the
+  question this ADR opened. It exists only during a verification, or while a
+  developer asked to look at it (a *dev session*: the same runner, no checks,
+  held to a deadline). The bench is where code is written, not where it runs.
+  It is the cheaper and poorer option, chosen knowingly: seeing the application
+  now costs a build, and the account's cache is what keeps that bearable.
+- **P-38's verification runner stops being undefined** — it now has a shape,
+  written up in [`verification-runner.md`](../superpowers/specs/verification-runner.md):
+  the port's nine guarantees, `.dop/verification.yml`, and the code the change
+  touches. It is still not built.
 - **The substrate spec's "internal Docker" line no longer describes the
-  verification path**, and has to say so.
+  verification path** — corrected, along with the acceptance section of
+  [`verification-and-delivery.md`](../superpowers/specs/verification-and-delivery.md).

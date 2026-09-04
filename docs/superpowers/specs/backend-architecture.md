@@ -12,7 +12,7 @@
 The base decisions: [ADR-0016](../../adr/0016-stack-go-core-python-bff.md) (stack and
 boundary), [ADR-0017](../../adr/0017-proto-as-source-of-truth.md) (the contract),
 [ADR-0018](../../adr/0018-postgres-persistence.md) (the database),
-[ADR-0019](../../adr/0019-outbox-and-nats.md) (events),
+[ADR-0018](../../adr/0018-postgres-persistence.md) (events),
 [ADR-0020](../../adr/0020-firebase-emulators-and-single-owner.md) (local and Terraform),
 [ADR-0001](../../adr/0001-infrastructure-behind-ports.md) (ports).
 
@@ -216,7 +216,7 @@ The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0
 
 **What the foundation did not have on 2026-08-31, and has since:** the domain services are
 implemented and registered (`internal/app/register.go`), the `AgentRuntime` lives in the core
-with two provider adapters (ADR-0023), and the sandbox launcher has its Kubernetes adapter. The
+with two provider adapters (ADR-0022), and the sandbox launcher has its Kubernetes adapter. The
 sentence that used to stand here — "the servers are a skeleton" — was true for about a day and
 then kept misleading planning; it is corrected rather than deleted, because knowing that the
 foundation shipped faster than the document is itself worth recording.

@@ -105,7 +105,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
 
 - **US-4.1** As a dev, I want to create an organization with a name and a company registration
   number and use it immediately.
-  - autofill of the legal name/address; the creator becomes `owner`; no waiting (ADR-0004)
+  - autofill of the legal name/address; the creator becomes `owner`; no waiting (ADR-0002)
 - **US-4.2** As an owner, I want to verify the domain through a TXT record to unlock automatic
   entry by an e-mail of the domain, the badge and a handle dispute.
 - **US-4.3** As a dev, I want to switch between the personal account and organizations in a
@@ -210,7 +210,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   git status, diffs file by file.
   - branches named according to the attached git flow
 - **US-8.2.2** As a dev, I want the **merge queue** per repository — position, re-verification,
-  overlaps — and to decide escalated conflicts (ADR-0008).
+  overlaps — and to decide escalated conflicts (ADR-0007).
 
 ### 8.3 Infra (the panel: applications · databases · remote services)
 - **US-8.3.1** As a dev, I want to see the demand's applications with their state, streaming logs
@@ -239,7 +239,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
 
 ### 8.6 Timeline (the panel: event filters · the centre: the timeline)
 - **US-8.6.1** As a dev, I want the demand's timeline — who did what, with which credential —
-  filterable by agents, git, gates and cost (ADR-0006/0011/0012).
+  filterable by agents, git, gates and cost (ADR-0006/0011).
 
 ---
 

@@ -47,7 +47,7 @@ same as the integrations':
 
 | Attached resource | Who reads it |
 |---|---|
-| `git_flow` | the merge queue (ADR-0008), verification and delivery, branch naming per card type |
+| `git_flow` | the merge queue (ADR-0007), verification and delivery, branch naming per card type |
 | `workflow` | the gates and roles of the demand's cycle (SP-4's core) |
 | `skill` | the agents' cards (ADR-0010) |
 | `integration` | repositories, task manager, the agents' models |

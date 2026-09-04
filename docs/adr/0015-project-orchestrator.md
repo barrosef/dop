@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Complements:** [ADR-0008](0008-merge-queue-per-repository.md) (it gives the overlap
+- **Complements:** [ADR-0007](0007-no-green-no-pr.md) (it gives the overlap
   detection an owner), [ADR-0010](0010-multi-agent-per-demand.md) (agents per demand),
   [ADR-0006](0006-demand-as-event-log.md) (the raw material for the observation)
 
@@ -10,7 +10,7 @@
 
 With parallel demands in the same project, **cross-cutting** situations appear that no
 demand's agent sees on its own: two demands touching the same files, one demand depending on
-another's result, behaviour changes in which one interferes with the other. ADR-0008
+another's result, behaviour changes in which one interferes with the other. ADR-0007
 foresaw "the orchestrator sees the overlap" without saying who it is. It now has a name and
 a nature: **an agent**, not a cron of rules.
 

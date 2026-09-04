@@ -119,7 +119,7 @@ The `dop-local` namespace, composed with Kustomize. **Built and tested on 2026-0
 | Component | Role | Port |
 |---|---|---|
 | **PostgreSQL 17 + pgvector** | State, the event log and semantic search (ADR-0018) | 5432 |
-| **NATS JetStream** | The event broker (ADR-0019) | 4222 · monitor 8222 |
+| **NATS JetStream** | The event broker (ADR-0018) | 4222 · monitor 8222 |
 | **The Firebase emulators** | Auth and Storage — the same SDK as production (ADR-0020) | 9099 · 9199 · hub 4400 |
 
 **Kustomize, not Helm** — a small, internal set; no template language to learn, and the `local`
@@ -151,6 +151,24 @@ imposes a minimum release age against a supply chain attack.
 **Measured consumption:** ~958 MB in total (the cluster 935 + the LB 10 + the registry 13). The
 emulator is the heaviest because it is Java; `k3d cluster stop` gives everything back while
 preserving the data.
+
+### 4.4 The emulator's data across restarts
+
+*(the operational half of [ADR-0020](../../adr/0020-firebase-emulators-and-single-owner.md),
+moved here on 2026-09-04: the decision is the ADR's, the recipe is this spec's)*
+
+The combination that works — each part is there because its absence broke something:
+
+- `--export-on-exit <dir>` **plus** a **conditional** `--import <dir>`: pass the import flag
+  only if the directory exists, otherwise the very first start fails;
+- **`stop_grace_period: 30s`** on the container — without it SIGKILL arrives before the export
+  finishes, and the data is lost exactly when stopping;
+- `reset` removes the directory **through the container**: it is born root-owned and the user
+  cannot delete it from outside.
+
+**The environment-variable bridge.** The Cloud Storage SDK reads `STORAGE_EMULATOR_HOST`; the
+Firebase CLI exposes `FIREBASE_STORAGE_EMULATOR_HOST`. **The application bridges them at
+boot** — without that, a local upload goes to the real bucket.
 
 ## 5. An emulator is not an adapter
 

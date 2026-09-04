@@ -27,7 +27,7 @@ Postgres — not even "just for a quick query". Two owners of the schema is how 
 dies. When the BFF needs to record something, it **calls the core**, which writes state and
 event in the same transaction.
 
-**~~The `AgentRuntime` lives in the BFF~~ — REPLACED by [ADR-0023](0023-agent-runtime-in-the-core.md): the runtime moved to the core, because the provider's credential cannot reach the layer exposed to the internet.** ~~The `AgentRuntime` lives in the BFF~~ (the substrate's ADR-0015 §7): the core decides *what*
+**~~The `AgentRuntime` lives in the BFF~~ — REPLACED by [ADR-0022](0022-agent-provider-as-port.md): the runtime moved to the core, because the provider's credential cannot reach the layer exposed to the internet.** ~~The `AgentRuntime` lives in the BFF~~ (the substrate's ADR-0015 §7): the core decides *what*
 (flow, card, budget, routing — ADR-0011); the BFF runs the conversation with the model and
 returns events to the core. The sandbox talks **only to the BFF**, which keeps the egress
 allowlist minimal (F-10).

@@ -31,12 +31,13 @@ disambiguation convention is recorded.
 | **Projection** | A read derived from the event log (the dossier, the timeline, the attention box, the metrics). It never writes the truth |
 | **Card** | A work item coming from the task manager. It has a dynamic type, defined by the provider |
 | **Demand** | A card in execution on the platform: a sandbox, threads, a spec, events. The card is the origin; the demand is the work |
-| **Sandbox (the bench)** | Where the AGENT works: one per demand, with the workspace, the shelf and the agent's containers. It holds the dirty working tree, and everything installed along the way. A security boundary — it runs untrusted code |
+| **Sandbox (the bench)** | Where the AGENT works: one per demand, with the workspace, the shelf and the agent's containers. It holds the dirty working tree, and everything installed along the way. A security boundary — it runs untrusted code. **It does not run the demand's application** |
 | **Runner** | Where a VERIFICATION runs: an ephemeral environment, separate from the sandbox, that pulls a COMMIT, builds from source and starts the application (ADR-0030). It starts from nothing, which is what makes its evidence about a clean environment and not about the agent's |
 | **The application** | The customer's software, built from source in the runner. **No image of it is ever built, pushed or deployed** — the slow sequence is not the build, it is `build → push → pull` around a registry |
 | **Dependency** | A third party the application needs to run: a database, a cache, a broker. Always a PUBLISHED image (`postgres:16`), pulled and never built. The project declares which ones and which versions — a few lines, not a translation of its compose file |
-| **Provisioning** | Creating an environment. It is two different acts and they are decided separately: provisioning the **bench** (so the agent can work) and provisioning a **runner** (so a verification can run) |
-| **The demand's address** | `<service>--<demand>.<domain>` — ONE per demand (P-27). Whatever is running takes it: the bench, or the runner during a verification. Parallel runs queue, so there is one holder at a time |
+| **Provisioning** | Creating an environment. It is two different acts and they are decided separately: provisioning the **bench** (so the agent can work) and provisioning a **runner** (so a verification can run, or so a developer can look at the application) |
+| **Dev session** | A runner with no checks, asked for by a developer who wants to click through the application. Same build from the same kind of commit; it holds the demand's address and dies on a deadline |
+| **The demand's address** | `<service>--<demand>.<domain>` — ONE per demand (P-27). Published for a DEV SESSION and nothing else: a verification's checks reach the application at `localhost` inside the run, so nothing queues for the address |
 | **Subagent** | A specialist agent launched inside the demand, in the same sandbox, with a card of its own (purpose, tools, model, budget) |
 | **Thread** | The conversation timeline with one of the demand's agents. One per agent; queryable by its siblings |
 | **Finding** | A structured result published by an agent on concluding an investigation. It becomes an event, a dossier entry and a memory |

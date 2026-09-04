@@ -48,7 +48,7 @@ produce and where to stop) and the **platform** (which events to emit):
 | `implementation` | code in the attached git flow's branches | progress per repo/task | |
 | `test` | running the suites per subtype | aaa/e2e/integration tabs, results | green is required before the PR (ADR-0007) |
 | `human_validation` | a validation plan with links | a **checklist tickable item by item**, expandable | the dev validates outside and ticks; they can talk to the agent midway |
-| `finalization` | PRs, entering the merge queue, closing | steps with idle/running/done/warn/error states | ADR-0008; a consolidated dossier |
+| `finalization` | PRs, entering the merge queue, closing | steps with idle/running/done/warn/error states | ADR-0007; a consolidated dossier |
 | `generic` | whatever the stage's description asks for | a document | an escape valve |
 
 ## 3. The resolution chain

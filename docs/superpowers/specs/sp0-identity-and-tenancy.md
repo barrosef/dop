@@ -10,8 +10,7 @@
 > [`GLOSSARY.md`](../../GLOSSARY.md). Rationales → [`adr/`](../../adr/).
 
 The base decisions: [ADR-0002](../../adr/0002-account-as-unit-of-ownership.md) (the account as
-the unit of ownership), [ADR-0005](../../adr/0005-multi-tenant-platform.md) (multi-tenant),
-[ADR-0004](../../adr/0004-organization-verification-by-domain.md) (verification by domain),
+the unit of ownership, multi-tenancy from the data model, and verification by domain),
 [ADR-0001](../../adr/0001-infrastructure-behind-ports.md) (ports),
 [ADR-0027](../../adr/0027-second-factor-in-the-core.md) (the second factor).
 
@@ -97,7 +96,7 @@ proven is a lock whose key nobody has tested. An `email` factor requires a **ver
 (the `IdentityProvider`'s guarantee 5, the same one ADR-0026 leans on).
 
 **Verification runs in the core**, because the TOTP seed is a credential and lives in the vault
-(ADR-0023): the BFF forwards the challenge and the answer, and stores neither seed nor code. The
+(ADR-0022): the BFF forwards the challenge and the answer, and stores neither seed nor code. The
 core records the step-up per (user, session) with an expiry, and the session identifier travels
 in the metadata, alongside `x-actor-id` and `x-account-id`.
 
@@ -200,7 +199,7 @@ left would be punishing the account for the person's departure.
 company, lost access, died):
 
 - If the organization is **verified by domain**, an `admin` claims ownership by **proving
-  control of the domain again** — the same mechanism as ADR-0004. Resolved by the customer
+  control of the domain again** — the same mechanism as ADR-0002. Resolved by the customer
   themselves, with no intervention.
 - If it is **not verified**, there is no proof available. It stays open (P-6).
 
