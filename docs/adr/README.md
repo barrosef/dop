@@ -37,3 +37,4 @@ rejected, or when somebody six months from now is going to ask "why like this?".
 | [0027](0027-second-factor-in-the-core.md) | The second factor is the platform's, with three verifiers | Accepted |
 | [0028](0028-project-knowledge-as-a-git-repository.md) | The project's knowledge is a git repository, hosted by the platform | Accepted |
 | [0029](0029-the-core-verifies-its-callers.md) | The core verifies a signature; it does not believe a header | Accepted |
+| [0030](0030-verification-runs-from-source.md) | Verification builds from source in a runner, not from an image | Accepted |

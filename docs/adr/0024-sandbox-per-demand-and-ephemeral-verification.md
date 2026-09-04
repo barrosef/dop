@@ -102,4 +102,13 @@ The owner's decision (P-27): the address stays **per demand** — `<service>--<d
 — and when a demand needs parallel verification runs, **they queue**. It trades latency inside
 one demand for simplicity, and it removes the per-run address `EndpointURL` would have needed.
 The argument for honest evidence stands: a verification still runs from a COMMIT
-(`VerificationRun.Commit`), it just runs in the demand's sandbox, one at a time.
+(`VerificationRun.Commit`).
+
+**Corrected on 2026-09-04 — see [ADR-0030](0030-verification-runs-from-source.md).**
+The sentence that used to end this paragraph said the verification "just runs in
+the demand's sandbox". That was an error in the write-up, not the owner's
+decision: what was decided was the ADDRESS (one per demand, runs queue), and
+putting the run inside the sandbox contradicted this ADR's own argument by
+returning it to the dirty tree. ADR-0030 keeps the argument and changes the
+mechanism: an ephemeral RUNNER that pulls the commit and builds from source —
+no image of the project is built, pushed or deployed.
