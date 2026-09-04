@@ -84,8 +84,9 @@ developer opens a session **on the same commit** — cheap, because the cache is
 dependencies:
   - name: db
     image: postgres:16
+    port: 5432                      # how the runner knows it came up
     env: { POSTGRES_PASSWORD: test }
-    ready: "pg_isready -U postgres"
+    ready: "pg_isready -h 127.0.0.1"   # optional, and it runs IN THE RUNNER
 build: "go build ./..."
 start: { command: "./bin/api", port: 8080 }
 checks:
@@ -93,6 +94,17 @@ checks:
   - { kind: integration, command: "go test -tags=integration ./..." }
 cache: ["/root/.cache/go-build", "/go/pkg/mod"]
 ```
+
+**`port` is required on a dependency** and readiness is a TCP connection to it.
+The optional `ready` command refines that, and it runs **in the runner**, not in the
+dependency: on Kubernetes the dependency is a container of the same pod, and its binaries are
+not ours to call. A port that opens before the service is really ready — Postgres accepting
+connections during recovery — is what `ready` is for.
+
+Both `start` and `checks` are optional, but not both at once: a project with only unit tests
+has nothing to start, and demanding a fake `start:` from it would be the tax pretending to be
+a rule. A project with no `start` cannot open a dev session, and the platform says so instead
+of raising an environment that answers nothing.
 
 **With no file, the run REFUSES and names the file.** Guessing how to build somebody's
 application is the class of silent lie this design exists to avoid — a wrong guess produces a
@@ -104,9 +116,15 @@ from source is the application, and only it.
 
 ## 6. Where the dependencies live, and why it costs nothing
 
-On Kubernetes the dependencies are **containers in the SAME pod** as the runner; on Docker they
-are containers on one network. Both give the application the same thing: its dependencies at
-`localhost:<port>`.
+On Kubernetes the dependencies are **containers in the SAME pod** as the runner. On Docker they
+join the runner's **network namespace** (`--network container:<runner>`). Both give the
+application the same thing: its dependencies at `localhost:<port>`.
+
+The Docker half was written first with a network alias — the dependency reachable by its
+declared *name* — and the Kubernetes adapter is what caught it: a pod gives `localhost`, an
+alias gives a hostname, and an application configured for one would break on the other. That
+is compose's translation problem coming back under another name, and it is exactly the kind of
+divergence two adapters exist to expose.
 
 That is what removes the translation problem. A compose file's networking exists so that
 `backend` resolves; a single pod gives the application `localhost`, which is simpler and needs
@@ -126,6 +144,12 @@ same burden every CI provider carries, and it is smaller than a builder plus a r
 
 The account's cache volume (already in the substrate spec: per account, never global, because
 a shared cache is a side channel) is mounted at the paths the project declared.
+
+**The cache is what decides where a run LIVES.** A volume cannot be mounted across namespaces,
+so the space a run occupies is the **account's**, not the run's — runs of one account share it
+and are told apart by their id. Getting this backwards is not a small mistake: it passes on
+Docker, where the cache is a directory on the host, and fails only on Kubernetes. It is exactly
+what the second adapter caught.
 
 **Without it the decision does not hold**: building from source on a cold cache every time
 would be slower than the registry sequence it replaces. The first run of a project pays; the
@@ -201,5 +225,6 @@ lifecycle vocabulary in both places is one less thing to learn.
 | R-2 | A cold cache makes the first run of a project slow enough to look broken — it needs to say what it is doing, not just take minutes |
 | R-3 | `.dop/verification.yml` is one more file to keep in step with how the project really builds. It drifts, and the symptom is a red that is not the code's fault |
 | R-4 | A run that dies holding the address leaves a URL answering nothing (§8) |
-| R-5 | A dev session is the most expensive thing a demand can hold, and it is held by a human who walks away. The deadline is the only thing standing between that and a bill: it has to be short by default and visible, not a setting nobody sees |
-| R-6 | Dependencies as containers in one pod share its memory limit: a hungry database starves the application, and the failure looks like the application's |
+| R-5 | The account's cache is one ReadWriteOnce volume, so two concurrent runs of an account have to land on the same node. Free on one node; on several, the second run waits. ReadWriteMany would need a storage class most installations do not have — the same wall that killed the shared volume in ADR-0028 |
+| R-6 | A dev session is the most expensive thing a demand can hold, and it is held by a human who walks away. The deadline is the only thing standing between that and a bill: it has to be short by default and visible, not a setting nobody sees |
+| R-7 | Dependencies as containers in one pod share its memory limit: a hungry database starves the application, and the failure looks like the application's |
