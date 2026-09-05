@@ -138,6 +138,27 @@ while nothing happens. Revisit with a measured start latency, not before.
   release cadence. It is the maintenance we accepted in §2.
 - **The project declares its dependencies**, in a few lines. It is a tax, and it
   is the smallest of the ones available.
+- **What TRIGGERS a run (added 2026-09-05, closing P-26).** Two triggers, and
+  only two:
+
+  1. **The end of development, automatically** — when a defined process says so.
+     That process does not exist yet: it is P-29's (reaction to an event as
+     data), and until it lands this trigger has nowhere to live. Recording it now
+     is what keeps somebody from hard-coding it into a consumer meanwhile.
+  2. **The developer asking** — they click *test*: the environment comes up, the
+     e2e run, and **the developer keeps the preview**.
+
+  Trigger 2 is the one that costs an implementation change. This ADR's §4 split
+  "a verification" and "a dev session" into two windows, and the port that was
+  built follows it: a run with checks finishes and exits, a run without them
+  holds. But "test it and leave it up for me" is ONE request, not two — so
+  holding has to become something a run is ASKED for, not something derived from
+  the absence of checks. The guarantee changes from *"a run with no checks
+  holds"* to *"a run holds when it was asked to"*.
+
+  Nothing decides trigger 1 today and nothing launches a run at all — that is
+  P-38's remaining half, and it is where both triggers will meet.
+
 - **The demand keeps no running application** — decided 2026-09-04, closing the
   question this ADR opened. It exists only during a verification, or while a
   developer asked to look at it (a *dev session*: the same runner, no checks,

@@ -58,6 +58,17 @@ application.** The application exists only
 - **during a verification** — it comes up, the checks run, it is destroyed; or
 - **while a developer asked for it** — a *dev session*, when someone wants to click through it.
 
+**Two triggers open those windows, and only two** (P-26, decided 2026-09-05):
+
+1. **the end of development, automatically**, when a defined process says so — that process is
+   P-29's and does not exist yet, so this trigger has nowhere to live until it does;
+2. **the developer asking**: they click *test*, the environment comes up, the e2e run, and the
+   developer keeps the preview.
+
+The second is one request, not two: it runs the checks **and then holds**. That is why holding
+is something a run is **asked** for and not something derived from having no checks — see §10,
+guarantee 10.
+
 The bench does not run it. That removes a second environment per demand — one that would sit
 idle most of the day, since an agent writing code is not exercising a frontend — and it removes
 the "resume brings the stack back up" latency the substrate spec listed as a risk.
@@ -192,8 +203,11 @@ lifecycle vocabulary in both places is one less thing to learn.
    address answers nothing;
 8. a run of account X cannot read account Y's cache;
 9. a project with no `.dop/verification.yml` is refused by name, before anything is created;
-10. a run with **no checks** starts and **stays** — that is a dev session (§4) — and it is the
-    deadline, an explicit stop or the demand closing that ends it, never the absence of work.
+10. a run **asked to hold** starts, runs whatever checks it has, and **stays** — that is a dev
+    session (§4). What ends it is the deadline, an explicit stop or the demand closing, never
+    the absence of work. *(The port as built derives holding from having no checks. P-26's
+    second trigger — "test it and leave it up for me" — is what makes that wrong, and the
+    change is pending; it is one field on the spec and one branch in the script.)*
 
 ## 11. What changes in the code
 
