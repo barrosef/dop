@@ -3,7 +3,7 @@
 > **Status:** Approved for review · **Date:** 2026-09-05 · **Project:** the DOP platform
 >
 > **Answers:** how a development flow is built through conversation, drawn, shared between
-> accounts, adopted, and revoked.
+> accounts, adopted, pinned, and revoked.
 >
 > **Does not answer:** the flow's own structure — `Flow`, typed stages, the inheritance chain
 > and versioning are [ADR-0014](../../adr/0014-dynamic-workflow.md) and are already built. Nor
@@ -83,6 +83,42 @@ FlowAdoption { publication_id, version, by_account_id, flow_id,
 
 Two rows for one `wasDerivedFrom`, so that neither side has to cross the boundary. It is
 duplication on purpose, and it is what makes §3 implementable.
+
+### 2.5 Inheritance across an ownership boundary is PINNED
+
+Adoption is a copy (§2.3). Inheritance down the chain is a reference. Between the two there is
+a third case, and it is the platform's default flow: inherited — no copy — but **pinned to a
+version**.
+
+The rule that decides which levels need a pin is about OWNERSHIP, not about depth:
+
+- **inside one account** (account → workspace → project → demand), inheritance stays LIVE. The
+  person who changes the flow is the same owner who lives with the change; that is governance
+  working, and a pin there would only add ceremony;
+- **across an ownership boundary** (a platform account's flow inherited by another account), it
+  is **pinned**. Whoever changes it is not whoever suffers it, and an automatic change to how
+  somebody else's development runs is the same objection that killed the live reference in §2.3.
+
+```
+AccountFlowPin { account_id, flow_id, version, pinned_at, pinned_by }
+```
+
+An account is born pinned to the version current at its creation. When the platform publishes a
+newer one, the cockpit says so — *"`@dop` published v4; you are on v3"* — and moving is an
+explicit act by owner or admin. Nothing about it is automatic.
+
+The vocabulary is dependency management's on purpose: this IS a dependency — an artefact owned
+by somebody else, pinned, upgraded deliberately. The same relationship `.dop/verification.yml`
+has with `postgres:16`.
+
+**What this buys over both alternatives.** A live reference would let the platform fix a defect
+and have it reach everyone with nobody deciding. A copy per account would mean the fix reaches
+nobody, ever, and a thousand accounts keep the defect with no way to repair it without touching
+data that is not ours. A pin makes the fix **offered** to everyone: it exists, it is visible,
+and it is taken deliberately.
+
+ADR-0014 §4 still freezes the flow's VERSION when a demand starts. The pin sits one level above
+it: it decides which version new demands freeze onto.
 
 ## 3. Revocation
 
@@ -207,8 +243,9 @@ stores, and claiming the standard without them would be a lie in the file format
 
 | Where | What |
 |---|---|
-| `migrations/` | `flow_publications`, `flow_shares`, `flow_adoptions`; `flows.origin_*`; `accounts.default_revocation_policy` |
-| `internal/domain/workflow/` | `Publish`, `Grant`, `Revoke`, `Withdraw`, `Derive`; provenance on the entity; the revocation policy as a domain type with its three values |
+| `migrations/` | `flow_publications`, `flow_shares`, `flow_adoptions`, `account_flow_pins`; `flows.origin_*`; `accounts.default_revocation_policy` |
+| `internal/domain/workflow/` | `Publish`, `Grant`, `Revoke`, `Withdraw`, `Derive`, `Pin`/`BumpPin`; provenance on the entity; the revocation policy as a domain type with its three values |
+| `internal/domain/workflow/` | `Resolve` learns the pin: crossing an ownership boundary returns the PINNED version, never the newest |
 | `internal/domain/workflow/` | reference resolution `@handle/slug[@vN]` — parsing and lookup, refusing a reference the caller was not granted |
 | `internal/domain/identity/` | `default_revocation_policy` on the account, gated by `CanManageMembers()` |
 | `internal/domain/agent/tools.go` | the four read tools and `flow.propose`, which validates and diffs without persisting |
@@ -223,7 +260,8 @@ stores, and claiming the standard without them would be a lie in the file format
 | R-2 | `terminate` stops another company's running demand. It is the correct behaviour when chosen, and it is the most destructive act in this design: it needs a confirmation that names how many demands will stop |
 | R-3 | Provenance is duplicated on both sides (§2.4). Two rows can drift — a derivation recorded on one side and not the other — and the reconciliation is nobody's job yet |
 | R-4 | A flow adopted and then edited diverges from its origin, and "there is a v4" becomes noise the adopter cannot act on without redoing their edits |
-| R-5 | The chain-not-a-graph limit will meet the first customer whose real process branches. The answer is an extension of ADR-0014, and until then the honest response is that the platform does not model it |
+| R-5 | A pin nobody ever bumps is the npm problem: every account stuck on v1 forever, and the platform unable to fix anything in practice. The notice has to be visible where flows are read, not buried in a settings screen |
+| R-6 | The chain-not-a-graph limit will meet the first customer whose real process branches. The answer is an extension of ADR-0014, and until then the honest response is that the platform does not model it |
 
 ## 9. What this design waits on
 
@@ -234,6 +272,8 @@ applies to an account is answered as **the nearest ancestor whose kind is `platf
 indexed query, no recursion. Everything else here is independent of the tree, and the isolation
 invariant does not move: every query still filters `account_id`.
 
-**The platform's default flow stays INHERITED, not derived.** Nobody chose it — it came with the
-account. If it were copied into every account at signup, the day a defect is found in it the fix
-would reach nobody. A flow somebody CHOSE to adopt earns a copy; a default does not.
+**The platform's default flow stays INHERITED — and pinned (§2.5).** Nobody chose it; it came
+with the account. Copying it into every account at signup would mean a defect found in it
+reaches nobody, ever. Leaving it live would mean a change reaches everybody with nobody
+deciding. Pinned, the fix is offered and taken deliberately. A flow somebody CHOSE to adopt
+earns a copy; a default earns a pin.
