@@ -84,4 +84,4 @@ Today's forensic reading is tomorrow's demand's context. Context is a cycle, not
 |---|---|
 | R-1 | Memory grows with no curation and becomes noise — relevance when assembling the package is the orchestrator's work, with periodic pruning |
 | R-2 | An outdated index is worse than a missing index (it lies with confidence) — which is why the update is on a merge event, never on a cron |
-| R-3 | The memory's content includes third-party text (cards, logs) — it enters the package as untrusted, by the substrate's security rule |
+| R-3 | The memory's content includes third-party text (cards, logs) — it enters the package as untrusted, by the executor's security rule |

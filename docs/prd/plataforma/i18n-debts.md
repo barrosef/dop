@@ -11,7 +11,7 @@ is ADR-0011, but nobody wrote what the dev sees, what they configure and what ha
 budget runs out. It is the biggest mismatch between what is built and what is specified — and
 organizing into epics served precisely to expose that.
 
-Epics 06 (agents), 07 (the substrate), 10 (communication) and 13 (operation) ended up with 1 or
+Epics 06 (agents), 07 (the executor), 10 (communication) and 13 (operation) ended up with 1 or
 2 stories each: they are the areas most decided and the least written.
 
 ---

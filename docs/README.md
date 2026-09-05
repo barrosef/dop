@@ -34,7 +34,7 @@ demands, specs, verification and delivery, with a human deciding at the gates.
 | [`backend-architecture`](superpowers/specs/backend-architecture.md) | The core, the BFF, the boundary, the schema |
 | [`workflow`](superpowers/specs/workflow.md) · [`conversation-and-attention`](superpowers/specs/conversation-and-attention.md) | The demand's flow, and where a human is asked |
 | [`context-and-knowledge`](superpowers/specs/context-and-knowledge.md) | The project's shelf and the package a demand carries |
-| [`execution-substrate`](superpowers/specs/execution-substrate.md) | The **bench**: where the agent works |
+| [`demand-execution`](superpowers/specs/demand-execution.md) | The **bench**: where the agent works |
 | [`verification-runner`](superpowers/specs/verification-runner.md) | The **runner**: where the application is built and run |
 | [`verification-and-delivery`](superpowers/specs/verification-and-delivery.md) | From green to `main`: the critic, the evidence, the queue |
 | [`navigation-and-cockpit`](superpowers/specs/navigation-and-cockpit.md) | What the screen shows |

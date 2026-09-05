@@ -1,4 +1,4 @@
-# The demand execution substrate
+# Demand execution: the bench and its executors
 
 > **Status:** Approved for review · **Date:** 2026-08-29 · **Project:** the DOP platform
 >

@@ -16,7 +16,7 @@ Two failures on the same path, and they are consecutive.
 
 **Before the human.** The 2026 research is conclusive: agents already close the loop up to the
 PR, and **the flow's bottleneck has become human review capacity**. With no native
-verification, the substrate's parallelism only moves the queue — from development to the
+verification, the executor's parallelism only moves the queue — from development to the
 reviewer's desk. The PRD already fixes that a merge is a human decision; this ADR decides what
 happens before the human is called.
 

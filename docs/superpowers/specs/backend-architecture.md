@@ -5,7 +5,7 @@
 > **Answers:** how the backend is organized, what the contracts are, the database's schema, the
 > cross-cutting concerns (logging/security) and the implementation order.
 > **Does not answer:** navigation and screens (the navigation spec); the demand's cycle (the
-> workflow spec); the execution substrate (its own spec).
+> workflow spec); the executor (its own spec).
 >
 > **Diagrams:** https://claude.ai/code/artifact/1ec0f828-ac7d-473a-ba5f-7bc0d6503402
 

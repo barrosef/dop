@@ -10,7 +10,7 @@
 >
 > **Does not answer:** what is verified — the criteria, the critic and the merge queue are
 > [`verification-and-delivery.md`](verification-and-delivery.md); where the AGENT works, which
-> is the bench ([`execution-substrate.md`](execution-substrate.md)).
+> is the bench ([`demand-execution.md`](demand-execution.md)).
 
 The base decision: [ADR-0030](../../adr/0030-verification-runs-from-source.md), which
 supersedes ADR-0024's ephemeral pod and corrects the sentence P-27's write-up put in it.
@@ -71,7 +71,7 @@ guarantee 10.
 
 The bench does not run it. That removes a second environment per demand — one that would sit
 idle most of the day, since an agent writing code is not exercising a frontend — and it removes
-the "resume brings the stack back up" latency the substrate spec listed as a risk.
+the "resume brings the stack back up" latency the execution spec listed as a risk.
 
 **A dev session builds from a pushed commit**, like any run. If the agent has not pushed, there
 is nothing to bring up: the push is the event (ADR-0028), and running the un-pushed tree is the
@@ -153,7 +153,7 @@ same burden every CI provider carries, and it is smaller than a builder plus a r
 
 ## 8. The cache is what makes the second run fast
 
-The account's cache volume (already in the substrate spec: per account, never global, because
+The account's cache volume (already in the execution spec: per account, never global, because
 a shared cache is a side channel) is mounted at the paths the project declared.
 
 **The cache is what decides where a run LIVES.** A volume cannot be mounted across namespaces,
@@ -179,7 +179,7 @@ answers nothing, hours later, with no error anywhere.
 ## 10. The port
 
 ```
-SupportedKinds()                → which check kinds this substrate can run
+SupportedKinds()                → which check kinds this executor can run
 Start(spec)      → handle      // dependencies, pull, cache, build, start
 Status(handle)   → run          // the steps, their codes, the endpoints
 Logs(handle, emit)              // streams; dies with the caller
@@ -224,7 +224,7 @@ lifecycle vocabulary in both places is one less thing to learn.
 
 ## 12. Documents this correction touches
 
-- **`execution-substrate.md`** — "an internal Docker that brings up that demand's stack for
+- **`demand-execution.md`** — "an internal Docker that brings up that demand's stack for
   testing and QA" describes the bench, not the verification. The line, §4's table and R-1/R-2
   say so now.
 - **`verification-and-delivery.md`** §2 — acceptance ran "in the sandbox … over the internal

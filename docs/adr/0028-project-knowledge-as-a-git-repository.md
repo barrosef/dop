@@ -71,7 +71,7 @@ history and rollback come free where a volume gave none of them.
 The platform's git server is inside the cluster. At provisioning the core mints
 a **per-demand, short-lived token**, scoped to that project's root repository,
 read-write, expiring with the sandbox. It reaches the sandbox **as a projected
-file** — the shape the execution substrate spec §5 already fixes for derived
+file** — the shape the execution execution spec §5 already fixes for derived
 tokens — never as an environment variable, which every child process inherits.
 It is the only credential the sandbox holds.
 

@@ -31,7 +31,7 @@ disambiguation convention is recorded.
 | **Projection** | A read derived from the event log (the dossier, the timeline, the attention box, the metrics). It never writes the truth |
 | **Card** | A work item coming from the task manager. It has a dynamic type, defined by the provider |
 | **Demand** | A card in execution on the platform: a sandbox, threads, a spec, events. The card is the origin; the demand is the work |
-| **Substrate** | **Who executes the container.** There are two, and only two: the **Kubernetes cluster** (k3d locally, k3s/OKD or GKE in production) and the **host's Docker daemon** (a laptop, no cluster). One is chosen at boot by `SANDBOX_BACKEND`. It exists as a word because the domain never says "pod" or "container" — it says *launch a sandbox* — so something has to name whichever technology is answering. Same nature as the vault being GCP Secret Manager or a k8s Secret (ADR-0001's infrastructure ports: one active, chosen by the deployment). **Substrate is the WHERE; the sandbox and the runner are the WHAT** — two different things running on the same substrate at the same time |
+| **Executor** | **Who executes the container.** There are two, and only two: the **Kubernetes cluster** (k3d locally, k3s/OKD or GKE in production) and the **host's Docker daemon** (a laptop, no cluster). One is chosen at boot by `SANDBOX_BACKEND`. It exists as a word because the domain never says "pod" or "container" — it says *launch a sandbox* — so something has to name whichever technology is answering. Same nature as the vault being GCP Secret Manager or a k8s Secret (ADR-0001's infrastructure ports: one active, chosen by the deployment). **Executor is the WHERE; the sandbox and the runner are the WHAT** — two different things running on the same executor at the same time |
 | **Sandbox (the bench)** | Where the AGENT works: one per demand, with the workspace, the shelf and the agent's containers. It holds the dirty working tree, and everything installed along the way. A security boundary — it runs untrusted code. **It does not run the demand's application** |
 | **Runner** | Where a VERIFICATION runs: an ephemeral environment, separate from the sandbox, that pulls a COMMIT, builds from source and starts the application (ADR-0030). It starts from nothing, which is what makes its evidence about a clean environment and not about the agent's |
 | **The application** | The customer's software, built from source in the runner. **No image of it is ever built, pushed or deployed** — the slow sequence is not the build, it is `build → push → pull` around a registry |
@@ -68,17 +68,24 @@ is true of the runner and false of the bench — the bench is where development
 happens.
 
 **"Sandbox" is the bench, always.** It is the agent's environment. The runner is
-not a sandbox, even where the substrate happens to implement both as pods: what
+not a sandbox, even where the executor happens to implement both as pods: what
 separates them is that one carries the dirty tree and the other starts from a
 commit.
 
-**"Substrate" was doing three jobs, and now does one.** It named (a) the
-technology — Kubernetes or the host's Docker; (b) the whole execution LAYER, as
-in "the substrate is running ahead of the work model" and epic 07; and (c), by
-filename, the BENCH specifically, since `execution-substrate.md` is now only
-about where the agent works. Only (a) is the term. For (b) say **the execution
-layer**; for (c) say **the bench**. The file keeps its name because renaming it
-would break every inbound link for no gain, but its subject is the bench.
+**"Substrate" is gone, and it is not coming back.** Until 2026-09-05 the
+technology that runs a container was called the *substrate* — a word coined in
+this repository on 2026-08-29 and never a standard term anywhere. It ended up
+doing three jobs at once: the technology, the whole execution LAYER ("the
+substrate is running ahead of the work model", epic 07), and — by filename —
+the bench. It was replaced by **executor**, which is what the industry calls
+exactly this (GitLab Runner has `docker` and `kubernetes` executors; Nomad calls
+them task drivers). For the layer, say **the execution layer**; for the bench,
+say **the bench**; and the spec that carried the old name is now
+[`demand-execution.md`](superpowers/specs/demand-execution.md).
+
+The word the CODE uses is still `backend` — `SANDBOX_BACKEND` chooses which
+executor answers. Renaming an environment variable breaks every deployment that
+sets it, so the identifier stays and the prose says executor.
 
 **"Building" is not one act either.** Building the APPLICATION from source is
 what a runner does on every verification. Building an IMAGE is what the platform

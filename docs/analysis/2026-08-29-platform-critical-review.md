@@ -2,7 +2,7 @@
 
 > **Date:** 2026-08-29
 > **Method:** a rereading of every requirement and decision (ADRs 0001–0005, the SP-0 specs,
-> the dop-infra spec, the execution substrate's design, PRD 1.0, 20 adjustment prompts, the
+> the dop-infra spec, the executor's design, PRD 1.0, 20 adjustment prompts, the
 > dop-app analysis), compared with the state of the art of autonomous development with agents.
 > `dop-cmd` was used **only as a source of knowledge** — it is a separate utility and is not
 > part of the platform.
@@ -28,12 +28,12 @@ Ordered by severity. ⬛ critical · 🟧 high · 🟨 medium.
 
 ### A. The product's core
 
-**⬛ F-1. The substrate is running ahead of the work model.**
+**⬛ F-1. The executor is running ahead of the work model.**
 SP-4 — what the platform *does* — is still undefined, while the sandbox, the infrastructure and
-identity already have a design. It is a product dependency inversion: the substrate may be born
+identity already have a design. It is a product dependency inversion: the executor may be born
 in the wrong shape (e.g. a suspend/resume cycle sized for gates that may not even exist).
-*The solution:* lock SP-4 as the mandatory next step before any substrate plan; validate the
-substrate against the demand's real life cycle.
+*The solution:* lock SP-4 as the mandatory next step before any executor plan; validate the
+executor against the demand's real life cycle.
 
 **⬛ F-2. There is no management of the project's context/knowledge.**
 What separates a good agent from a useless one in 2026 is context: the code's index, the
@@ -99,7 +99,7 @@ incremental dossier already asked for in prompt 17); every agent action becomes 
 the actor, the credential used and the result. That also resolves P-1 for free.
 
 **🟨 F-9. Demand scheduling is undefined.**
-The substrate is CPU-bound (measured in the reference document); the orchestrator "decides",
+The executor is CPU-bound (measured in the reference document); the orchestrator "decides",
 but does not exist. Who queues, who prioritizes, what happens when the 9th demand arrives?
 *The solution:* an admission queue per account/project with limits; an explicit priority;
 preemptive suspension of idle demands (already designed) as the valve.
@@ -177,8 +177,8 @@ serves projections, it does not replace the log.
 ## 4. The recommended order of attack
 
 1. **SP-4** resolves F-1, F-3, F-15 and decides the orphan's fate (F-13) — it is the unblocker.
-2. **The sandbox's security** (F-10, F-11) goes into the substrate's spec before the plan.
+2. **The sandbox's security** (F-10, F-11) goes into the execution spec before the plan.
 3. **The merge queue and conflicts** (F-4) — designed together with SP-4, mining dop-cmd.
 4. **Cost and telemetry** (F-6, F-7, F-8) — they go into SP-3 as dossier events.
 5. **The contract** (F-12) — SP-2 right after SP-4; freeze invention in the front until then.
-6. **The missing ports** (F-14) — the AgentRuntime in the substrate's spec.
+6. **The missing ports** (F-14) — the AgentRuntime in the execution spec.

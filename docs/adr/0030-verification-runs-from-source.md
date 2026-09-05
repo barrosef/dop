@@ -11,7 +11,7 @@
 Three documents disagreed about where a demand's application runs, and the
 disagreement was ours to fix:
 
-- the substrate spec says an **internal Docker** brings up the demand's stack
+- the execution spec says an **internal Docker** brings up the demand's stack
   inside the sandbox, with `docker compose -p <demand>`;
 - ADR-0024 says a verification runs in an **ephemeral pod** in the cluster,
   because *"a test running inside the agent's sandbox runs against the dirty
@@ -83,7 +83,7 @@ The application itself is the only thing built, and it is built from source.
 
 ### 5. The cache is what makes the second run fast
 
-The account's cache volume — already in the substrate spec, per account and never
+The account's cache volume — already in the execution spec, per account and never
 global, because a shared cache is a side channel — is mounted into the runner.
 `node_modules`, the Go build cache, the Maven repository: the first run of a
 project pays, the rest do not.
@@ -103,15 +103,15 @@ afterthought.
 
 ### 7. It is a PORT, with two adapters
 
-"Run this commit and give me a URL" is a port, and each substrate answers it
+"Run this commit and give me a URL" is a port, and each executor answers it
 natively: pods on Kubernetes, containers on the host daemon under Docker. That is
-what keeps the two substrates from diverging on the very thing that produces
+what keeps the two executors from diverging on the very thing that produces
 evidence — the mistake this ADR nearly made by thinking of verification as
 hand-written Kubernetes manifests.
 
 ## Alternatives considered
 
-**Compose inside the sandbox** (the substrate spec's original). Cheapest to
+**Compose inside the sandbox** (the execution spec's original). Cheapest to
 build and it keeps the project's own file. Rejected as the VERIFICATION path: the
 environment is the agent's, with whatever the agent installed in it, and evidence
 from there speaks about that environment and not about a clean one. It remains
@@ -169,6 +169,6 @@ while nothing happens. Revisit with a measured start latency, not before.
   written up in [`verification-runner.md`](../superpowers/specs/verification-runner.md):
   the port's nine guarantees, `.dop/verification.yml`, and the code the change
   touches. It is still not built.
-- **The substrate spec's "internal Docker" line no longer describes the
+- **The execution spec's "internal Docker" line no longer describes the
   verification path** — corrected, along with the acceptance section of
   [`verification-and-delivery.md`](../superpowers/specs/verification-and-delivery.md).
