@@ -119,6 +119,18 @@ convenience exception:
 `password` so the field is comparable across adapters. The rule has the input it
 needs.
 
+What that list is **not** is a list of providers only. Firebase builds it from
+the keys of `firebase.identities`, which are IDENTIFIER TYPES, plus
+`sign_in_provider`: a real e-mail/password token arrives as
+`["email","password"]`. So the test cannot be "every entry is `password`" — that
+answers *false* for the exact credential the rule exists to stop, and any
+unfamiliar value switches the rule off silently. It asks instead whether a
+**social** provider is present, against a named set (`google.com`,
+`github.com`). An unknown value counts as not-social and the rule still fires;
+the cost is that enabling a new social provider without adding it to that set
+refuses its unverified-e-mail users until somebody does, which is the direction
+we want the mistake to point in.
+
 **D-6. The refusal lives in the core.** Blocking only in the cockpit would be
 decoration: the token stays valid and anybody calling the core directly walks
 past it. Same reasoning as ADR-0029 — the core verifies, it does not believe.
@@ -163,9 +175,16 @@ can prove the **person** without proving an **actor**, and the person is exactly
 what this call needs. So the verified identity travels on `ctxutil.Call`,
 independent of `ActorID`, and the handler refuses when it is absent.
 
-The request's fields stay in the proto and are ignored, so an older client is
-refused rather than silently misread. Retiring them is a breaking change that
-belongs with the work that updates the caller.
+The request's fields stay in the proto and are ignored. An older client that
+still fills them in is **not** refused: the handler never looks at the body, so
+the call succeeds and is served the token's values. That is the behaviour we
+want — the client is asking for the right thing in an outdated way, and there is
+nothing for it to do differently — but it is worth saying plainly, because
+"ignored" and "refused" are not the same promise, and only one of them is true
+here. What IS refused is a call arriving with no verified token at all.
+
+Retiring the fields is a breaking change for every caller at once, so it belongs
+with the work that updates them.
 
 ## 3. The user stories
 
