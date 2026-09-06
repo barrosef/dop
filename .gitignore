@@ -13,3 +13,4 @@ cockpit-real.png
 # meta-repository. Get it with:
 #   git clone git@github.com:Digital-Business-One/dop-cmd.git repos/dop-cmd
 repos/dop-cmd/
+.superpowers/
