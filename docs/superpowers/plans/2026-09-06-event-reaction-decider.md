@@ -478,14 +478,24 @@ func Decide(e ports.Event, rules []Rule) ([]PlannedAction, error) {
 		}
 	}
 
-	disabled := map[string]bool{}
+	// A rule's `disables` reaches only what came BEFORE it in the chain — which,
+	// walking generic to specific, is everything more generic than itself. That
+	// is the whole direction of the rule: an account may refuse the platform's
+	// policy, and the platform may not reach into the account's. Collecting every
+	// `disables` regardless of position would let the platform switch off an
+	// account's rule, which is the opposite of what this exists for.
+	disabled, seen := map[string]bool{}, map[string]bool{}
+	for _, r := range rules {
+		for _, id := range r.Disables {
+			if seen[id] {
+				disabled[id] = true
+			}
+		}
+		seen[r.ID] = true
+	}
+
 	var planned []PlannedAction
 	for _, r := range rules {
-		// Applied in chain order: what this rule disables can only be a rule
-		// already seen, which is a more generic one.
-		for _, id := range r.Disables {
-			disabled[id] = true
-		}
 		if disabled[r.ID] || !r.Enabled {
 			continue
 		}
@@ -501,15 +511,7 @@ func Decide(e ports.Event, rules []Rule) ([]PlannedAction, error) {
 			})
 		}
 	}
-	// A rule disabled by a LATER rule has already been planned by the time we
-	// see the disable, so the plan is filtered once at the end.
-	out := planned[:0]
-	for _, p := range planned {
-		if !disabled[p.RuleRef] {
-			out = append(out, p)
-		}
-	}
-	return out, nil
+	return planned, nil
 }
 
 // matches is equality and nothing else. A comparison, a range or a composite
@@ -537,7 +539,7 @@ Expected: PASS
 
 - [ ] **Step 5: Prove the directional disable is load-bearing**
 
-Remove the final filtering loop, run `TestALowerLevelDisablesAnInheritedRuleByID`, and confirm it goes RED — then restore. A `disables` that only works when the disabling rule comes first is a rule that works in the test's order and not in the chain's.
+Remove the `if seen[id]` guard — so every `disables` applies regardless of position — and run `TestOnlyALOWERLevelCanDisable`. It must go RED, because without that guard the platform can switch off an account's rule. Restore it. A `disables` that ignores direction is the difference between an account refusing a policy and the platform reaching into one.
 
 - [ ] **Step 6: Commit**
 
