@@ -20,7 +20,7 @@ P-46 (making `terminate` differ from `drain`), and every reaction the user stori
 
 ## The decisions, and who made them
 
-Six, taken by the owner on 2026-09-06. One went against the recommendation on the table and is
+Seven, taken by the owner on 2026-09-06. One went against the recommendation on the table and is
 recorded as such, because its cost lands later rather than now:
 
 | | Decision | |
@@ -31,6 +31,7 @@ recorded as such, because its cost lands later rather than now:
 | 4 | **Rules live in Postgres**, resolved by the flow's own chain | owner's |
 | 5 | **A stage's action fires on entry or exit**, declared per action | owner's |
 | 6 | **A failed action goes to ONE dead-letter queue, then to ONE errors table** | owner's |
+| 7 | **Failures are classified recoverable / irrecoverable / unknown**, seeded from `errs.Kind`, learned from repetition, and demoted by a success — except where a human placed the mark | owner's |
 
 ## 1. The dispatcher
 
@@ -195,6 +196,45 @@ The same reasoning gives the DLQ consumer no logic of its own: it calls the same
 registry the dispatcher calls, with the parameters already decided. One executor, three callers
 — the dispatcher, the DLQ consumer, and whatever the panel triggers.
 
+### Not every failure deserves a retry
+
+Retrying a permanently broken action twice over two budgets is waste with a delay attached, and
+it is what pushes a real failure hours away from the table where somebody would see it. So a
+failure is classified before it is retried.
+
+**The seed is derived, not a hand-kept list.** `errs.Kind` already encodes this: `Unavailable`
+means the world was busy and the same call may work later; `Invalid`, `NotFound`, `Permission`,
+`Unauthorized` and `Precondition` all say the input is wrong, and repeating the same call
+produces the same answer. A template id that does not exist arrives as `NotFound` and is born
+irrecoverable without anyone registering anything.
+
+**The signature is `(action_name, code)`.** `errs.Error` already carries a stable `Code`
+("invite.wrong_recipient") separate from the developer-facing message, precisely because the
+message is free text that changes. Comparing messages would make the learning brittle; comparing
+codes makes it exact.
+
+```
+error_signatures ( action_name, code,
+                   classification,    -- recoverable | irrecoverable | unknown
+                   exhausted_count,   -- times it burned EVERY retry
+                   last_success_at,   -- the evidence that contradicts the mark
+                   classified_by,     -- seed | learned | human
+                   first_seen, last_seen )
+```
+
+**The system learns.** A signature that has burned every retry **more than once** and has never
+succeeded is promoted to `irrecoverable`, marked `learned`. From then on the recovery mechanism
+skips it and spends its budget on what is `recoverable` or still `unknown`.
+
+**And it can be wrong, so it takes evidence back.** A success on that signature demotes it to
+`recoverable` — but only when the mark was `seed` or `learned`. A mark a human placed stays until
+another human moves it: somebody marked it for a reason the system cannot see, and one accidental
+success should not throw that judgement away.
+
+**Irrecoverable does not loop.** Those records are consumed by the mechanism that feeds the
+errors table, where a person or an agent decides what to do — which may be no more than telling
+the user their action failed.
+
 **One queue and one table, not one per consumer.** A queue per consumer means a retry mechanism
 per consumer, each with its own idea of how many attempts are enough, and an operator who has to
 know which queue to look in. The record is self-contained precisely so that one queue can serve
@@ -222,7 +262,8 @@ panel-triggered re-run — writes the row, and every later attempt is skipped.
 | `internal/domain/reaction/` (new) | the `Rule`/`Action` entities, `Validate`, the chain resolution, and `Decide(event) []PlannedAction` — the decider, with no infrastructure |
 | `internal/domain/workflow/` | `StageAction` on `StageSpec`, and `Validate` refusing an unknown action name |
 | `internal/domain/ports/` | `ActionHandler`, and the registry's shape |
-| `internal/adapter/postgres/reaction.go` | the rules repository, `applied_actions`, and the errors table with its attempt history |
+| `internal/adapter/postgres/reaction.go` | the rules repository, `applied_actions`, `error_signatures`, and the errors table with its attempt history |
+| `internal/domain/reaction/` | the classification: the seed derived from `errs.Kind`, the promotion rule, and the demotion that spares a human's mark |
 | `internal/app/register.go` | the DLQ consumer, wired to the same action registry |
 | `internal/app/register.go` | one subscription instead of three; the registry wired with the four handlers |
 | `internal/domain/attention/rules.go` | `Apply`'s `switch` deleted; its rows become seeded rules |
@@ -232,10 +273,12 @@ panel-triggered re-run — writes the row, and every later attempt is skipped.
 
 | # | |
 |---|---|
-| R-1 | **Two retry layers can hide a permanent failure for a long time.** JetStream's attempts plus the DLQ consumer's attempts mean a genuinely broken action — a wrong template id, a revoked credential — takes both budgets to reach the errors table where somebody would see it. The budgets should be small enough that a real failure surfaces in minutes, not hours |
-| R-2 | **The plan frozen in a DLQ record can outlive the world it was decided in.** A `provision_bench` retried an hour later may target a demand that has since been destroyed, and a `send_email` may name a user who has left the account. The handler, not the queue, has to tolerate that — every action needs to be safe to run late, or to refuse cleanly when its subject is gone |
-| R-3 | **Rules accumulate.** A four-level chain can fire more actions than anyone intended, and nobody can see the effective set without a "what fires for this event" view. The flow chain has the same shape and solved it by showing where the effective flow came from — rules will want the same |
-| R-4 | The equality-only `when` will meet the case it cannot express, and the pressure will be to add a DSL — the thing ADR-0014 refused for flows |
-| R-5 | A flow authored before this change has no actions, and that is **silent**: correct, and indistinguishable from a broken mechanism |
-| R-6 | A rule written for an event nobody emits does nothing and says nothing — the opposite of the test that today guarantees subject coverage. The derived subject list should refuse, or at least report, an event type no aggregate emits |
-| R-7 | Replacing three consumers at once (decision 3) means the attention box, communication and the timeline all change behaviour in one deployment. Migrating incrementally was the recommendation; the mitigation available is that the seeded rules reproduce today's rows exactly, so the first deployment should be behaviour-identical |
+| R-1 | **The FIRST occurrence of a permanent failure still burns both retry budgets.** Classification only helps from the second occurrence on, because the first is what teaches the system. For a signature that arrives already seeded as irrecoverable this never happens; for a genuinely new failure mode it happens once, by design. The budgets still have to be small enough that the first one surfaces in minutes |
+| R-2 | **An action that returns an uncoded error collapses the learning.** `errs.CodeOf` answers empty for a plain error, so every distinct failure of one action would share the signature `(action_name, "")` and be learned about as if it were one thing. Every action handler owes its errors a `Code`, and nothing enforces that today |
+| R-3 | **An unstable signature oscillates.** Something that fails for a week and works on Fridays will be promoted and demoted repeatedly, and the recovery mechanism's behaviour changes underneath without anyone deciding it. The counters make it visible; nothing makes it stop |
+| R-4 | **The plan frozen in a DLQ record can outlive the world it was decided in.** A `provision_bench` retried an hour later may target a demand that has since been destroyed, and a `send_email` may name a user who has left the account. The handler, not the queue, has to tolerate that — every action needs to be safe to run late, or to refuse cleanly when its subject is gone |
+| R-5 | **Rules accumulate.** A four-level chain can fire more actions than anyone intended, and nobody can see the effective set without a "what fires for this event" view. The flow chain has the same shape and solved it by showing where the effective flow came from — rules will want the same |
+| R-6 | The equality-only `when` will meet the case it cannot express, and the pressure will be to add a DSL — the thing ADR-0014 refused for flows |
+| R-7 | A flow authored before this change has no actions, and that is **silent**: correct, and indistinguishable from a broken mechanism |
+| R-8 | A rule written for an event nobody emits does nothing and says nothing — the opposite of the test that today guarantees subject coverage. The derived subject list should refuse, or at least report, an event type no aggregate emits |
+| R-9 | Replacing three consumers at once (decision 3) means the attention box, communication and the timeline all change behaviour in one deployment. Migrating incrementally was the recommendation; the mitigation available is that the seeded rules reproduce today's rows exactly, so the first deployment should be behaviour-identical |
