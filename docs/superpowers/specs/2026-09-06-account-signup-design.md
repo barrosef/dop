@@ -144,6 +144,29 @@ to the user being created, which comes alive when P-29's dispatcher lands (its
 plan 2). They are different things and must not share a path merely because both
 are e-mail.
 
+**D-10. `EnsureUser` reads the verified token, not the request body.** Added
+after the owner approved this spec, on finding that D-5 and US-7 would otherwise
+be unenforceable.
+
+`internal/app/grpc/identity.go` builds its `Principal` out of `req.GetSubject()`,
+`req.GetEmail()`, `req.GetEmailVerified()` and `req.GetProvider()`. Every rule in
+this spec reads exactly those fields, so any caller could pass D-5 by sending
+`email_verified: true`. That is the thing ADR-0029 was written to end, and it
+ended everywhere except here.
+
+The reason it survived here is worth recording, because it also shows the fix.
+`callauth` does verify the bearer token, and then keeps only the resolved user
+id. `EnsureUser` is the **bootstrap**: it runs before the person has a user, so
+the lookup finds nothing, no actor is proven, and in strict mode the call arrives
+with an empty `Call` — leaving the body as the only thing to read. But a token
+can prove the **person** without proving an **actor**, and the person is exactly
+what this call needs. So the verified identity travels on `ctxutil.Call`,
+independent of `ActorID`, and the handler refuses when it is absent.
+
+The request's fields stay in the proto and are ignored, so an older client is
+refused rather than silently misread. Retiring them is a breaking change that
+belongs with the work that updates the caller.
+
 ## 3. The user stories
 
 ### US-1 — Sign up with e-mail and password
