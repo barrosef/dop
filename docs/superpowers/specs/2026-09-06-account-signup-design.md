@@ -131,6 +131,14 @@ the cost is that enabling a new social provider without adding it to that set
 refuses its unverified-e-mail users until somebody does, which is the direction
 we want the mistake to point in.
 
+To be exact, because the sentence above describes only half of it: the rule
+fires when `password` is present **and** no social provider is. A credential
+carrying neither — `["apple.com"]`, say, from a provider nobody has enabled —
+is admitted with an unverified e-mail, on the same reasoning that admits GitHub:
+some provider authenticated the person, and the e-mail is not the proof. Only
+the presence of `password` makes the e-mail the sole link to a human, and that
+is the case this rule exists for.
+
 **D-6. The refusal lives in the core.** Blocking only in the cockpit would be
 decoration: the token stays valid and anybody calling the core directly walks
 past it. Same reasoning as ADR-0029 — the core verifies, it does not believe.
