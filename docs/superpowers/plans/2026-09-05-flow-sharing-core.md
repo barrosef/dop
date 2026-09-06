@@ -165,7 +165,7 @@ func TestOnlyOwnerOrAdminChangesTheDefaultRevocationPolicy(t *testing.T) {
 }
 ```
 
-If `newServiceForTest`/`env.CtxAs` do not exist with those names, use whatever helper the file already provides — do not add a second harness.
+**`newServiceForTest` and `env.CtxAs` do not exist** — the names above are illustrative. Read `internal/domain/identity/service_test.go` first and write this test against the harness that file actually provides. Do not add a second harness for the same domain.
 
 - [ ] **Step 7: Run it and see it fail**
 
@@ -661,16 +661,19 @@ type SharingRepository interface {
 	CreateShare(ctx context.Context, s *Share, idempotencyKey string) (*Share, error)
 	ShareByID(ctx context.Context, accountID, id string) (*Share, error)
 	SharesOfPublication(ctx context.Context, accountID, publicationID string) ([]Share, error)
-	RevokeShare(ctx context.Context, accountID, shareID string, at time.Time) error
+
+	// RevokeShare does the WHOLE revocation in one transaction: the share, the
+	// copies the policy reaches, their adoption records, and both events.
+	//
+	// It is one call and not four because a crash between four calls leaves a
+	// share revoked with its copies untouched — a half-revocation nobody would
+	// notice until somebody used a flow that was supposed to be gone. The
+	// transaction and the outbox are the adapter's job (ADR-0019); the domain's
+	// job is to decide WHAT the policy reaches and hand it over.
+	RevokeShare(ctx context.Context, accountID string, rev Revocation) error
 
 	RecordAdoption(ctx context.Context, a *Adoption) error
 	AdoptionsOfPublication(ctx context.Context, accountID, publicationID string) ([]Adoption, error)
-	MarkAdoptionRevoked(ctx context.Context, adoptionID string, at time.Time) error
-
-	// MarkFlowRevoked flags the DERIVED copy, which lives in another account.
-	// It is the only write this port makes outside the caller's account, and it
-	// writes exactly one column.
-	MarkFlowRevoked(ctx context.Context, flowID string, at time.Time) error
 
 	Pin(ctx context.Context, accountID, flowID string, version int32, by string, at time.Time) error
 	PinOf(ctx context.Context, accountID, flowID string) (int32, bool, error)
@@ -929,6 +932,8 @@ func (s *Service) SharesOf(ctx context.Context, publicationID string) ([]Share, 
 }
 ```
 
+Add a `defaults AccountDefaults` field to `Service` and a parameter to `NewService`, beside the `sharing` field Task 4 added, and update every construction site.
+
 If `idem.Key` does not have that signature, build the key with `strings.Join` as `writeKey` already does in this file.
 
 `Revoke` comes in Task 6, because what it does to derived copies depends on the derivation records that task creates.
@@ -1114,8 +1119,8 @@ git commit -m "feat(workflow): derivar uma publicação, com procedência nos do
 - Modify: `repos/dop-core/internal/domain/workflow/sharing_test.go`
 
 **Interfaces:**
-- Consumes: `SharingRepository.RevokeShare` / `AdoptionsOfPublication` / `MarkAdoptionRevoked` / `MarkFlowRevoked`, `ports.EventBus` (already wired in the composition root).
-- Produces: `Service.Revoke(ctx, shareID string) error`; the event `flow.share.revoked` with payload `{share_id, publication_id, to_account_id, policy, flows_revoked []string}`.
+- Consumes: `SharingRepository.ShareByID` / `AdoptionsOfPublication` / `RevokeShare`, `Access.RoleOf`.
+- Produces: `Service.Revoke(ctx, shareID string) error`; the types `workflow.Revocation` and `workflow.AdoptionRef`. The events themselves are Task 9's, written in the adapter's transaction.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1151,13 +1156,15 @@ func TestWhatARevocationReachesDependsOnTheStampedPolicy(t *testing.T) {
 			if env.FlowDeleted(copied.ID) {
 				t.Fatal("revoking deleted the copy — it must only change its state")
 			}
-			// Both sides are told: the publisher, and the account that was revoked.
-			kinds := env.EventKinds()
-			if !kinds["flow.share.revoked"] || !kinds["flow.grant.revoked"] {
-				t.Fatalf("both accounts have to receive an event, got %v", kinds)
+			// The events are written by the adapter, in the same transaction
+			// (ADR-0019), so what the DOMAIN owes is the decision: which
+			// adoptions the policy reaches. Task 9 proves the events exist.
+			rev := env.LastRevocation()
+			if rev.Policy != tc.policy {
+				t.Fatalf("the revocation carried %q, wanted %q", rev.Policy, tc.policy)
 			}
-			if env.LastEvent().Payload["policy"] != string(tc.policy) {
-				t.Fatalf("the event does not carry the policy that was applied: %+v", env.LastEvent())
+			if want := map[bool]int{true: 1, false: 0}[tc.copyRevoked]; len(rev.Adoptions) != want {
+				t.Fatalf("under %s the revocation reached %d adoptions, wanted %d", tc.policy, len(rev.Adoptions), want)
 			}
 		})
 	}
@@ -1206,11 +1213,12 @@ func (s *Service) Revoke(ctx context.Context, shareID string) error {
 		return nil // idempotent: the outcome asked for is already true
 	}
 	now := s.now()
-	if err := s.sharing.RevokeShare(ctx, accountID, shareID, now); err != nil {
-		return err
+	// The domain decides WHAT the policy reaches; the adapter writes it, all of
+	// it, in one transaction.
+	rev := Revocation{
+		ShareID: share.ID, PublicationID: share.PublicationID,
+		ToAccountID: share.ToAccountID, Policy: share.RevocationPolicy, At: now,
 	}
-
-	var reached []string
 	if share.RevocationPolicy != PolicyProspective {
 		ads, err := s.sharing.AdoptionsOfPublication(ctx, accountID, share.PublicationID)
 		if err != nil {
@@ -1220,38 +1228,36 @@ func (s *Service) Revoke(ctx context.Context, shareID string) error {
 			if a.ByAccountID != share.ToAccountID || !a.RevokedAt.IsZero() {
 				continue
 			}
-			if err := s.sharing.MarkFlowRevoked(ctx, a.FlowID, now); err != nil {
-				return err
-			}
-			if err := s.sharing.MarkAdoptionRevoked(ctx, a.ID, now); err != nil {
-				return err
-			}
-			reached = append(reached, a.FlowID)
+			rev.Adoptions = append(rev.Adoptions, AdoptionRef{ID: a.ID, FlowID: a.FlowID})
 		}
 	}
-	payload := map[string]any{
-		"share_id":       share.ID,
-		"publication_id": share.PublicationID,
-		"to_account_id":  share.ToAccountID,
-		"policy":         string(share.RevocationPolicy),
-		"flows_revoked":  reached,
-	}
-	// BOTH sides get an event (spec §3.3). One event on the publisher's account
-	// would leave the account that was revoked finding out by noticing, which is
-	// the failure mode the visible `revoked` state exists to prevent — an event
-	// nobody received is a notification nobody can act on.
-	if err := s.bus.Publish(ctx, ports.Event{
-		Kind: "flow.share.revoked", AccountID: accountID, Payload: payload,
-	}); err != nil {
-		return err
-	}
-	return s.bus.Publish(ctx, ports.Event{
-		Kind: "flow.grant.revoked", AccountID: share.ToAccountID, Payload: payload,
-	})
+	return s.sharing.RevokeShare(ctx, accountID, rev)
+}
+
+// Revocation is everything one revocation has to write, handed over as one
+// value so the adapter can do it in one transaction.
+type Revocation struct {
+	ShareID       string
+	PublicationID string
+	ToAccountID   string
+	Policy        RevocationPolicy
+	// Adoptions is EMPTY under `prospective`: that policy reaches the grant and
+	// nothing else.
+	Adoptions []AdoptionRef
+	At        time.Time
+}
+
+// AdoptionRef is one derivation the revocation reaches: the record on the
+// publisher's side, and the copy in the other account.
+type AdoptionRef struct {
+	ID     string
+	FlowID string
 }
 ```
 
-Add a `bus ports.EventBus` field to `Service` if it has none, wiring it in `NewService`. Match `ports.Event`'s real field names — read `internal/domain/ports/ports.go` before writing this.
+Put `Revocation` and `AdoptionRef` in `sharing.go` beside the other entities.
+
+**The events are the ADAPTER's, not this service's** (ruling R1). `internal/adapter/postgres/outbox.go` writes the event and the outbox row inside the transaction that changes the state — that is ADR-0019, and no domain service in this codebase publishes anything. Task 9 emits both events there, inside `RevokeShare`'s transaction, using `ports.Event`'s real fields: `Aggregate: "flow"`, `AggregateID: <share id>`, `Type: "flow.share.revoked"` / `"flow.grant.revoked"`, and `Payload []byte` holding the marshalled JSON.
 
 - [ ] **Step 4: Run the tests**
 
@@ -1415,7 +1421,7 @@ git commit -m "feat(workflow): herança que cruza dono é pinada; dentro da cont
 
 **Files:**
 - Create: `repos/dop-core/internal/adapter/postgres/workflow_sharing.go`
-- Create: `repos/dop-core/internal/adapter/postgres/workflow_sharing_test.go`
+- Create: `repos/dop-core/test/integration/flow_sharing_test.go`
 
 **Interfaces:**
 - Consumes: the `SharingRepository` port from Task 4, the schema from Task 3, `pgxpool.Pool`.
@@ -1423,7 +1429,7 @@ git commit -m "feat(workflow): herança que cruza dono é pinada; dentro da cont
 
 - [ ] **Step 1: Write the failing integration test**
 
-`internal/adapter/postgres/workflow_sharing_test.go`, following the build tag and harness the other adapter tests in this directory already use:
+There are **no tests under `internal/adapter/postgres/`** — this repo's database tests live in `test/integration/`, behind the `integration` build tag, using the `openPool(t)` helper from `outbox_test.go` and per-file seed helpers. Write `test/integration/flow_sharing_test.go` the way `agentmetrics_test.go` and `secondfactor_test.go` are written, including your own `seedThreeAccounts`/`seedFlow`/`handleOf` in that file:
 
 ```go
 //go:build integration
@@ -1431,7 +1437,8 @@ git commit -m "feat(workflow): herança que cruza dono é pinada; dentro da cont
 package postgres_test
 
 func TestResolvePublicationOnlyAnswersToWhoWasGranted(t *testing.T) {
-	pool, ctx := newTestPool(t) // existing helper
+	pool := openPool(t) // test/integration/outbox_test.go
+	ctx := context.Background()
 	repo := postgres.NewWorkflowSharing(pool)
 	pubAccount, otherAccount, third := seedThreeAccounts(t, pool)
 	flowID, version := seedFlow(t, pool, pubAccount)
@@ -1463,7 +1470,7 @@ func TestResolvePublicationOnlyAnswersToWhoWasGranted(t *testing.T) {
 
 - [ ] **Step 2: Run it and see it fail**
 
-Run: `cd repos/dop-core && go test ./internal/adapter/postgres/ -tags=integration -run TestResolvePublication -v`
+Run: `cd repos/dop-core && go test ./test/integration/ -tags=integration -run TestResolvePublication -v`
 Expected: FAIL — `undefined: postgres.NewWorkflowSharing`
 
 - [ ] **Step 3: Implement the adapter**
@@ -1538,7 +1545,7 @@ The join on `flow_shares` is the authorisation: with no share row there is no re
 
 - [ ] **Step 4: Run the test**
 
-Run: `cd repos/dop-core && go test ./internal/adapter/postgres/ -tags=integration -run TestResolvePublication -v`
+Run: `cd repos/dop-core && go test ./test/integration/ -tags=integration -run TestResolvePublication -v`
 Expected: PASS
 
 - [ ] **Step 5: Wire it in the composition root**
