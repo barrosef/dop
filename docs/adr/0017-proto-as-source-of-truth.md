@@ -32,6 +32,20 @@ Mandatory conventions:
    string.
 3. **Every write RPC carries an `idempotency_key`** — with events and retries, that is a
    requirement, not a luxury.
+
+   *Whose namespace the key lives in (added 2026-09-06).* `flows` made its
+   `idempotency_key` UNIQUE across the whole table; `reaction_rules` deliberately did not,
+   and scopes its uniqueness to `(account, key)`. The difference is not a preference. The
+   key is supplied by the **client** and stored verbatim, so a table-wide namespace lets
+   account B send a key account A already used, collide with a row B is not allowed to
+   see, and get that collision handed back — as A's row if the conflict lookup forgets to
+   filter by account, and as a `NotFound` about a rule B never wrote if it remembers.
+   `flows` shipped the first of those once. Neither shape is right by default: scope the
+   key to whatever owns the rows, and where a level has no owner — the platform's, which
+   applies to everybody — give it a namespace of its own
+   (`COALESCE(account_id, <nil uuid>)`) so its keys still collide with each other. The
+   next table's author should reach that decision deliberately, rather than by copying
+   whichever neighbour they opened first.
 4. Compatibility validated in CI (`buf breaking`): a field changes neither its number nor its
    type.
 5. **Who is calling and in which account travels in the metadata**, not in the body —

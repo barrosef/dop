@@ -35,6 +35,24 @@ vacant.
    "Puts an artifact on the table" means that file exists at that path. Rendered bytes
    (a diagram's export) stay in the `ObjectStore`, referenced from the file.
    No conditionals, no stage parallelism, no rules DSL — they evolve over the same structure.
+
+   **What a stage causes (added 2026-09-06):** a stage may also declare
+   `actions: [{ on: enter | exit, name, params }]` — what the platform does when a demand
+   enters it and when it leaves. It is a change to the structure above, and deliberately
+   the smallest one that answers "provision the bench when implementation ends" without
+   reopening what this section refused. The names are drawn from a **closed vocabulary the
+   platform implements** (`open_attention`, `close_attention`, `send_email`,
+   `provision_bench`) and `params` is a flat map of strings: there is no condition to
+   evaluate, no branch to take, and no order to establish beyond the sequence the stages
+   already are. That is what keeps "no rules DSL" intact — a declaration is not a DSL. The
+   moment a stage could say *when* to act rather than only *what*, the flow would stop
+   being data a loader reads and become a program, which is precisely the trade rejected
+   above. Both moments are derivable from the `from`/`to` the stage-advanced event already
+   carries (§4), so nothing in the emitter changes. One limit falls out of the idempotency
+   gate rather than the design and is refused loudly when the flow is written: an action
+   name may not repeat at the same moment on one stage, because what records an action as
+   done is (event, flow/version/stage/moment, action name) and the repeat would claim a row
+   that already exists — the second action would be skipped forever, in silence.
 3. **A resolution chain with inheritance:** `platform ◁ account ◁ workspace ◁ project ◁
    demand` — the nearest level wins; it is inherited by omission, overridden by declaration.
    The interface always shows **where the effective flow came from**.
