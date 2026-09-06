@@ -352,7 +352,21 @@ Three cases earn their own message, because a generic one is expensive here:
 - **the e-mail already has an account through another provider** — not an error,
   the linking path: name the provider they have and offer it;
 - **the GitHub organization blocks third-party applications** — the person did
-  nothing wrong and retrying will not help; say an administrator has to approve;
+  nothing wrong and retrying will not help, and an administrator has to approve.
+  **Corrected after implementation:** this case cannot be recognised from a
+  Firebase error code. GitHub shows its own restriction page inside the popup,
+  and if the person closes it we see `auth/popup-closed-by-user` —
+  indistinguishable from somebody changing their mind. So the cockpit must not
+  promise this message, and must not guess at it with a heuristic. What explains
+  the situation is GitHub's own page, which the person has already read. What we
+  can do is not contradict it: the abandoned-popup message says the sign-in did
+  not complete, and does not blame a password.
+
+  The code that looked like this one is not this one. `auth/unauthorized-domain`
+  means the current origin is missing from OUR project's authorized domains — our
+  configuration, which no administrator of theirs can fix. Its message is an
+  alert for whoever runs the platform, and must never send the person to ask
+  anybody for anything;
 - **wrong password against no such account** — indistinguishable, always.
   `sign-in.tsx` already gets this right and says why in a comment: telling them
   apart hands the user list to whoever asks. The same rule binds sign-up and
