@@ -173,13 +173,29 @@ unauthenticated — is the same silence this ADR was written about.
 Identity-Aware Proxy stopped requiring a load balancer and carries no charge of
 its own, so cost is not the reason.
 
-It authenticates **Google identities**, and this platform lets anyone sign up
-with an e-mail and a password, with Google, or with GitHub. Putting IAP in front
-would mean a Google sign-in before our own, would require the paid Identity
-Platform tier to admit the other two, and would replace the token this ADR is
-built on with `x-goog-iap-jwt-assertion` — changing `VerifyToken`, `Principal`,
-`EnsureUser`, the account linking and the verification gate. It is not a layer
-on top of the identity subsystem; it is a different one.
+It can authenticate our own users: IAP's *external identities* mode uses
+Identity Platform, which is the same service behind Firebase Auth, and it is free
+to 50,000 monthly active users. **Cost is not the reason, and an earlier draft of
+this amendment was wrong to say it required a paid tier.**
+
+The reason is that IAP decides *who may reach a resource*, by IAM policy, and
+this platform lets **anyone sign up**. The policy would have to admit every
+authenticated user, which decides nothing. Meanwhile the access question that
+actually matters here — which account you belong to, with which role and which
+grants — is per-tenant application state that IAM has no vocabulary for.
+
+So it would enforce nothing and change everything: the token this ADR is built on
+becomes `x-goog-iap-jwt-assertion`, and with it `VerifyToken`, `Principal`,
+`EnsureUser`, the account linking and the verification gate.
+
+Two further findings from Google's own guide for external identities. It requires
+a **separate authentication application**, hosted apart from the protected one —
+so IAP does not save the sign-in screens we already have, it adds a second app to
+maintain. And it describes a flow for **browser-based authentication, by redirect
+and session cookie**; our cockpit is a single-page app on another origin calling
+the API by XHR, which cannot follow a redirect to a sign-in page and would need a
+third-party cookie. IAP in front of the API breaks the front end it is meant to
+protect.
 
 It also cannot fence the QA environment: the cockpit is served from outside
 Google Cloud and carries no IAP token, so IAP in front of the API would block the

@@ -63,7 +63,9 @@ product. This is what `EnsureUser` already does.
 
 **D-2. Three ways in: e-mail and password, Google, GitHub.** LinkedIn was
 considered and dropped. It is not a native Firebase provider; the generic OIDC
-route exists only on the paid Identity Platform tier, and even there LinkedIn
+route exists only on Identity Platform — which, corrected later, is free to
+50,000 monthly active users, so the cost clause of this argument does not hold —
+and even there LinkedIn
 publishes its discovery document at `%issuer%/oauth/.well-known/openid-configuration`
 instead of `%issuer%/.well-known/openid-configuration`, which the Firebase and
 GCIP discovery will not accept. The remaining route — the BFF running the OAuth
