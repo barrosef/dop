@@ -130,3 +130,60 @@ signature decides who is heard.
   a compromised edge signs whatever it likes. Both are inherent in signing one's
   own claims, and both are why the token — signed by a third party — is
   preferred wherever a person exists.
+
+## Amendment · 2026-09-07 — Cloud Run IAM replaces the NetworkPolicy
+
+The Context above records why the NetworkPolicy was not enough: it holds *today,
+here*, it is a property of the deployment rather than of the software, and it
+fails in silence — nothing breaks, the door is simply open.
+
+The Options weighed mTLS and set it aside: **"strong, no bearer, and expensive:
+issuance and rotation. It proves the CONNECTION, while the question is about the
+CLAIM."**
+
+On Cloud Run that objection disappears. **IAM invoker permission is the
+mTLS-shaped answer with no issuance and no rotation**: Google signs, Google
+verifies, and the check happens before the request reaches the process. The core
+is deployed with no unauthenticated access, and only the BFF's service account
+holds `roles/run.invoker`.
+
+**This does not replace anything decided above.** Three layers now answer three
+different questions, and none of them answers another's:
+
+| layer | question |
+|---|---|
+| Cloud Run IAM | may this *caller* invoke this *service*? |
+| `x-dop-assertion` | which *component* asserts, and about which *actor*? |
+| the person's token | who is the *person*? |
+
+What it replaces is the NetworkPolicy, which stays in the local cluster because
+there is no IAM there — and that asymmetry is the point of the original
+decision: the guarantee now belongs to the software's deployment contract in
+both places, instead of to one CNI's behaviour.
+
+**One collision to handle when implementing.** Cloud Run reads the invoker's
+identity token from `Authorization: Bearer`, and that header is already carrying
+the person's token. The service token therefore travels in
+`X-Serverless-Authorization`, which exists for exactly this case. Getting it
+wrong breaks both at once, and the symptom — everything arriving
+unauthenticated — is the same silence this ADR was written about.
+
+### IAP was weighed and refused
+
+Identity-Aware Proxy stopped requiring a load balancer and carries no charge of
+its own, so cost is not the reason.
+
+It authenticates **Google identities**, and this platform lets anyone sign up
+with an e-mail and a password, with Google, or with GitHub. Putting IAP in front
+would mean a Google sign-in before our own, would require the paid Identity
+Platform tier to admit the other two, and would replace the token this ADR is
+built on with `x-goog-iap-jwt-assertion` — changing `VerifyToken`, `Principal`,
+`EnsureUser`, the account linking and the verification gate. It is not a layer
+on top of the identity subsystem; it is a different one.
+
+It also cannot fence the QA environment: the cockpit is served from outside
+Google Cloud and carries no IAP token, so IAP in front of the API would block the
+product's own front end.
+
+Where it does fit is a surface only the team uses — an administration screen,
+metrics, the cluster's console. Free, and correct there.
