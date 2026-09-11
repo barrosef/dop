@@ -13,3 +13,6 @@
 [submodule "repos/dop-infra"]
 	path = repos/dop-infra
 	url = git@github.com:Digital-Business-One/dop-infra.git
+[submodule "repos/dop-t.com"]
+	path = repos/dop-t.com
+	url = git@github.com:Digital-Business-One/dop-t.com.git
