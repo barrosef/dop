@@ -51,6 +51,14 @@ DLQ and replay.
 the metrics, the cost) and react (the techlead wakes up, the launcher provisions, the index
 regenerates). Retry with backoff; a poisoned message goes to the DLQ.
 
+> **Amendment, 2026-09-13.** This section described the DLQ as if it existed.
+> It did not: on exhaustion the adapter called `Term()`, which discards, under
+> a log line claiming the message had been saved. The queue, the classification
+> and the terminal table were built by
+> [the 2026-09-13 spec](../superpowers/specs/2026-09-13-event-context-and-dlq-design.md).
+> The stream's 30-day retention was the only thing standing between an
+> exhausted event and nothing at all.
+
 ### 4. Long processes are sagas
 
 Orchestrated by the core — the demand's finalization (commits → PRs → the merge queue →
