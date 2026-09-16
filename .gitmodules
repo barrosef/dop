@@ -1,18 +1,18 @@
 [submodule "repos/dop-cli"]
 	path = repos/dop-cli
-	url = git@github.com:Digital-Business-One/dop-cli.git
+	url = git@github.com:barrosef/dop-cli.git
 [submodule "repos/dop-api"]
 	path = repos/dop-api
-	url = git@github.com:Digital-Business-One/dop-api.git
+	url = git@github.com:barrosef/dop-api.git
 [submodule "repos/dop-app"]
 	path = repos/dop-app
-	url = git@github.com:Digital-Business-One/dop-app.git
+	url = git@github.com:barrosef/dop-app.git
 [submodule "repos/dop-core"]
 	path = repos/dop-core
-	url = git@github.com:Digital-Business-One/dop-core.git
+	url = git@github.com:barrosef/dop-core.git
 [submodule "repos/dop-infra"]
 	path = repos/dop-infra
-	url = git@github.com:Digital-Business-One/dop-infra.git
+	url = git@github.com:barrosef/dop-infra.git
 [submodule "repos/dop-t.com"]
 	path = repos/dop-t.com
-	url = git@github.com:Digital-Business-One/dop-t.com.git
+	url = git@github.com:barrosef/dop-t.com.git

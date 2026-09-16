@@ -11,6 +11,6 @@ cockpit-real.png
 
 # dop-cmd is a component of the project, but it is NOT a submodule of this
 # meta-repository. Get it with:
-#   git clone git@github.com:Digital-Business-One/dop-cmd.git repos/dop-cmd
+#   git clone git@github.com:barrosef/dop-cmd.git repos/dop-cmd
 repos/dop-cmd/
 .superpowers/

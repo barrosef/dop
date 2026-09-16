@@ -26,7 +26,7 @@ The components are **git submodules** (each pinned at a specific commit). Clone 
 `--recursive`:
 
 ```bash
-git clone --recursive git@github.com:Digital-Business-One/dop.git
+git clone --recursive git@github.com:barrosef/dop.git
 # or, after a plain clone:
 git submodule update --init --recursive
 ```
@@ -42,7 +42,7 @@ git add repos/<component> && git commit -m "chore: bump <component>"
 separately:
 
 ```bash
-git clone git@github.com:Digital-Business-One/dop-cmd.git repos/dop-cmd
+git clone git@github.com:barrosef/dop-cmd.git repos/dop-cmd
 ```
 
 ## Components
@@ -60,7 +60,7 @@ git clone git@github.com:Digital-Business-One/dop-cmd.git repos/dop-cmd
 - **dop-cmd** (`repos/dop-cmd`) — the **operational tool in use** (v0.7.1). It reaches the
   workspace directly and answers for the environment: multi-platform git/PR, a docker-compose
   runtime, e2e/AAA and Allure. **A project of its own**, independent of the platform.
-  Installation: `pip install 'git+ssh://git@github.com/Digital-Business-One/dop-cmd.git'`.
+  Installation: `pip install 'git+ssh://git@github.com/barrosef/dop-cmd.git'`.
 
 ## Documentation
 
