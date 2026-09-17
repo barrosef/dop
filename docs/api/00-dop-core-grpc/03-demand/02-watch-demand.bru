@@ -27,12 +27,12 @@ body:grpc {
 
 docs {
   Who is calling and in which account go in the METADATA, never in the body
-  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  (ADR-0013, convention 5). The `ctx` field the messages still declare is ignored
   by the server — do not use it: it gives the false impression of scoping the
   call.
 
   Server-side streaming: the stage ruler, messages and findings in real time.
 
   The BFF subscribes to this stream and converts it into SSE for the browser —
-  real time is a projection of the event log, not polling (ADR-0006).
+  real time is a projection of the event log, not polling (ADR-0004).
 }

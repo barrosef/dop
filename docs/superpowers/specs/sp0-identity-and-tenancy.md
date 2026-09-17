@@ -12,7 +12,7 @@
 The base decisions: [ADR-0002](../../adr/0002-account-as-unit-of-ownership.md) (the account as
 the unit of ownership, multi-tenancy from the data model, and verification by domain),
 [ADR-0001](../../adr/0001-infrastructure-behind-ports.md) (ports),
-[ADR-0027](../../adr/0027-second-factor-in-the-core.md) (the second factor).
+[ADR-0020](../../adr/0020-second-factor-in-the-core.md) (the second factor).
 
 ## 1. Identity
 
@@ -21,7 +21,7 @@ providers. It exists once on the platform, regardless of how many accounts they 
 
 Authentication uses **Firebase Authentication** as the `IdentityProvider` port's first adapter,
 with four methods: e-mail and password, Google, GitHub and LinkedIn. That is the **first**
-factor; the second is the platform's (§3, ADR-0027).
+factor; the second is the platform's (§3, ADR-0020).
 
 Per ADR-0001, the adapter returns a **normalized principal** — `subject`, `email`,
 `emailVerified`, linked providers. A Firebase claim does not cross the domain's boundary.
@@ -82,21 +82,21 @@ The selector lists the personal account plus every organization the user has a m
 ## 3. The second factor
 
 The platform is born with a second factor, and it is **the platform's** — the identity provider
-does the first one and nothing else (ADR-0027). Three options, one mechanism:
+does the first one and nothing else (ADR-0020). Three options, one mechanism:
 
 | kind | How it verifies | Channel |
 |---|---|---|
 | `totp` | RFC 6238, 30 s, 6 digits, a ±1 window | none — the seed lives in the vault |
-| `email` | a 6-digit code, 10 minutes, single use | the `Mailer` port (ADR-0025) |
+| `email` | a 6-digit code, 10 minutes, single use | the `Mailer` port (ADR-0018) |
 | `sms` | the same code, the same validity | the `SMSer` port, born with this feature |
 
 **Enrolment proves possession**: `enroll → challenge → confirm`. The factor is born `pending`
 and only becomes `active` when the person returns the code — a factor registered without being
 proven is a lock whose key nobody has tested. An `email` factor requires a **verified** address
-(the `IdentityProvider`'s guarantee 5, the same one ADR-0026 leans on).
+(the `IdentityProvider`'s guarantee 5, the same one ADR-0019 leans on).
 
 **Verification runs in the core**, because the TOTP seed is a credential and lives in the vault
-(ADR-0022): the BFF forwards the challenge and the answer, and stores neither seed nor code. The
+(ADR-0016): the BFF forwards the challenge and the answer, and stores neither seed nor code. The
 core records the step-up per (user, session) with an expiry, and the session identifier travels
 in the metadata, alongside `x-actor-id` and `x-account-id`.
 
@@ -118,7 +118,7 @@ the standard library (RFC 6238, with the published vectors in the test), the `SM
 two adapters and a contract suite, the gate on inviting, revoking, changing a role and writing a
 credential, and the cockpit's screens. What is missing is the enrolment's QR code (P-36).
 
-Enrolment, confirmation, success, failure, cool-off and recovery-code use are events (ADR-0006):
+Enrolment, confirmation, success, failure, cool-off and recovery-code use are events (ADR-0004):
 the timeline shows them, and no failure becomes an item in the attention box — a failed attempt
 is not a decision for a human.
 
@@ -166,7 +166,7 @@ a field in the membership: adding one later requires no migration, and inventing
 nobody asked for is complexity you pay for without receiving.
 
 **A resource grant** — per user, per resource (integrations, skills, workflows, git flows —
-ADR-0013), with level `use` or `manage`. Orthogonal to the role; the mechanism is in
+ADR-0009), with level `use` or `manage`. Orthogonal to the role; the mechanism is in
 [`sp0-resources.md`](sp0-resources.md) and, for the case with a credential,
 [`sp0-integrations-and-credentials.md`](sp0-integrations-and-credentials.md).
 
@@ -252,7 +252,7 @@ foundation.
 | R-2 | **Badly configured account linking creates duplicate users**, and a duplicate in multi-tenant becomes an access problem. It has to be active from day one (§1) |
 | R-3 | **An invite by e-mail is a vector for internal phishing.** Acceptance has to require an authenticated session and show clearly which account is being entered |
 | R-4 | **The `workspace → project` renaming** cuts across code, routes, i18n, mocks and documentation. Done halfway, it costs more than done in one go (P-5) |
-| R-5 | **SMS is the weakest of the three factors** (SIM swap, interception) and the only one that costs money per attempt, which makes it the abuse surface: rate limiting per destination is a requirement, not a refinement (ADR-0027) |
+| R-5 | **SMS is the weakest of the three factors** (SIM swap, interception) and the only one that costs money per attempt, which makes it the abuse surface: rate limiting per destination is a requirement, not a refinement (ADR-0020) |
 | R-6 | **A forged session identifier skips the step-up.** The core trusts the BFF's metadata; the NetworkPolicy makes the assumption hold, and that is not the same as authenticating (P-18, which this feature promotes from background item to prerequisite) |
 | R-7 | **A second factor with no recovery path locks people out**, and the workaround becomes a human being talked into resetting it. The recovery codes are what stop support from becoming the bypass |
 

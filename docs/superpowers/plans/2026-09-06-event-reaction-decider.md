@@ -18,7 +18,7 @@
 - House comment style: comments explain WHY a decision was made and what it costs, not what a line does.
 - **Multi-tenant isolation:** every repository operation takes `accountID` explicitly.
 - **A rule row holds no function, no closure and no `switch`** (P-29). `when` is a map of field to value; parameters are copied from the payload BY NAME. Anything that needs an expression is a new decision, not an `if`.
-- **The action vocabulary is closed.** An unknown name is a contract error, not user data — the same stance ADR-0014 §1 takes on stage types.
+- **The action vocabulary is closed.** An unknown name is a contract error, not user data — the same stance ADR-0010 §1 takes on stage types.
 - Rules **accumulate** down the chain; they do not override. A lower level switches off an inherited rule by id, through `disables`.
 - Scope is platform ◁ account ◁ workspace ◁ project. **Never demand** — a demand's reactions come from its frozen flow.
 - The domain is tested without a database, using in-memory doubles declared in the domain package's own `_test.go` files.
@@ -73,7 +73,7 @@ func TestTheActionVocabularyIsClosed(t *testing.T) {
 		}
 	}
 	// An action is CODE. A name outside the vocabulary is a contract error, not
-	// something a user typed — the same stance ADR-0014 takes on stage types.
+	// something a user typed — the same stance ADR-0010 takes on stage types.
 	for _, n := range []reaction.ActionName{"", "send_sms", "run_script", "OPEN_ATTENTION"} {
 		if reaction.ValidActionName(n) {
 			t.Fatalf("%q must not be accepted", n)
@@ -160,7 +160,7 @@ import (
 // ActionName is what a rule asks for. The vocabulary is CLOSED because an
 // action is code: there is a Go handler behind each name, and a name nobody
 // implemented is a contract error rather than something a user typed. It is the
-// same stance ADR-0014 §1 takes on stage types.
+// same stance ADR-0010 §1 takes on stage types.
 type ActionName string
 
 const (
@@ -515,7 +515,7 @@ func Decide(e ports.Event, rules []Rule) ([]PlannedAction, error) {
 }
 
 // matches is equality and nothing else. A comparison, a range or a composite
-// boolean would make this a DSL — which ADR-0014 §2 already refused for flows,
+// boolean would make this a DSL — which ADR-0010 §2 already refused for flows,
 // for the same reason: the moment the row holds an expression, swapping the
 // policy stops being a loader and becomes a rewrite.
 func matches(when map[string]string, payload map[string]any) bool {
@@ -745,7 +745,7 @@ type StageActionSpec struct {
 
 // DecideStage answers what a stage transition should cause.
 //
-// The demand froze (flow_id, version) when it started (ADR-0014 §4), so the
+// The demand froze (flow_id, version) when it started (ADR-0010 §4), so the
 // actions read here are the ones that were in force when the work began — not
 // what somebody edited into the flow this morning.
 func DecideStage(e ports.Event, flowID string, version int32, stages map[string][]StageActionSpec) ([]PlannedAction, error) {

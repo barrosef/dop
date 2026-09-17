@@ -6,16 +6,16 @@
 > accounts, adopted, pinned, and revoked.
 >
 > **Does not answer:** the flow's own structure — `Flow`, typed stages, the inheritance chain
-> and versioning are [ADR-0014](../../adr/0014-dynamic-workflow.md) and are already built. Nor
+> and versioning are [ADR-0010](../../adr/0010-dynamic-workflow.md) and are already built. Nor
 > the account TREE, which this design depends on for one question and which is decided
 > elsewhere (P-44).
 
-The base decisions: [ADR-0014](../../adr/0014-dynamic-workflow.md) (the flow itself),
-[ADR-0013](../../adr/0013-resource-as-unit-of-sharing.md) (a flow is a content resource),
+The base decisions: [ADR-0010](../../adr/0010-dynamic-workflow.md) (the flow itself),
+[ADR-0009](../../adr/0009-resource-as-unit-of-sharing.md) (a flow is a content resource),
 [ADR-0002](../../adr/0002-account-as-unit-of-ownership.md) (the account owns; handles are one
-namespace), [ADR-0006](../../adr/0006-demand-as-event-log.md) (every act is an event).
+namespace), [ADR-0004](../../adr/0004-demand-as-event-log.md) (every act is an event).
 
-**It partially reopens P-9**, which ADR-0014 §7 deferred as strategic: sharing to a NAMED
+**It partially reopens P-9**, which ADR-0010 §7 deferred as strategic: sharing to a NAMED
 account is in; the public community catalogue stays out (§6).
 
 ## 1. What does NOT change
@@ -117,7 +117,7 @@ nobody, ever, and a thousand accounts keep the defect with no way to repair it w
 data that is not ours. A pin makes the fix **offered** to everyone: it exists, it is visible,
 and it is taken deliberately.
 
-ADR-0014 §4 still freezes the flow's VERSION when a demand starts. The pin sits one level above
+ADR-0010 §4 still freezes the flow's VERSION when a demand starts. The pin sits one level above
 it: it decides which version new demands freeze onto.
 
 ## 3. Revocation
@@ -134,9 +134,9 @@ The copy moves to `revoked`, and three things stay true:
   Vanishing silently turns "my process stopped working" into a question with no answer;
 - **the adopter's own edits and history stay.** They built on top; deleting destroys work that
   is theirs;
-- **a demand that already ran stays auditable.** ADR-0014 §4 freezes the flow's version when a
+- **a demand that already ran stays auditable.** ADR-0010 §4 freezes the flow's version when a
   demand starts, and the dossier has to be able to read the definition that run happened under.
-  It is ADR-0007's argument again: evidence pointing at something deleted is evidence nobody can
+  It is ADR-0005's argument again: evidence pointing at something deleted is evidence nobody can
   check.
 
 ### 3.2 The policy has three values, and it is STAMPED on the grant
@@ -160,7 +160,7 @@ the account default therefore affects future grants only.
 ### 3.3 Granularity, events, and the one limit
 
 Revoking a `FlowShare` reaches the derivations made under it — one account at a time.
-Withdrawing a publication reaches all of them. **Both sides emit an event** (ADR-0006): the
+Withdrawing a publication reaches all of them. **Both sides emit an event** (ADR-0004): the
 origin revoked, the target was revoked. Neither finds out by accident.
 
 **The limit, named now rather than discovered later:** if B derives from A, republishes as
@@ -185,7 +185,7 @@ what is built rather than reimplementing it.
 
 **Why a whole new version rather than named operations.** The agent reads the current flow and
 produces the complete next one. A closed vocabulary of operations (`move_stage`, `add_stage`)
-would be safer against silent drift, and was rejected: ADR-0014 exists so that a new composition
+would be safer against silent drift, and was rejected: ADR-0010 exists so that a new composition
 does NOT require the platform to evolve, and a closed operation set fights exactly that. The
 diff is what covers the risk the rewrite creates — a model that rewrites a structure can quietly
 drop a stage nobody asked it to touch, and without a diff that surfaces on the day a demand runs
@@ -198,7 +198,7 @@ relative to what already applied there.
 ### 4.2 What the agent reads
 
 - `flow.vocabulary()` — stage types, artifact kinds, gates, self-describing. It is what stops
-  the agent inventing a type that ADR-0014 §1 defines as a contract error, not user data;
+  the agent inventing a type that ADR-0010 §1 defines as a contract error, not user data;
 - `flow.effective(scope, id)` — the flow in force there, and where in the chain it came from;
 - `project.summary()` — repositories, connected integrations, flows that already exist;
 - `demand.history()` — how earlier demands ran: where they stalled, which gates waited.
@@ -215,13 +215,13 @@ confirmation step exists.
 
 The cockpit draws the flow from the `Flow` structure itself, in React — no diagram library.
 
-- **definition** — the stage's type decides its icon and colour (ADR-0014 §1 already says the
+- **definition** — the stage's type decides its icon and colour (ADR-0010 §1 already says the
   type decides the renderer); a human gate is a visible badge; substages nest;
-- **progress** — the same chain with state on top, from the event log's projection (ADR-0006):
+- **progress** — the same chain with state on top, from the event log's projection (ADR-0004):
   what passed, where it is, which gate is waiting. This is requirement 7;
 - **diff** — the same chain marking what enters, leaves and changes, before confirmation.
 
-**It is a chain, not a graph.** ADR-0014 §2 fixes v1 with no conditionals, no stage parallelism
+**It is a chain, not a graph.** ADR-0010 §2 fixes v1 with no conditionals, no stage parallelism
 and no rules DSL, so there is nothing to branch and **no layout algorithm is needed** — which is
 why a renderer of our own is cheap and a BPMN library would be dead weight. The word "BPM" in
 the requirement should be read as *a picture of the process*, not as BPMN 2.0 conformance: the
@@ -233,7 +233,7 @@ stores, and claiming the standard without them would be a lie in the file format
 | Out | Why |
 |---|---|
 | The public community catalogue | Discovery, curation, trust and abuse are a different product. The mechanism is shaped to receive it later; P-9 stays open for that half |
-| Conditionals and branching | ADR-0014 §2. If a real process needs "if A then B", that is a deliberate extension of the flow structure, not an adjustment here |
+| Conditionals and branching | ADR-0010 §2. If a real process needs "if A then B", that is a deliberate extension of the flow structure, not an adjustment here |
 | Three-way merge on an update | We show that a newer version exists and the agent helps produce the next one; the diff decides |
 | Cascading revocation past one level | §3.3 |
 | A parent account administering its children | The breadcrumb records the relationship; the rule is P-44's |
@@ -261,7 +261,7 @@ stores, and claiming the standard without them would be a lie in the file format
 | R-3 | Provenance is duplicated on both sides (§2.4). Two rows can drift — a derivation recorded on one side and not the other — and the reconciliation is nobody's job yet |
 | R-4 | A flow adopted and then edited diverges from its origin, and "there is a v4" becomes noise the adopter cannot act on without redoing their edits |
 | R-5 | A pin nobody ever bumps is the npm problem: every account stuck on v1 forever, and the platform unable to fix anything in practice. The notice has to be visible where flows are read, not buried in a settings screen |
-| R-6 | The chain-not-a-graph limit will meet the first customer whose real process branches. The answer is an extension of ADR-0014, and until then the honest response is that the platform does not model it |
+| R-6 | The chain-not-a-graph limit will meet the first customer whose real process branches. The answer is an extension of ADR-0010, and until then the honest response is that the platform does not model it |
 
 ## 9. What this design waits on
 

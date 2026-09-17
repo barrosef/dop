@@ -27,7 +27,7 @@ body:grpc {
 
 docs {
   Who is calling and in which account go in the METADATA, never in the body
-  (ADR-0017, convention 5).
+  (ADR-0013, convention 5).
 
   It is worth running this request right after `SetCredential`: the response
   carries `credential_ref` — an opaque label derivable from the row itself — and

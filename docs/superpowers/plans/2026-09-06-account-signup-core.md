@@ -19,7 +19,7 @@
 - The domain is tested without a database; database tests live in `test/integration/` behind the `integration` build tag.
 - `openPool` calls `t.Skipf` when Postgres does not answer. A green `ok` in this repo routinely means every test skipped: run integration tests with `-v` and confirm `--- PASS`, never `--- SKIP`.
 - No adapter may be imported from `internal/domain` — the architecture test in `test/contract/` enforces it.
-- ADR-0029 binds this work: the core verifies a signature, it does not believe a claim.
+- ADR-0022 binds this work: the core verifies a signature, it does not believe a claim.
 
 ---
 
@@ -88,7 +88,7 @@ func TestAVerifiedTokenProvesThePersonEvenWhenNoUserExistsYet(t *testing.T) {
 	// The bootstrap: EnsureUser is the call that runs BEFORE the user exists, so
 	// userOf finds nothing and strict mode proves no actor. The token still
 	// proved WHO, and that is what EnsureUser needs — without it the handler
-	// falls back to believing the request body, which ADR-0029 exists to stop.
+	// falls back to believing the request body, which ADR-0022 exists to stop.
 	users := &fakeUsers{bySubject: map[string]string{}}
 	a, _ := newAuth(t, "strict", fakeTokens{principal: &ports.Principal{
 		Subject: "sub-new", Email: "ana@example.com", EmailVerified: true,
@@ -338,7 +338,7 @@ Replace `internal/app/grpc/identity.go:27-40`:
 // EnsureUser is the bootstrap: it runs BEFORE the person has a user, so no actor
 // can authorize it. What authorizes it is the token, and the token is also the
 // only acceptable source for who the person is — the request's fields describe
-// an identity the caller merely asserts (ADR-0029). They are ignored, and stay
+// an identity the caller merely asserts (ADR-0022). They are ignored, and stay
 // in the proto only so an older client is refused rather than misread.
 func (s *IdentityServer) EnsureUser(ctx context.Context, _ *dopv1.EnsureUserRequest) (*dopv1.User, error) {
 	call, _ := ctxutil.From(ctx)

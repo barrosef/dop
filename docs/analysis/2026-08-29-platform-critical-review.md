@@ -1,7 +1,7 @@
 # A critical review — the DOP platform × the state of the art (August 2026)
 
 > **Date:** 2026-08-29
-> **Method:** a rereading of every requirement and decision (ADRs 0001–0005, the SP-0 specs,
+> **Method:** a rereading of every requirement and decision (ADRs 0001–0003, the SP-0 specs,
 > the dop-infra spec, the executor's design, PRD 1.0, 20 adjustment prompts, the
 > dop-app analysis), compared with the state of the art of autonomous development with agents.
 > `dop-cmd` was used **only as a source of knowledge** — it is a separate utility and is not
@@ -114,7 +114,7 @@ failure in production; a malicious card can instruct the agent to exfiltrate cod
 *A layered solution:* (1) an **egress allowlist per sandbox** — only the provider's git, the
 BFF and the model endpoints; (2) card and repo content marked as untrusted in the agent's
 context; (3) the already existing minimal credential (a 1h installation token — keep it); (4)
-secret redaction in every output (`dop-cmd`'s knowledge, its ADR-0006, to be mined and
+secret redaction in every output (`dop-cmd`'s knowledge, its ADR-0004, to be mined and
 reimplemented); (5) runtime detection of anomalous commands + F-8's trail.
 
 **🟧 F-11. A degradable isolation has to be an account policy, not a silent fallback.**

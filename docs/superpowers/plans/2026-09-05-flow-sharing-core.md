@@ -17,8 +17,8 @@
 - **Everything written in the repository is in English** — code, comments, logs, paths, protos, docs. Only what a person reads on screen goes through i18n.
 - **Multi-tenant isolation:** every repository operation takes `accountID` explicitly. The one boundary crossing in this plan is resolving a publication reference, and it is authorised by a `flow_shares` row.
 - **A version is immutable.** No operation alters a stored version; the way to change a flow is to append a version (existing invariant, enforced by a trigger in `0005_workflow.sql`).
-- **Every write carries an idempotency key** (ADR-0017), unique in the database.
-- **State and event are written in the same transaction** (ADR-0006/ADR-0018).
+- **Every write carries an idempotency key** (ADR-0013), unique in the database.
+- **State and event are written in the same transaction** (ADR-0004/ADR-0014).
 - The default revocation policy is `prospective`.
 - Account-level settings are changed by **owner or admin** — reuse `identity.Role.CanManageMembers()`, do not invent a permission.
 
@@ -96,7 +96,7 @@ const (
 	// and every existing one goes on working, untouched.
 	PolicyProspective RevocationPolicy = "prospective"
 	// PolicyDrain revokes the derivations, but a demand already running finishes
-	// under the version it froze on start (ADR-0014 §4).
+	// under the version it froze on start (ADR-0010 §4).
 	PolicyDrain RevocationPolicy = "drain"
 	// PolicyTerminate revokes at once: a running demand stops at its current gate
 	// and raises an attention item.
@@ -668,7 +668,7 @@ type SharingRepository interface {
 	// It is one call and not four because a crash between four calls leaves a
 	// share revoked with its copies untouched — a half-revocation nobody would
 	// notice until somebody used a flow that was supposed to be gone. The
-	// transaction and the outbox are the adapter's job (ADR-0019); the domain's
+	// transaction and the outbox are the adapter's job (ADR-0014); the domain's
 	// job is to decide WHAT the policy reaches and hand it over.
 	RevokeShare(ctx context.Context, accountID string, rev Revocation) error
 
@@ -1157,7 +1157,7 @@ func TestWhatARevocationReachesDependsOnTheStampedPolicy(t *testing.T) {
 				t.Fatal("revoking deleted the copy — it must only change its state")
 			}
 			// The events are written by the adapter, in the same transaction
-			// (ADR-0019), so what the DOMAIN owes is the decision: which
+			// (ADR-0014), so what the DOMAIN owes is the decision: which
 			// adoptions the policy reaches. Task 9 proves the events exist.
 			rev := env.LastRevocation()
 			if rev.Policy != tc.policy {
@@ -1186,7 +1186,7 @@ Expected: FAIL — `svc.Revoke undefined`
 // `terminate` it also marks the copies derived under it as revoked — a state
 // change, never a deletion: the adopter's own edits and the audit trail of a
 // demand that already ran have to survive, or a green becomes uncheckable
-// (ADR-0007's argument).
+// (ADR-0005's argument).
 //
 // The DIFFERENCE between drain and terminate is what happens to demands already
 // running, and that does not happen here: this emits the event carrying the
@@ -1257,7 +1257,7 @@ type AdoptionRef struct {
 
 Put `Revocation` and `AdoptionRef` in `sharing.go` beside the other entities.
 
-**The events are the ADAPTER's, not this service's** (ruling R1). `internal/adapter/postgres/outbox.go` writes the event and the outbox row inside the transaction that changes the state — that is ADR-0019, and no domain service in this codebase publishes anything. Task 9 emits both events there, inside `RevokeShare`'s transaction, using `ports.Event`'s real fields: `Aggregate: "flow"`, `AggregateID: <share id>`, `Type: "flow.share.revoked"` / `"flow.grant.revoked"`, and `Payload []byte` holding the marshalled JSON.
+**The events are the ADAPTER's, not this service's** (ruling R1). `internal/adapter/postgres/outbox.go` writes the event and the outbox row inside the transaction that changes the state — that is ADR-0014, and no domain service in this codebase publishes anything. Task 9 emits both events there, inside `RevokeShare`'s transaction, using `ports.Event`'s real fields: `Aggregate: "flow"`, `AggregateID: <share id>`, `Type: "flow.share.revoked"` / `"flow.grant.revoked"`, and `Payload []byte` holding the marshalled JSON.
 
 - [ ] **Step 4: Run the tests**
 
@@ -1579,7 +1579,7 @@ git commit -m "feat(postgres): o adaptador de compartilhamento, com a autorizaç
 
 - [ ] **Step 1: Add the messages and RPCs to the proto**
 
-Follow the conventions ADR-0017 fixes and this file already uses: a `Ref` instead of a loose id, identity in the metadata and never in the body, server-side streaming only where something is live (nothing here is).
+Follow the conventions ADR-0013 fixes and this file already uses: a `Ref` instead of a loose id, identity in the metadata and never in the body, server-side streaming only where something is live (nothing here is).
 
 ```proto
 message PublishFlowRequest {

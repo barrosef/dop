@@ -1,4 +1,4 @@
-# ADR-0009 — Context is a subsystem: a knowledge base and a package per demand
+# ADR-0006 — Context is a subsystem: a knowledge base and a package per demand
 
 - **Status:** Accepted
 - **Date:** 2026-08-29
@@ -29,9 +29,9 @@ and **how** it is assembled per demand.
 3. **A context package per demand**, assembled when the sandbox is provisioned: the demand's
    spec + the rules + the index of the repositories involved + the relevant memories. It is
    the agent's carry-on luggage — curated, not dumped.
-4. **A write-back at closing**: the demand's findings (ADR-0010) and lessons go into the
+4. **A write-back at closing**: the demand's findings (ADR-0007) and lessons go into the
    memory layer. Context is a cycle, not a file.
-5. **The index updates on a merge event** (ADR-0006/0007), not on a cron: the map follows
+5. **The index updates on a merge event** (ADR-0004/0007), not on a cron: the map follows
    the real `main`.
 
 ## Alternatives considered
@@ -39,8 +39,8 @@ and **how** it is assembled per demand.
 **A raw document folder in the sandbox.** Rejected: with no curation and no assembly, the
 agent digs — and digging is what the package exists to eliminate.
 
-> **Revised by [ADR-0028](0028-project-knowledge-as-a-git-repository.md) (2026-09-03).** What
-> was rejected here was a folder AS A REPLACEMENT for the package. ADR-0028 keeps the package
+> **Revised by [ADR-0021](0021-project-knowledge-as-a-git-repository.md) (2026-09-03).** What
+> was rejected here was a folder AS A REPLACEMENT for the package. ADR-0021 keeps the package
 > exactly as this ADR defines it — the curated, budgeted luggage that goes into the prompt —
 > and ADDS the shelf: the project's root repository, complete, cloned into the sandbox, with
 > a generated `README.md` so the agent does not dig. The package is paid for on every turn;
@@ -64,7 +64,7 @@ starting there is buying infrastructure before having content.
 
 ## Revised on 2026-09-03 — where the text lives
 
-Decision 2 said "over `ObjectStore`". With [ADR-0028](0028-project-knowledge-as-a-git-repository.md),
+Decision 2 said "over `ObjectStore`". With [ADR-0021](0021-project-knowledge-as-a-git-repository.md),
 **text lives in the project's root repository (git)** and the `ObjectStore` keeps BYTES —
 diagrams, exports, anything a repository is bad at. The three layers, the port and the
 package are unchanged; only the storage of the text moved, and it moved to gain attribution

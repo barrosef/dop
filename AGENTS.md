@@ -45,18 +45,18 @@ These are the architecture's load-bearing walls. A change that breaks one is
 wrong even when it compiles and the tests pass.
 
 1. **The core is the only source of truth.** It owns the schema and the vault
-   (ADR-0016, ADR-0023). Every write goes through it.
+   (ADR-0012, ADR-0016). Every write goes through it.
 2. **The BFF has no database and no secret.** `dop-api` translates and forwards;
    it never persists and never holds a credential.
-3. **The `.proto` files are the contract** (ADR-0017). Generated code is
+3. **The `.proto` files are the contract** (ADR-0013). Generated code is
    regenerated, never hand-edited. `make proto-breaking` refuses an incompatible
    change on purpose.
 4. **The cockpit consumes a committed contract.** `lib/api-spec/openapi.json` is
    downloaded and committed; Orval generates the react-query hooks and the Zod
    schemas from it. See `repos/dop-app/RAILS.md`, which states the cockpit's own
    invariants in full — read it before changing that repository.
-5. **The core verifies its callers** (ADR-0029), and **verification runs from
-   source** (ADR-0030).
+5. **The core verifies its callers** (ADR-0022), and **verification runs from
+   source** (ADR-0023).
 
 When a change appears to require breaking one of these, that is a decision for a
 human and probably an ADR — not something to work around.
@@ -69,7 +69,7 @@ human and probably an ADR — not something to work around.
   scope.
 - **Documentation, code and comments are in English.** Only commit subjects and
   the specs written for humans are in Portuguese.
-- ADRs follow MADR and live in `docs/adr/`. Thirty of them exist; they are the
+- ADRs follow MADR and live in `docs/adr/`. Twenty-three of them exist, numbered 0001–0023; they are the
   reason behind most of what looks arbitrary.
 
 ## Where to look before asking

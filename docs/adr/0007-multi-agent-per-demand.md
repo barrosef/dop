@@ -1,4 +1,4 @@
-# ADR-0010 — Multi-agent per demand: addressable threads and published findings
+# ADR-0007 — Multi-agent per demand: addressable threads and published findings
 
 - **Status:** Accepted (definitive, by product decision)
 - **Date:** 2026-08-29
@@ -23,15 +23,15 @@ in today's tools.
    thread per subagent. Each with its own history; the dev enters and talks to that agent,
    in isolation.
 2. **Every subagent is born with a card**: purpose, tools granted (e.g. the workspace's
-   MySQL MCP — R1.14 gains its real use), model (the router's decision, ADR-0011) and a
+   MySQL MCP — R1.14 gains its real use), model (the router's decision, ADR-0008) and a
    slice of the demand's budget.
 3. **Cross-knowledge by query, not by dump.** Threads are readable by their siblings as a
    tool (`read_thread`, `ask`); dumping whole timelines into every agent's context does not
    scale and widens the injection surface.
 4. **A conclusion becomes a published finding**: a structured result on the demand's common
    board ("a deadlock on table X, 14:02–14:07, caused by migration Y"). Findings go
-   automatically into the siblings' context, are events (ADR-0006) and feed the project's
-   memory (ADR-0009).
+   automatically into the siblings' context, are events (ADR-0004) and feed the project's
+   memory (ADR-0006).
 5. **Who launches subagents: the human and the main agent.** The human, through the chat;
    the main agent, on its own initiative when it judges it necessary — the thread shows up
    immediately for the dev to follow or step into.

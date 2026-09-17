@@ -1,8 +1,8 @@
-# ADR-0014 — A dynamic, typed and inheritable workflow
+# ADR-0010 — A dynamic, typed and inheritable workflow
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Refines:** [ADR-0013](0013-resource-as-unit-of-sharing.md) (it gives shape to the
+- **Refines:** [ADR-0009](0009-resource-as-unit-of-sharing.md) (it gives shape to the
   `workflow` resource and adjusts the access default per resource type)
 
 ## Context
@@ -31,7 +31,7 @@ vacant.
        gate: human | none, substages? } ] }
    ```
    **Where an artefact lives (added 2026-09-03):** as a file at `demand/<id>/<kind>.md` in the
-   project's root repository — [ADR-0028](0028-project-knowledge-as-a-git-repository.md).
+   project's root repository — [ADR-0021](0021-project-knowledge-as-a-git-repository.md).
    "Puts an artifact on the table" means that file exists at that path. Rendered bytes
    (a diagram's export) stay in the `ObjectStore`, referenced from the file.
    No conditionals, no stage parallelism, no rules DSL — they evolve over the same structure.
@@ -57,10 +57,10 @@ vacant.
    demand` — the nearest level wins; it is inherited by omission, overridden by declaration.
    The interface always shows **where the effective flow came from**.
 4. **The demand freezes the flow's version when it starts.** A stage's progress is an event
-   (ADR-0006); the ruler on the screen is a projection.
+   (ADR-0004); the ruler on the screen is a projection.
 5. **Promotion:** a flow created at one level may be promoted to a level above (demand →
    project → workspace → account) by whoever has `manage`.
-6. **An access default per resource type** (a refinement of ADR-0013): a resource **with a
+6. **An access default per resource type** (a refinement of ADR-0009): a resource **with a
    credential** (`integration`) stays closed — a grant composed in the invite; a **content**
    resource (`workflow`, `skill`, `git_flow`) in an organization account is **open within the
    account by default**, restrictable by a grant. A credential is risk; a flow is knowledge —

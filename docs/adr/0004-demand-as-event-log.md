@@ -1,4 +1,4 @@
-# ADR-0006 — The demand is an event log; everything else is a projection
+# ADR-0004 — The demand is an event log; everything else is a projection
 
 - **Status:** Accepted
 - **Date:** 2026-08-29
@@ -39,7 +39,7 @@ in a multi-tenant system needs fields, not grep.
 ## Consequences
 
 - ➕ One investment, five returns; P-1 leaves the pending list.
-- ➕ The subagents' "findings" (ADR-0010) and the metering (ADR-0011) are just two more event
+- ➕ The subagents' "findings" (ADR-0007) and the metering (ADR-0008) are just two more event
   types — no new mechanism.
 - ➖ The discipline of emitting everywhere: an action with no event is a bug, not a detail.
 - ➖ Volume: the log grows with the fleet; retention and compaction are an SP-3 decision.

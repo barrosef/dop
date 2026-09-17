@@ -1,9 +1,9 @@
-# ADR-0029 — The core verifies a signature; it does not believe a header
+# ADR-0022 — The core verifies a signature; it does not believe a header
 
 - **Status:** Accepted
 - **Date:** 2026-09-03
-- **Refines:** [ADR-0016](0016-stack-go-core-python-bff.md) (the edge stays the one that authenticates the person — what changes is that the core no longer takes its word for the conclusion), [ADR-0017](0017-proto-as-source-of-truth.md) (convention 5: identity travels in the metadata, not in the body — still true, and now the metadata is verified)
-- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (the `IdentityProvider` port already existed and does the heavy half), [ADR-0006](0006-demand-as-event-log.md) (an event's authorship is only worth what the actor behind it is worth)
+- **Refines:** [ADR-0012](0012-stack-go-core-python-bff.md) (the edge stays the one that authenticates the person — what changes is that the core no longer takes its word for the conclusion), [ADR-0013](0013-proto-as-source-of-truth.md) (convention 5: identity travels in the metadata, not in the body — still true, and now the metadata is verified)
+- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (the `IdentityProvider` port already existed and does the heavy half), [ADR-0004](0004-demand-as-event-log.md) (an event's authorship is only worth what the actor behind it is worth)
 - **Resolves:** P-18
 
 ## Context
@@ -13,14 +13,14 @@ believed them. The metadata is text: whoever could open a connection to port
 9090 declared themselves **any actor of any account** — no password, no token,
 nothing beyond sending the header.
 
-That was a deliberate decision (ADR-0016): one trust boundary, at the edge, and
+That was a deliberate decision (ADR-0012): one trust boundary, at the edge, and
 a core that stays simple. What put it on the list is the KIND of guarantee
 behind it. "Only the BFF calls" is not enforced by the code — it is enforced by
 a NetworkPolicy. Verified on 2026-09-03, from a loose pod in the namespace:
 
 ```
 BLOCKED_9090   ← the gRPC port, denied
-REACHED_9091   ← health (and, since ADR-0028, the git server), open
+REACHED_9091   ← health (and, since ADR-0021, the git server), open
 ```
 
 So it holds **today, here**. Three things make that insufficient:

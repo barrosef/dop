@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-29 · **consolidated 2026-09-04**
-- **Absorbs:** ADR-0004 (verifying an organization by domain) and ADR-0005 (a multi-tenant
+- **Absorbs:** the former ADR 0004 (a number retired by the 2026-09-17 renumbering) (verifying an organization by domain) and the former ADR 0005 (a number retired by the 2026-09-17 renumbering) (a multi-tenant
   platform) — one subject, one ADR. Those numbers are **retired and never reused**.
 
 ## Context

@@ -1,9 +1,9 @@
-# ADR-0026 — The invite has no secret: identity in place of a bearer
+# ADR-0019 — The invite has no secret: identity in place of a bearer
 
 - **Status:** Accepted
 - **Date:** 2026-09-01
 - **Resolves:** P-30 (the invite carried no acceptance link)
-- **Changes:** ADR-0025 (the invite e-mail now addresses the row)
+- **Changes:** ADR-0018 (the invite e-mail now addresses the row)
 
 ## Context
 
@@ -23,7 +23,7 @@ payload of `dop.identity.invite.created` travels to:
 | `timeline` | a projection that subscribes to `dop.>` and keeps the whole payload — **made to be displayed** |
 
 That is: putting the token in the event would replicate it to four places, one of them a
-screen. Without the token in the event, the notifier (ADR-0025 — it only sees the event) had no
+screen. Without the token in the event, the notifier (ADR-0018 — it only sees the event) had no
 way to build an acceptance link. The e-mail announced the invite and pointed at `/invites` — a
 list the invitee, **who is not a user yet**, does not have.
 

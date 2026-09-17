@@ -1,4 +1,4 @@
-# ADR-0020 — Firebase emulators in the local environment; Terraform as the single owner
+# ADR-0015 — Firebase emulators in the local environment; Terraform as the single owner
 
 - **Status:** Accepted
 - **Date:** 2026-08-30 · **slimmed 2026-09-04** (the operational recipe moved to the `dop-infra` spec, §4.4)

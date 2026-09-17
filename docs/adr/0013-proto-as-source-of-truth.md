@@ -1,4 +1,4 @@
-# ADR-0017 — The `.proto` is the contract's source of truth
+# ADR-0013 — The `.proto` is the contract's source of truth
 
 - **Status:** Accepted
 - **Date:** 2026-08-30

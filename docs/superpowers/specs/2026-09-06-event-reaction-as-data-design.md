@@ -8,11 +8,11 @@
 > **Does not answer:** which reactions the product actually wants — that is epic 10's content.
 > Nor the cockpit screen for editing rules: the model allows one, the screen comes later.
 
-The base decisions: [ADR-0006](../../adr/0006-demand-as-event-log.md) (the event log is the
-truth), [ADR-0019 — now part of ADR-0018](../../adr/0018-postgres-persistence.md) (the outbox,
+The base decisions: [ADR-0004](../../adr/0004-demand-as-event-log.md) (the event log is the
+truth), [ADR-0014 — now part of ADR-0014](../../adr/0014-postgres-persistence.md) (the outbox,
 at-least-once delivery, idempotent consumers, the DLQ),
-[ADR-0025](../../adr/0025-communication-trigger-and-channel.md) (the trigger and the channel are
-separate), [ADR-0014](../../adr/0014-dynamic-workflow.md) (the flow, whose `StageSpec` this
+[ADR-0018](../../adr/0018-communication-trigger-and-channel.md) (the trigger and the channel are
+separate), [ADR-0010](../../adr/0010-dynamic-workflow.md) (the flow, whose `StageSpec` this
 extends).
 
 This is **P-29**, and four things wait on it: epic 10, P-26's automatic provisioning trigger,
@@ -59,15 +59,15 @@ rule saying "record everything" — a rule that decides nothing, and a table tha
 rows which exist only to satisfy the mechanism. Projections run under the same dispatcher, in
 the same consumer, and **outside the decision path**.
 
-### What this does to ADR-0025
+### What this does to ADR-0018
 
-ADR-0025 said the trigger and the channel are born together, and created the `Notifier` as the
+ADR-0018 said the trigger and the channel are born together, and created the `Notifier` as the
 trigger so that no use case would call the `Mailer` directly and become a diffuse trigger. With
 this design the **table** is the trigger and the `Notifier` becomes a channel.
 
-That does not contradict ADR-0025 — it is what ADR-0025 anticipated, and `register.go` already
+That does not contradict ADR-0018 — it is what ADR-0018 anticipated, and `register.go` already
 says so in a comment: *"when the reaction becomes data (P-29), you swap the loader, not the
-caller."* The rule ADR-0025 actually protects — that nothing calls the `Mailer` directly —
+caller."* The rule ADR-0018 actually protects — that nothing calls the `Mailer` directly —
 survives intact.
 
 `projection.Attention` and the notifier stop deciding and become executors of one action each.
@@ -97,7 +97,7 @@ else.
 
 ### `when` is data, and stays data
 
-P-29 requires that no row hold a function, a closure or a `switch`; ADR-0014 §2 already refused a
+P-29 requires that no row hold a function, a closure or a `switch`; ADR-0010 §2 already refused a
 rules DSL inside flows for the same reason. So `when` is a map of field to value and every entry
 must match. That covers *"the stage advanced **and** `to` is implementation"*, which is P-26's
 case. It does not cover comparison, ranges or composite booleans — and when somebody needs one,
@@ -136,8 +136,8 @@ type StageAction struct {
 Both moments are derived from the `from`/`to` the `dop.demand.stage.advanced` event already
 carries (`demand/service.go:257`) — nothing changes in the emitter.
 
-This is a change to ADR-0014's structure, merged the day before. Two consequences travel with it:
-`Validate` refuses an action whose name is outside the vocabulary (ADR-0014 §1 already treats an
+This is a change to ADR-0010's structure, merged the day before. Two consequences travel with it:
+`Validate` refuses an action whose name is outside the vocabulary (ADR-0010 §1 already treats an
 unknown type as a contract error rather than user data), and **a demand in flight keeps its
 frozen version** — a v3 with no actions goes on having none until somebody moves the pin.
 
@@ -247,7 +247,7 @@ panel-triggered re-run — writes the row, and every later attempt is skipped.
 
 | Out | Why |
 |---|---|
-| Conditions beyond equality | It is a DSL, and ADR-0014 §2 already refused one |
+| Conditions beyond equality | It is a DSL, and ADR-0010 §2 already refused one |
 | User-supplied action code | An action is code; the vocabulary is the platform's |
 | Rules at demand scope | The frozen flow covers it (§3) |
 | A cockpit editor for rules | The model allows it; the screen is later work |
@@ -278,7 +278,7 @@ panel-triggered re-run — writes the row, and every later attempt is skipped.
 | R-3 | **An unstable signature oscillates.** Something that fails for a week and works on Fridays will be promoted and demoted repeatedly, and the recovery mechanism's behaviour changes underneath without anyone deciding it. The counters make it visible; nothing makes it stop |
 | R-4 | **The plan frozen in a DLQ record can outlive the world it was decided in.** A `provision_bench` retried an hour later may target a demand that has since been destroyed, and a `send_email` may name a user who has left the account. The handler, not the queue, has to tolerate that — every action needs to be safe to run late, or to refuse cleanly when its subject is gone |
 | R-5 | **Rules accumulate.** A four-level chain can fire more actions than anyone intended, and nobody can see the effective set without a "what fires for this event" view. The flow chain has the same shape and solved it by showing where the effective flow came from — rules will want the same |
-| R-6 | The equality-only `when` will meet the case it cannot express, and the pressure will be to add a DSL — the thing ADR-0014 refused for flows |
+| R-6 | The equality-only `when` will meet the case it cannot express, and the pressure will be to add a DSL — the thing ADR-0010 refused for flows |
 | R-7 | A flow authored before this change has no actions, and that is **silent**: correct, and indistinguishable from a broken mechanism |
 | R-8 | A rule written for an event nobody emits does nothing and says nothing — the opposite of the test that today guarantees subject coverage. The derived subject list should refuse, or at least report, an event type no aggregate emits |
 | R-9 | Replacing three consumers at once (decision 3) means the attention box, communication and the timeline all change behaviour in one deployment. Migrating incrementally was the recommendation; the mitigation available is that the seeded rules reproduce today's rows exactly, so the first deployment should be behaviour-identical |

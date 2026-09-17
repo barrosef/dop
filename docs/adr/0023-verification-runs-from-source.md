@@ -1,9 +1,9 @@
-# ADR-0030 — Verification builds from source in a runner, not from an image
+# ADR-0023 — Verification builds from source in a runner, not from an image
 
 - **Status:** Accepted
 - **Date:** 2026-09-04
-- **Supersedes:** [ADR-0024](0024-sandbox-per-demand.md)'s "an ephemeral pod per verification run" — the argument stands, the mechanism changes
-- **Depends on:** [ADR-0007](0007-no-green-no-pr.md) (evidence names the commit it ran on), [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (the credential that pulls the code)
+- **Supersedes:** [ADR-0017](0017-sandbox-per-demand.md)'s "an ephemeral pod per verification run" — the argument stands, the mechanism changes
+- **Depends on:** [ADR-0005](0005-no-green-no-pr.md) (evidence names the commit it ran on), [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (the credential that pulls the code)
 - **Refines:** P-27 (one address per demand; runs queue)
 
 ## Context
@@ -13,7 +13,7 @@ disagreement was ours to fix:
 
 - the execution spec says an **internal Docker** brings up the demand's stack
   inside the sandbox, with `docker compose -p <demand>`;
-- ADR-0024 says a verification runs in an **ephemeral pod** in the cluster,
+- ADR-0017 says a verification runs in an **ephemeral pod** in the cluster,
   because *"a test running inside the agent's sandbox runs against the dirty
   working tree, which is no commit at all"*;
 - and P-27's write-up, on 2026-09-03, withdrew the ephemeral pod and said the
@@ -63,7 +63,7 @@ The sandbox holds the agent, the dirty tree and everything installed along the
 way. The runner starts from nothing, on a commit, so:
 
 - **the evidence is honest about the environment**, not only about the code —
-  which is what ADR-0024 bought with the ephemeral pod, and what a `git worktree`
+  which is what ADR-0017 bought with the ephemeral pod, and what a `git worktree`
   inside the sandbox would NOT have bought;
 - **the test does not compete with the agent** for memory or CPU;
 - and a runner that dies takes nothing of the demand's work with it.
@@ -117,7 +117,7 @@ environment is the agent's, with whatever the agent installed in it, and evidenc
 from there speaks about that environment and not about a clean one. It remains
 the candidate for the developer's own bench — a separate question, still open.
 
-**An ephemeral pod from a built image** (ADR-0024's mechanism). Honest
+**An ephemeral pod from a built image** (ADR-0017's mechanism). Honest
 environment, and it costs a builder, a registry and three network hops per run.
 Rejected for the cost, not for the argument — the argument is what this ADR
 keeps.

@@ -1,9 +1,9 @@
-# ADR-0028 — The project's knowledge is a git repository, hosted by the platform
+# ADR-0021 — The project's knowledge is a git repository, hosted by the platform
 
 - **Status:** Accepted
 - **Date:** 2026-09-03
-- **Refines:** [ADR-0009](0009-context-as-subsystem.md) (the three layers get a home on disk), [ADR-0024](0024-sandbox-per-demand.md) (the knowledge boundary moves up to the project; the workspace boundary stays)
-- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (**every rule about commits, authorship and push lives there** — this ADR only references it), [ADR-0006](0006-demand-as-event-log.md) (a push is an event), [ADR-0013](0013-resource-as-unit-of-sharing.md) (a repository is a resource)
+- **Refines:** [ADR-0006](0006-context-as-subsystem.md) (the three layers get a home on disk), [ADR-0017](0017-sandbox-per-demand.md) (the knowledge boundary moves up to the project; the workspace boundary stays)
+- **Depends on:** [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (**every rule about commits, authorship and push lives there** — this ADR only references it), [ADR-0004](0004-demand-as-event-log.md) (a push is an event), [ADR-0009](0009-resource-as-unit-of-sharing.md) (a repository is a resource)
 - **Scope:** HOW the project's knowledge is structured and shared. Not how a commit is attributed or pushed — that is ADR-0003's, for this repository as for any other.
 
 ## Context
@@ -26,7 +26,7 @@ Two attempts preceded this decision, and both were the wrong kind:
 A per-project volume, the obvious next step, fails on two facts: the local
 cluster refuses `ReadWriteMany` (*"NodePath only supports ReadWriteOnce"*), and
 a shared filesystem has no idea WHO changed a file — which is the one thing
-ADR-0006 requires this platform to always know.
+ADR-0004 requires this platform to always know.
 
 The owner then named the answer: **versioned in git**. Instead of sharing a
 volume, share a repository.
@@ -87,7 +87,7 @@ is weaker (spoofable inside the cluster) and harder to audit.
 A user may point the project at a remote of their own — GitHub, GitLab — at any
 moment. When they do, **the platform's repository stays the primary** and the
 user's remote becomes a **push mirror**: every push to the platform is pushed
-onward by the platform, with the user's credential from the vault (ADR-0022).
+onward by the platform, with the user's credential from the vault (ADR-0016).
 The sandbox never sees that credential.
 
 There is **no two-way sync in v1**. Two-way sync of a repository two parties
@@ -100,7 +100,7 @@ Moving the primary to the user's remote is a one-time migration, not a mode.
 ### 5. Every push is an event
 
 The git server's post-receive reaches the core: a push becomes an event
-(ADR-0006) carrying the author, the paths and the commit. It is what fires the
+(ADR-0004) carrying the author, the paths and the commit. It is what fires the
 `README.md` regeneration, what feeds the timeline, and — when an agent commits
 into `memory/` at the end of a demand — what makes the lessons loop (P-41)
 exist: a demand's findings become the project's memory by the agent writing

@@ -1,4 +1,4 @@
-# ADR-0016 — A core in Go, a BFF in Python, and the boundary between them
+# ADR-0012 — A core in Go, a BFF in Python, and the boundary between them
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
@@ -27,8 +27,8 @@ Postgres — not even "just for a quick query". Two owners of the schema is how 
 dies. When the BFF needs to record something, it **calls the core**, which writes state and
 event in the same transaction.
 
-**~~The `AgentRuntime` lives in the BFF~~ — REPLACED by [ADR-0022](0022-agent-provider-as-port.md): the runtime moved to the core, because the provider's credential cannot reach the layer exposed to the internet.** ~~The `AgentRuntime` lives in the BFF~~ (the execution spec's ADR-0015 §7): the core decides *what*
-(flow, card, budget, routing — ADR-0011); the BFF runs the conversation with the model and
+**~~The `AgentRuntime` lives in the BFF~~ — REPLACED by [ADR-0016](0016-agent-provider-as-port.md): the runtime moved to the core, because the provider's credential cannot reach the layer exposed to the internet.** ~~The `AgentRuntime` lives in the BFF~~ (the execution spec's ADR-0011 §7): the core decides *what*
+(flow, card, budget, routing — ADR-0008); the BFF runs the conversation with the model and
 returns events to the core. The sandbox talks **only to the BFF**, which keeps the egress
 allowlist minimal (F-10).
 
@@ -54,4 +54,4 @@ same reason: the most complete agent and embedding libraries are Python.
 - ➖ Every call from the BFF to the core is network — it requires a deadline, a retry and
   idempotency (the proto carries an `idempotency_key` on every write).
 - ➖ Types duplicated at both ends, mitigated by generating both from the same proto
-  ([ADR-0017](0017-proto-as-source-of-truth.md)).
+  ([ADR-0013](0013-proto-as-source-of-truth.md)).

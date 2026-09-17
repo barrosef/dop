@@ -1,4 +1,4 @@
-# ADR-0013 — The resource as the account's unit of ownership and sharing
+# ADR-0009 — The resource as the account's unit of ownership and sharing
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
@@ -44,8 +44,8 @@ N implementations of the same policy, diverging.
    governs as its own.
 4. **A project consumes the resources of the account that owns the workspace** — the
    integrations rule, unchanged, now holds for everything: the git flow attached to the
-   project parameterizes the merge queue (ADR-0007) and the verification; the skills and the
-   workflow attached parameterize the agents (their cards, ADR-0010).
+   project parameterizes the merge queue (ADR-0005) and the verification; the skills and the
+   workflow attached parameterize the agents (their cards, ADR-0007).
 
 ## Alternatives considered
 

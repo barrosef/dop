@@ -34,12 +34,12 @@ body:grpc {
 
 docs {
   Who is calling and in which account go in the METADATA, never in the body
-  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  (ADR-0013, convention 5). The `ctx` field the messages still declare is ignored
   by the server — do not use it: it gives the false impression of scoping the
   call.
 
   The category is a lowercase string — `git`, `task_manager` or `agent` — and not
-  an enum: the one who rules the provider vocabulary is the provider (ADR-0013).
+  an enum: the one who rules the provider vocabulary is the provider (ADR-0009).
 
   It creates the integration WITHOUT a credential. The secret comes in through
   `SetCredential`, which writes it into the `SecretStore` and returns only the

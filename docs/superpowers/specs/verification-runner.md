@@ -12,8 +12,8 @@
 > [`verification-and-delivery.md`](verification-and-delivery.md); where the AGENT works, which
 > is the bench ([`demand-execution.md`](demand-execution.md)).
 
-The base decision: [ADR-0030](../../adr/0030-verification-runs-from-source.md), which
-supersedes ADR-0024's ephemeral pod and corrects the sentence P-27's write-up put in it.
+The base decision: [ADR-0023](../../adr/0023-verification-runs-from-source.md), which
+supersedes ADR-0017's ephemeral pod and corrects the sentence P-27's write-up put in it.
 
 ## 1. The idea in one paragraph
 
@@ -46,13 +46,13 @@ a commit  →  [ runner ]  →  dependencies up      (published images, pulled)
 
 A **dev session** is the same sequence with no checks: it stops at `start` and holds.
 
-Each step produces an exit code, output and a duration, and each becomes an event (ADR-0006).
+Each step produces an exit code, output and a duration, and each becomes an event (ADR-0004).
 A step that fails **stops the sequence**: a build that did not compile is not a test failure,
 and reporting it as one sends whoever reads the evidence to the wrong place.
 
 ## 4. The application exists in two windows, and in no other
 
-Decided 2026-09-04, closing the question ADR-0030 left open: **a demand does not keep a running
+Decided 2026-09-04, closing the question ADR-0023 left open: **a demand does not keep a running
 application.** The application exists only
 
 - **during a verification** — it comes up, the checks run, it is destroyed; or
@@ -74,7 +74,7 @@ idle most of the day, since an agent writing code is not exercising a frontend �
 the "resume brings the stack back up" latency the execution spec listed as a risk.
 
 **A dev session builds from a pushed commit**, like any run. If the agent has not pushed, there
-is nothing to bring up: the push is the event (ADR-0028), and running the un-pushed tree is the
+is nothing to bring up: the push is the event (ADR-0021), and running the un-pushed tree is the
 same lie as verifying on the bench.
 
 **The lifetime is a deadline, not idleness.** A session comes up with a visible clock, extends
@@ -229,7 +229,7 @@ lifecycle vocabulary in both places is one less thing to learn.
   say so now.
 - **`verification-and-delivery.md`** §2 — acceptance ran "in the sandbox … over the internal
   compose stack". It runs in the runner, from a commit.
-- **ADR-0024** — corrected in place: the argument stands, the mechanism is ADR-0030's.
+- **ADR-0017** — corrected in place: the argument stands, the mechanism is ADR-0023's.
 
 ## 13. Risks
 
@@ -239,6 +239,6 @@ lifecycle vocabulary in both places is one less thing to learn.
 | R-2 | A cold cache makes the first run of a project slow enough to look broken — it needs to say what it is doing, not just take minutes |
 | R-3 | `.dop/verification.yml` is one more file to keep in step with how the project really builds. It drifts, and the symptom is a red that is not the code's fault |
 | R-4 | A run that dies holding the address leaves a URL answering nothing (§8) |
-| R-5 | The account's cache is one ReadWriteOnce volume, so two concurrent runs of an account have to land on the same node. Free on one node; on several, the second run waits. ReadWriteMany would need a storage class most installations do not have — the same wall that killed the shared volume in ADR-0028 |
+| R-5 | The account's cache is one ReadWriteOnce volume, so two concurrent runs of an account have to land on the same node. Free on one node; on several, the second run waits. ReadWriteMany would need a storage class most installations do not have — the same wall that killed the shared volume in ADR-0021 |
 | R-6 | A dev session is the most expensive thing a demand can hold, and it is held by a human who walks away. The deadline is the only thing standing between that and a bill: it has to be short by default and visible, not a setting nobody sees |
 | R-7 | Dependencies as containers in one pod share its memory limit: a hungry database starves the application, and the failure looks like the application's |

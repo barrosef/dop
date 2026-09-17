@@ -3,7 +3,7 @@
 - **Date:** 2026-09-06
 - **Status:** decisions approved by the owner, section by section
 - **Depends on:** `2026-09-06-account-signup-design.md` (this begins where that
-  ends), [ADR-0027](../../adr/0027-second-factor-in-the-core.md) (the second
+  ends), [ADR-0020](../../adr/0020-second-factor-in-the-core.md) (the second
   factor, whose SMS machinery this reuses), [ADR-0001](../../adr/0001-infrastructure-behind-ports.md)
 - **Built in:** the visual language of `2026-09-06-cockpit-visual-language-design.md`
 - **Touches:** `dop-core`, `dop-api`, `dop-app`
@@ -14,7 +14,7 @@
 `EnrollCode(ctx, kind, label, destination)`, which sends a code to a
 destination, and `Confirm(ctx, factorID, challengeID, code)`, which validates
 it — behind `ports.SMSer`, with two real adapters (`twilio.go`, `zenvia.go`) and
-a contract suite. ADR-0027 put it in the core for reasons that apply here
+a contract suite. ADR-0020 put it in the core for reasons that apply here
 unchanged.
 
 So the wizard's first step does **not** build an SMS mechanism. It enrols the

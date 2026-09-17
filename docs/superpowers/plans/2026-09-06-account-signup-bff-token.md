@@ -17,7 +17,7 @@
 - Everything in the repository is written in English — code, comments, identifiers, test names. Commit messages are Portuguese by house convention.
 - Comments explain WHY a decision was made and what it costs, never what the line does.
 - `make test` runs `uv run pytest -q`; `make lint` runs `uv run ruff check app tests`. Both must be green.
-- ADR-0029 binds this work: the core verifies a signature, it does not believe a claim.
+- ADR-0022 binds this work: the core verifies a signature, it does not believe a claim.
 
 ---
 
@@ -56,7 +56,7 @@ Add to `tests/test_identity_routes.py`. The suite's `FakeCall` records the metad
 
 ```python
 def test_ensure_user_carries_the_persons_token(client, fake_core):
-    """The core stopped believing the request body (ADR-0029, D-10).
+    """The core stopped believing the request body (ADR-0022, D-10).
 
     It now reads who the person is from the token it verified itself, and
     refuses when there is none. If this header stops going out, every login
@@ -96,7 +96,7 @@ and in `_ensure_user`:
         """Idempotent by design — it runs on EVERY login, not only the first.
 
         It carries the person's TOKEN and not only the edge's assertion, because
-        since ADR-0029 the core reads who the person is from the signature it
+        since ADR-0022 the core reads who the person is from the signature it
         verified itself rather than from this request's body. Without the header
         the core refuses, and it refuses on every request, not only the first.
         """

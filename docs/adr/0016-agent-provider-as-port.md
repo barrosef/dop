@@ -1,13 +1,13 @@
-# ADR-0022 — The agent runtime: a port per vendor, running inside the core
+# ADR-0016 — The agent runtime: a port per vendor, running inside the core
 
 - **Status:** Accepted
 - **Date:** 2026-08-31 · **consolidated 2026-09-04**
-- **Absorbs:** ADR-0023 (the AgentRuntime lives in the core) — two halves of one question,
+- **Absorbs:** the former ADR 0023 (a number retired by the 2026-09-17 renumbering) (the AgentRuntime lives in the core) — two halves of one question,
   decided on the same day: what the runtime talks to, and where it runs. That number is
   **retired and never reused**.
 - **Resolves:** the `AgentRuntime` coupled to a single vendor, and sitting on the wrong side of
   the credential boundary
-- **Replaces:** [ADR-0016](0016-stack-go-core-python-bff.md)'s decision that *"the AgentRuntime
+- **Replaces:** [ADR-0012](0012-stack-go-core-python-bff.md)'s decision that *"the AgentRuntime
   lives in the BFF"*
 
 ## Context
@@ -23,17 +23,17 @@ where it is easiest to forget, because the model vendor looks like "the product"
 
 The data model already anticipated it, and nobody had connected the dots:
 
-- **ADR-0013** defines an agent provider as an **integration of category `agent`** — a resource
+- **ADR-0009** defines an agent provider as an **integration of category `agent`** — a resource
   with a credential, shareable subject to authorization. Claude and Codex are two resources,
   not two versions of the code.
-- The **cost router** (ADR-0011) already separates **policy** from **catalogue**:
+- The **cost router** (ADR-0008) already separates **policy** from **catalogue**:
   `routingTable` chooses the *class* (cheap/medium/strong) and `ModelCatalog` resolves the
   *concrete name* — "policy changes with telemetry, the catalogue changes when the vendor
   releases a model".
 
 ### The place
 
-ADR-0016 put the `AgentRuntime` in the BFF: *"the core decides what; the BFF runs the
+ADR-0012 put the `AgentRuntime` in the BFF: *"the core decides what; the BFF runs the
 conversation with the model"*. The split looked clean. On implementing it, it charged its price:
 the runtime needs the agent provider's credential, and a resource's credential lives in the
 vault, behind `ports.SecretStore`, **in the core** — which **never returns a secret**, by
@@ -109,7 +109,7 @@ for the reasons stated there.
 ## Consequences
 
 - ➕ Swapping or adding a vendor is writing an adapter, not touching the runtime.
-- ➕ The token economy (ADR-0011) becomes explicit per vendor, instead of assumed.
+- ➕ The token economy (ADR-0008) becomes explicit per vendor, instead of assumed.
 - ➕ The credential does not cross the network. Compromising the BFF does not expose an agent
   credential, and the BFF gets an invariant stronger than "it has no database": **it has no
   secret**.
@@ -125,5 +125,5 @@ for the reasons stated there.
   divergences survive — they change language, not design.
 - ➖ The core starts making long external calls. Go handles that well, but the connection budget
   and the timeout become the core's concern.
-- ➖ ADR-0016 is left with a replaced decision; the "the BFF has no database" boundary still
+- ➖ ADR-0012 is left with a replaced decision; the "the BFF has no database" boundary still
   holds, and gains its second half.

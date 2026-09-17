@@ -29,11 +29,11 @@ body:grpc {
 
 docs {
   Who is calling and in which account go in the METADATA, never in the body
-  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  (ADR-0013, convention 5). The `ctx` field the messages still declare is ignored
   by the server — do not use it: it gives the false impression of scoping the
   call.
 
   It resolves the effective flow along the chain `platform ◁ account ◁ workspace ◁
-  project ◁ demand` and **freezes the version** (ADR-0014). A change to a flow
+  project ◁ demand` and **freezes the version** (ADR-0010). A change to a flow
   above does not affect a demand in flight.
 }

@@ -118,9 +118,9 @@ The `dop-local` namespace, composed with Kustomize. **Built and tested on 2026-0
 
 | Component | Role | Port |
 |---|---|---|
-| **PostgreSQL 17 + pgvector** | State, the event log and semantic search (ADR-0018) | 5432 |
-| **NATS JetStream** | The event broker (ADR-0018) | 4222 · monitor 8222 |
-| **The Firebase emulators** | Auth and Storage — the same SDK as production (ADR-0020) | 9099 · 9199 · hub 4400 |
+| **PostgreSQL 17 + pgvector** | State, the event log and semantic search (ADR-0014) | 5432 |
+| **NATS JetStream** | The event broker (ADR-0014) | 4222 · monitor 8222 |
+| **The Firebase emulators** | Auth and Storage — the same SDK as production (ADR-0015) | 9099 · 9199 · hub 4400 |
 
 **Kustomize, not Helm** — a small, internal set; no template language to learn, and the `local`
 overlay literally expresses "the base plus the emulators".
@@ -154,7 +154,7 @@ preserving the data.
 
 ### 4.4 The emulator's data across restarts
 
-*(the operational half of [ADR-0020](../../adr/0020-firebase-emulators-and-single-owner.md),
+*(the operational half of [ADR-0015](../../adr/0015-firebase-emulators-and-single-owner.md),
 moved here on 2026-09-04: the decision is the ADR's, the recipe is this spec's)*
 
 The combination that works — each part is there because its absence broke something:

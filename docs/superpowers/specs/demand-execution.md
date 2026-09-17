@@ -11,8 +11,8 @@
 
 The base decisions: [ADR-0001](../../adr/0001-infrastructure-behind-ports.md),
 [ADR-0003](../../adr/0003-organization-credential-human-authorship.md),
-[ADR-0010](../../adr/0010-multi-agent-per-demand.md),
-[ADR-0011](../../adr/0011-llm-cost-governance.md).
+[ADR-0007](../../adr/0007-multi-agent-per-demand.md),
+[ADR-0008](../../adr/0008-llm-cost-governance.md).
 
 ## 1. One demand, one sandbox
 
@@ -21,7 +21,7 @@ and an internal Docker for what the agent's own commands need while it works.
 
 **The sandbox does not run the demand's application.** It exists only during a verification, or
 while a developer asked to look at it, and both happen in a runner
-([`verification-runner.md`](verification-runner.md) §4, ADR-0030).
+([`verification-runner.md`](verification-runner.md) §4, ADR-0023).
 
 Kubernetes is the orchestration surface: **one namespace per demand** (`dop-<short-id>`, with
 account/workspace/project/demand in labels — hierarchical identification is a label, not a
@@ -67,10 +67,10 @@ the design does not depend on it.
 
 | | |
 |---|---|
-| **Agents** | 1 main + N subagents (ADR-0010), through the `AgentRuntime` port (§7) |
+| **Agents** | 1 main + N subagents (ADR-0007), through the `AgentRuntime` port (§7) |
 | **The workspace** | Worktrees of the demand's branches, in a PVC |
-| **The internal Docker** | For what the agent's own commands need while iterating — a container a test spins up, a tool that expects a daemon. **Not the demand's application:** that exists only in a runner, during a verification or a dev session (ADR-0030). Evidence produced here would speak about the agent's environment, with whatever it installed along the way, and not about a clean one |
-| **The project's root repository** | Cloned at `/project` at provisioning, **read-write** — the agent commits, pushes, pulls ([ADR-0028](../../adr/0028-project-knowledge-as-a-git-repository.md)). The context package is a different thing: assembled per TURN, into the prompt ([`context-and-knowledge.md`](context-and-knowledge.md)) |
+| **The internal Docker** | For what the agent's own commands need while iterating — a container a test spins up, a tool that expects a daemon. **Not the demand's application:** that exists only in a runner, during a verification or a dev session (ADR-0023). Evidence produced here would speak about the agent's environment, with whatever it installed along the way, and not about a clean one |
+| **The project's root repository** | Cloned at `/project` at provisioning, **read-write** — the agent commits, pushes, pulls ([ADR-0021](../../adr/0021-project-knowledge-as-a-git-repository.md)). The context package is a different thing: assembled per TURN, into the prompt ([`context-and-knowledge.md`](context-and-knowledge.md)) |
 | **Caches** | A volume **per account** — never global: a cache shared between accounts is a side channel |
 
 ## 5. Access and credentials
@@ -82,7 +82,7 @@ the design does not depend on it.
 - **Credentials:** nothing baked into an image, nothing persisted. The `SecretStore` resolves
   the account's credential and the sandbox receives a **short-lived derived token** (a 1h
   installation token for selected repositories — ADR-0003), as a projected volume. The token
-  to the platform's git server (ADR-0028 §3) has the same shape: per demand, opens exactly
+  to the platform's git server (ADR-0021 §3) has the same shape: per demand, opens exactly
   the project's root repository, a projected file, dies with the sandbox. The mirror's
   credential — the user's remote — is never in a sandbox.
 
@@ -92,12 +92,12 @@ The agent has the full triad — it reads untrusted content, it carries a creden
 exit through git (F-10). Defence in layers, mandatory:
 
 1. **An egress allowlist per sandbox**: only the demand's provider's git, the platform's git
-   server (ADR-0028), the BFF and the model endpoints. Everything else denied by a
+   server (ADR-0021), the BFF and the model endpoints. Everything else denied by a
    NetworkPolicy.
 2. **The card and the repository's content are untrusted input** — marked as such in every
    agent's context.
 3. **Secret redaction in every output** of an agent and of a log.
-4. **Runtime detection**: an anomalous action becomes an event (ADR-0006) and an alert.
+4. **Runtime detection**: an anomalous action becomes an event (ADR-0004) and an alert.
 5. A minimal, short token (§5) — the layer that already existed, kept.
 
 ## 7. The `AgentRuntime` port
@@ -107,25 +107,25 @@ ADR-0001 applied to the engine itself (F-14): the domain knows no agent SDK.
 ```
 open(sandbox, card) → Session      // N sessions per sandbox (subagents)
 send(session, msg) · cancel(session)
-events(session) → stream           // actions, questions, cost (→ ADR-0006/0011)
+events(session) → stream           // actions, questions, cost (→ ADR-0004/0011)
 ```
 
 The first adapter: the Claude Agent SDK; one adapter per agent provider of the account
 (integrations with `category: agent` — Claude, Codex, Google Code Assist). The card (purpose,
-tools, model, budget) comes from ADR-0010; the model, from the router (ADR-0011), **restricted
+tools, model, budget) comes from ADR-0007; the model, from the router (ADR-0008), **restricted
 to the menu of the account's agent integrations**.
 
-The port exposes the economy knobs (ADR-0011), filled in by the card: the **model**, the
+The port exposes the economy knobs (ADR-0008), filled in by the card: the **model**, the
 **effort**, the **budget** (a task budget — the agent sees the ceiling and paces itself) and
 the **cache policy** (a stable prefix layout; an operator's intervention through a `system`
 message mid-conversation, never by editing the top of the prompt). The event stream reports
-`cache_read`/`cache_creation` for ADR-0011's telemetry.
+`cache_read`/`cache_creation` for ADR-0008's telemetry.
 
 ## 8. Risks
 
 | # | |
 |---|---|
-| R-1 | Docker in a microVM with no cache pulls images on every demand — a per-account cache is a mandatory mitigation, and the runner (ADR-0030) mounts the same volume |
+| R-1 | Docker in a microVM with no cache pulls images on every demand — a per-account cache is a mandatory mitigation, and the runner (ADR-0023) mounts the same volume |
 | R-2 | Resuming restores the bench, not an application — since 2026-09-04 the demand keeps none. What the dev perceives as latency moved to the dev session: asking to see the application means waiting for a build. The account's cache is what keeps that from being a wait each time |
 | R-3 | An ingress per demand multiplies objects/certificates in the controller |
 | R-4 | The Kata `RuntimeClass` is missing in many distributions — the adapter detects it and applies the tier policy (§2), it never degrades in silence |

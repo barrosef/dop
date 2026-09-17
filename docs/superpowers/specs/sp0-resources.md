@@ -8,7 +8,7 @@
 > **Does not answer:** credentials → [`sp0-integrations-and-credentials.md`](sp0-integrations-and-credentials.md);
 > accounts and memberships → [`sp0-identity-and-tenancy.md`](sp0-identity-and-tenancy.md).
 
-The base decision: [ADR-0013](../../adr/0013-resource-as-unit-of-sharing.md).
+The base decision: [ADR-0009](../../adr/0009-resource-as-unit-of-sharing.md).
 
 ## 1. The entity
 
@@ -26,7 +26,7 @@ version; projects migrate explicitly.
 
 ## 2. Sharing
 
-The mechanism is the integrations', generalized (ADR-0013): a personal account's resource is
+The mechanism is the integrations', generalized (ADR-0009): a personal account's resource is
 private; an organization account's resource is shareable through a **`use`/`manage` grant per
 user**, composed in the invite and always editable; `owner`/`admin` have an implicit `manage`;
 revoking `use` does not tear down what is already configured.
@@ -47,9 +47,9 @@ same as the integrations':
 
 | Attached resource | Who reads it |
 |---|---|
-| `git_flow` | the merge queue (ADR-0007), verification and delivery, branch naming per card type |
+| `git_flow` | the merge queue (ADR-0005), verification and delivery, branch naming per card type |
 | `workflow` | the gates and roles of the demand's cycle (SP-4's core) |
-| `skill` | the agents' cards (ADR-0010) |
+| `skill` | the agents' cards (ADR-0007) |
 | `integration` | repositories, task manager, the agents' models |
 
 ## 5. Risks

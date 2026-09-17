@@ -113,7 +113,7 @@ type Event struct {
 	RequestID string
 	SessionID string
 	// Caller is the COMPONENT that signed the call — "bff", "collector"
-	// (ADR-0029). Empty when the call was proven only by a person's token.
+	// (ADR-0022). Empty when the call was proven only by a person's token.
 	Caller string
 }
 ```
@@ -1545,10 +1545,10 @@ quem o execute; e JSON quebrado não melhora com reentrega nenhuma."
 ### Task 7: Documentation, and the log that used to lie
 
 **Files:**
-- Modify: `docs/adr/0018-postgres-persistence.md`
+- Modify: `docs/adr/0014-postgres-persistence.md`
 - Modify: `docs/GLOSSARY.md`
 
-- [ ] **Step 1: Amend ADR-0018**
+- [ ] **Step 1: Amend ADR-0014**
 
 Its §3 says *"a poisoned message goes to the DLQ"* and, until this plan, no DLQ existed. Append to that section:
 
@@ -1575,8 +1575,8 @@ Its §3 says *"a poisoned message goes to the DLQ"* and, until this plan, no DLQ
 Run: `make test`
 
 ```bash
-git add docs/adr/0018-postgres-persistence.md docs/GLOSSARY.md
-git commit -m "docs: a ADR-0018 falava da DLQ como se ela existisse
+git add docs/adr/0014-postgres-persistence.md docs/GLOSSARY.md
+git commit -m "docs: a ADR-0014 falava da DLQ como se ela existisse
 
 Ela descrevia 'mensagem envenenada vai para a DLQ' desde o início, e a DLQ
 nunca foi construída. A emenda registra o que havia de fato — Term(), que

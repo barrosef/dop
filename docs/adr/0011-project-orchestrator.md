@@ -1,16 +1,16 @@
-# ADR-0015 — The project orchestrator: the techlead agent
+# ADR-0011 — The project orchestrator: the techlead agent
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Complements:** [ADR-0007](0007-no-green-no-pr.md) (it gives the overlap
-  detection an owner), [ADR-0010](0010-multi-agent-per-demand.md) (agents per demand),
-  [ADR-0006](0006-demand-as-event-log.md) (the raw material for the observation)
+- **Complements:** [ADR-0005](0005-no-green-no-pr.md) (it gives the overlap
+  detection an owner), [ADR-0007](0007-multi-agent-per-demand.md) (agents per demand),
+  [ADR-0004](0004-demand-as-event-log.md) (the raw material for the observation)
 
 ## Context
 
 With parallel demands in the same project, **cross-cutting** situations appear that no
 demand's agent sees on its own: two demands touching the same files, one demand depending on
-another's result, behaviour changes in which one interferes with the other. ADR-0007
+another's result, behaviour changes in which one interferes with the other. ADR-0005
 foresaw "the orchestrator sees the overlap" without saying who it is. It now has a name and
 a nature: **an agent**, not a cron of rules.
 
@@ -28,7 +28,7 @@ a nature: **an agent**, not a cron of rules.
 4. **A decision becomes a coordination directive.** The dev's choice is reflected in the
    demands as an instruction to the agents involved. The canonical example: "demand 1 depends
    on demand 0" → the decision: when 0 commits what 1 needs, 1 **cherry-picks** from 0's
-   branch and carries on. The directive is an event (ADR-0006) and appears in the demands'
+   branch and carries on. The directive is an event (ADR-0004) and appears in the demands'
    threads.
 5. **The golden rule: an identified cross-cutting situation NEVER pauses a demand.** Demand 1
    goes as far as it can; when the directive's condition is met (0 has committed), it applies
@@ -60,6 +60,6 @@ coordination.
   the supervisor it lacked; F-4 closes entirely (a merge queue + upstream coordination).
 - ➕ The attention box receives ready decision items, not symptoms.
 - ➖ The techlead's model cost: observation is cheap (events/diffs), planning is expensive —
-  routed as an investigation (ADR-0011); it wakes on an event, not by polling.
+  routed as an investigation (ADR-0008); it wakes on an event, not by polling.
 - ➖ A coordination directive is new state between demands — it has to appear in the Timeline
   and in both ends' threads, or it becomes invisible magic.

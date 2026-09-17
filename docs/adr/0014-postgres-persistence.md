@@ -1,11 +1,11 @@
-# ADR-0018 — PostgreSQL as the single database, and the outbox that moves its events
+# ADR-0014 — PostgreSQL as the single database, and the outbox that moves its events
 
 - **Status:** Accepted
 - **Date:** 2026-08-30 · **consolidated 2026-09-04**
-- **Absorbs:** ADR-0019 (a transactional outbox + NATS JetStream) — where the truth is stored
+- **Absorbs:** the former ADR 0019 (a number retired by the 2026-09-17 renumbering) (a transactional outbox + NATS JetStream) — where the truth is stored
   and how it leaves the database is one subject. That number is **retired and never reused**.
 - **Resolves:** F-16 (contradictory persistence signals)
-- **Refines / realizes:** [ADR-0006](0006-demand-as-event-log.md) — the log, and the
+- **Refines / realizes:** [ADR-0004](0004-demand-as-event-log.md) — the log, and the
   requirement of decoupled processes with atomic transactions
 
 ## Context
@@ -27,10 +27,10 @@ charges dearly in complexity and availability.
 
 - **Relational in the spine:** multi-tenant integrity is an FK and a constraint, not an
   application convention. Every domain table carries an `account_id`.
-- **JSONB** for flows (ADR-0014), agent cards and event payloads — schema-free where it
+- **JSONB** for flows (ADR-0010), agent cards and event payloads — schema-free where it
   matters, with an index.
 - **The event log** in an append-only table partitioned by month, with the outbox of §2.
-- **pgvector** for the semantic search of the memories (ADR-0009) — **with no extra vector
+- **pgvector** for the semantic search of the memories (ADR-0006) — **with no extra vector
   store**.
 - **Projections** (the dossier, the timeline, the attention box) start as *materialized views*;
   they become tables fed by the worker only if the cost demands it.

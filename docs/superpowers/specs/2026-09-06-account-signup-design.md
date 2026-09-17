@@ -2,7 +2,7 @@
 
 - **Date:** 2026-09-06
 - **Status:** approved by the owner, section by section
-- **Depends on:** [ADR-0002](../../adr/0002-account-as-unit-of-ownership.md) (the account is the unit of ownership), [ADR-0020](../../adr/0020-firebase-emulators-and-single-owner.md) §4 (Terraform is the single owner), [ADR-0025](../../adr/0025-communication-trigger-and-channel.md) (the trigger is separate from the channel), [ADR-0029](../../adr/0029-the-core-verifies-its-callers.md) (the core verifies a signature; it does not believe a header)
+- **Depends on:** [ADR-0002](../../adr/0002-account-as-unit-of-ownership.md) (the account is the unit of ownership), [ADR-0015](../../adr/0015-firebase-emulators-and-single-owner.md) §4 (Terraform is the single owner), [ADR-0018](../../adr/0018-communication-trigger-and-channel.md) (the trigger is separate from the channel), [ADR-0022](../../adr/0022-the-core-verifies-its-callers.md) (the core verifies a signature; it does not believe a header)
 - **Touches:** `dop-app` (the cockpit), `dop-api` (the BFF), `dop-core`, `dop-infra`
 
 ## 1. Context — most of this already exists
@@ -20,7 +20,7 @@ What is already built and tested:
 - **The provisioning.** `identity.Service.EnsureUser` takes a `Principal` and
   produces a user and a personal account, idempotently, on every first login. It
   merges `providers[]` so a second provider shows up on the same user.
-- **The trust boundary.** ADR-0029 already decided that the core verifies the
+- **The trust boundary.** ADR-0022 already decided that the core verifies the
   person's token rather than believing a header.
 - **The sign-in screen.** `dop-app`'s `sign-in.tsx` already signs in with e-mail
   and password against Firebase Auth, and already refuses to distinguish "wrong
@@ -81,7 +81,7 @@ many GitHub organizations block outright until an administrator approves. It
 also already has a home in this platform that is not authentication:
 [ADR-0003](../../adr/0003-organization-credential-human-authorship.md) gives an
 organization account a GitHub App installation and allows a personal token in a
-personal account, and [ADR-0013](../../adr/0013-resource-as-unit-of-sharing.md)
+personal account, and [ADR-0009](../../adr/0009-resource-as-unit-of-sharing.md)
 makes it a resource credential in the vault behind `ports.SecretStore`. The
 `gitprovider` adapter already receives a resolved token and does not know a vault
 exists. Connecting GitHub therefore belongs to the integrations surface, after
@@ -143,12 +143,12 @@ is the case this rule exists for.
 
 **D-6. The refusal lives in the core.** Blocking only in the cockpit would be
 decoration: the token stays valid and anybody calling the core directly walks
-past it. Same reasoning as ADR-0029 — the core verifies, it does not believe.
+past it. Same reasoning as ADR-0022 — the core verifies, it does not believe.
 One rule, one place, no way around it.
 
 **D-7. Firebase generates the link; our Mailer sends the message.** The Admin
 SDK generates the verification link **without sending it**, and the message goes
-out through the Notifier and Mailer (ADR-0025), in the house's i18n and the
+out through the Notifier and Mailer (ADR-0018), in the house's i18n and the
 house's brand. Password reset uses the same pair. The alternative — Firebase's
 built-in e-mail — would give the platform two mail paths with two appearances
 and little control over either.
@@ -173,7 +173,7 @@ be unenforceable.
 `internal/app/grpc/identity.go` builds its `Principal` out of `req.GetSubject()`,
 `req.GetEmail()`, `req.GetEmailVerified()` and `req.GetProvider()`. Every rule in
 this spec reads exactly those fields, so any caller could pass D-5 by sending
-`email_verified: true`. That is the thing ADR-0029 was written to end, and it
+`email_verified: true`. That is the thing ADR-0022 was written to end, and it
 ended everywhere except here.
 
 The reason it survived here is worth recording, because it also shows the fix.
@@ -317,7 +317,7 @@ Acceptance:
 1. Google and GitHub are enabled through Terraform, with their client IDs and
    secrets, and so is the setting that links accounts sharing an e-mail.
 2. `dop-infra`'s `README` gains the row declaring the single owner of Auth
-   providers, which ADR-0020 §4 requires and names as the ambiguous case.
+   providers, which ADR-0015 §4 requires and names as the ambiguous case.
 3. Nothing is created through the Firebase console.
 
 ## 4. What changes, by repository
@@ -399,12 +399,12 @@ What is testable, and must be:
 
 - **LinkedIn** (D-2), and the custom-token machinery it would need.
 - **Connecting repositories and organizations** (D-3) — the integrations
-  surface, on top of ADR-0003 and ADR-0013.
+  surface, on top of ADR-0003 and ADR-0009.
 - **The welcome e-mail** (D-9) — a `reaction_rules` row, alive when P-29's
   dispatcher lands.
 - **Organization creation** (D-1) — `CreateOrganization` already exists; giving
   it a screen is separate work.
-- **A second factor at sign-up.** ADR-0027 puts the second factor in the core
+- **A second factor at sign-up.** ADR-0020 puts the second factor in the core
   and it stands on its own; enrolling one is not part of creating an account.
 
 ## 8. Open items for the plan
@@ -414,4 +414,4 @@ What is testable, and must be:
 2. Rate limits for US-2's resend and US-6's request need a number and a place to
    live.
 3. Where the BFF's service-account credential is stored, and who owns it in the
-   ADR-0020 §4 table.
+   ADR-0015 §4 table.

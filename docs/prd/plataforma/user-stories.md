@@ -1,9 +1,9 @@
 # The DOP platform — features and user stories
 
 > **Status:** A draft for the dev's review · **Date:** 2026-09-01 (rev. 4 — US-5.2 corrected by
-> ADR-0026; the organization into epics is under way)
+> ADR-0019; the organization into epics is under way)
 > **The base:** the SP-0 specs (identity, integrations, resources), the workflow spec, the
-> navigation spec rev. 2; ADRs 0001–0026
+> navigation spec rev. 2; ADRs 0001–0019
 > **Phases:** as per `ROADMAP.md` — **[F1]** is built now; **[F2]** is modelled in the schema
 > from now on, built in the following phase.
 
@@ -35,7 +35,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   sign-out/sign-in and to be shareable by URL.
   - `/:account/:workspace/:project?card=` restores the exact state
 
-> The second factor is the PLATFORM's, not the identity provider's (ADR-0027): one mechanism,
+> The second factor is the PLATFORM's, not the identity provider's (ADR-0020): one mechanism,
 > three verifiers. It is [F1] because a security gate added later has to be retrofitted onto
 > sessions and operations already written without it.
 
@@ -64,11 +64,11 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   - revoking the LAST active factor in an account that requires 2FA is refused with a message
 - **US-2.10** As a dev, I want a failed attempt to say only that it failed, and a sequence of
   failures to put the factor in a cool-off.
-  - five consecutive failures; every attempt is an event on the timeline (ADR-0006)
+  - five consecutive failures; every attempt is an event on the timeline (ADR-0004)
 
 ## 3. The account's resources **[F1 in the core]**
 
-> A resource = the unit of ownership and sharing (ADR-0013): integrations (git, task manager,
+> A resource = the unit of ownership and sharing (ADR-0009): integrations (git, task manager,
 > **agent**), skills, human↔agent workflows and git flows. Projects only consume — no credential
 > typed into a project.
 
@@ -80,7 +80,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   cards flow into the cockpits.
 - **US-3.3 [F1]** As a dev, I want to connect an **agent** provider (Claude, Codex, Google Code
   Assist) through my subscription's OAuth or an API key.
-  - the models become the router's menu; a BYO cost is measured the same (ADR-0011)
+  - the models become the router's menu; a BYO cost is measured the same (ADR-0008)
 - **US-3.4 [F1]** As a dev, I want to see my integrations' state (`active`, `expired`, `error`)
   and be told in the attention box when one breaks.
 - **US-3.5 [F1]** As a dev, I want to keep **git flows** in the account — created by me or
@@ -88,7 +88,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   - they declare: the branch taxonomy per card type, bases, direction, release composition,
     policies
 - **US-3.6 [F1]** As a dev, I want to keep versioned **workflows** — composed of typed stages
-  (ADR-0014) — creating my own or adopting the platform's default.
+  (ADR-0010) — creating my own or adopting the platform's default.
   - structural validation at creation; a warning when a `spec` stage is missing
 - **US-3.6b [F1]** As a dev, I want a workspace, a project and a demand to **inherit** the flow
   of the level above and to be able to override it with one of their own — always seeing the
@@ -114,7 +114,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
 - **US-4.4** As an owner, I want to **require a second factor** of my organization's members.
   - a member with no active factor still signs in and operates their PERSONAL account; what is
     blocked is operating in THIS one
-  - the policy may disable SMS: it is the weakest of the three (ADR-0027)
+  - the policy may disable SMS: it is the weakest of the three (ADR-0020)
 
 ## 5. Invites and access **[F2]**
 
@@ -125,7 +125,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   - it expires in 14 days; revocable while pending; a resend invalidates the previous one
 - **US-5.2** As an invitee, I want to accept through the link and land in the organization's
   account.
-  - the link carries only the `invite_id` — **there is no token** (ADR-0026): the id on its own
+  - the link carries only the `invite_id` — **there is no token** (ADR-0019): the id on its own
     grants nothing, and that is why it can travel in an e-mail, an event and a projection
   - acceptance requires being signed in **as the invitee**: the session's e-mail VERIFIED and
     equal to the invite's. Without that, any authenticated person holding the link got into the
@@ -162,11 +162,11 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   merge queue, the verification and the branch naming then obey — and a workflow/skills [F2] —
   which parameterize the agents.
 - **US-7.4** As a dev, I want to keep the project's rules and consult the accumulated knowledge
-  (the index, the memories) in the project's root repository, shown in the cockpit (ADR-0009,
-  ADR-0028).
+  (the index, the memories) in the project's root repository, shown in the cockpit (ADR-0006,
+  ADR-0021).
 - **US-7.5** As a dev, I want to add/remove repositories and resources later, in a sliding
   panel, without recreating the project.
-- **US-7.6** As a dev, I want the project to have a **techlead agent** (ADR-0015), activated when
+- **US-7.6** As a dev, I want the project to have a **techlead agent** (ADR-0011), activated when
   there are parallel demands, which detects cross-cutting situations — dependencies, file
   overlap, behaviour interference — plans solutions and **prompts me for decisions in the
   attention box** with ready options.
@@ -195,9 +195,9 @@ invites are [F2] and come later in the numbering, even though they exist in the 
 
 ### 8.1 Chat (the panel: threads · the centre: the flow's stages)
 - **US-8.1.1** As a dev, I want to talk to the main agent and to each subagent in separate
-  threads, with their cards and findings (ADR-0010).
+  threads, with their cards and findings (ADR-0007).
 - **US-8.1.2** As a dev, I want the centre showing the demand's **effective flow's stage ruler**
-  — any flow, rendered by each stage's type (ADR-0014).
+  — any flow, rendered by each stage's type (ADR-0010).
   - MD documents with a viewer/source and editing; approval gates visible
 - **US-8.1.3** As a dev, I want the **human validation** stage as a checklist tickable item by
   item, generated from the validation plan, with links — being able to reject an item and handle
@@ -210,7 +210,7 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   git status, diffs file by file.
   - branches named according to the attached git flow
 - **US-8.2.2** As a dev, I want the **merge queue** per repository — position, re-verification,
-  overlaps — and to decide escalated conflicts (ADR-0007).
+  overlaps — and to decide escalated conflicts (ADR-0005).
 
 ### 8.3 Infra (the panel: applications · databases · remote services)
 - **US-8.3.1** As a dev, I want to see the demand's applications with their state, streaming logs
@@ -235,11 +235,11 @@ invites are [F2] and come later in the numbering, even though they exist in the 
   task.
 - **US-8.5.3** As a dev, I want to browse the architectural artifacts **filtered by the task
   header** — the selected demand shows only its own; with no selection, all the project's, plus
-  the map (the ADR-0009 index).
+  the map (the ADR-0006 index).
 
 ### 8.6 Timeline (the panel: event filters · the centre: the timeline)
 - **US-8.6.1** As a dev, I want the demand's timeline — who did what, with which credential —
-  filterable by agents, git, gates and cost (ADR-0006/0011).
+  filterable by agents, git, gates and cost (ADR-0004/0011).
 
 ---
 

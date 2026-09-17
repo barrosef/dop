@@ -32,13 +32,13 @@ and the PR's body identifies who asked.
 **And the `committer` is the THREAD** — the agent that made the commit, as a platform
 identity (`<thread-id>@agents.dop`), never a person. Git has two fields for two questions:
 `author` answers *for whom* the work was done (the customer's history keeps the person);
-`committer` answers *who wrote it down* (the platform's attribution, ADR-0006, keeps the
+`committer` answers *who wrote it down* (the platform's attribution, ADR-0004, keeps the
 agent). A commit made by the platform itself — a regenerated index, a rule saved from the
 cockpit — carries the platform as committer and the person who acted as author.
 
 **These rules govern EVERY repository the platform writes to** — the customer's code
-repositories and the project's root repository of [ADR-0028](0028-project-knowledge-as-a-git-repository.md)
-alike. ADR-0028 structures what is shared and how; it does not restate how a commit is
+repositories and the project's root repository of [ADR-0021](0021-project-knowledge-as-a-git-repository.md)
+alike. ADR-0021 structures what is shared and how; it does not restate how a commit is
 attributed or pushed, and must not: one rule, one place.
 
 ## Alternatives considered

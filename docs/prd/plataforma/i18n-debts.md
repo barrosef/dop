@@ -7,7 +7,7 @@ track what was still missing there; what is left is what does NOT fit on a card.
 ## What has no story written
 
 Epic **11 💰 Cost and governance** is EMPTY on purpose: there is a domain in the core and there
-is ADR-0011, but nobody wrote what the dev sees, what they configure and what happens when the
+is ADR-0008, but nobody wrote what the dev sees, what they configure and what happens when the
 budget runs out. It is the biggest mismatch between what is built and what is specified — and
 organizing into epics served precisely to expose that.
 
@@ -63,7 +63,7 @@ field:
 
 ## The second factor's own i18n note (2026-09-02)
 
-The code's message goes out through a CHANNEL and not through the Notifier (ADR-0027 §3), so it
+The code's message goes out through a CHANNEL and not through the Notifier (ADR-0020 §3), so it
 does not inherit the notification table's per-locale plan. Its text — in the e-mail and in the
 SMS — is born in English like the rest of the code, and it is content a person reads: it enters
-the same queue as the mailer's templates, waiting for the per-locale catalogue of ADR-0025.
+the same queue as the mailer's templates, waiting for the per-locale catalogue of ADR-0018.

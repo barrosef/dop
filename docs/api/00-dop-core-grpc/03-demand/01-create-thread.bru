@@ -36,13 +36,13 @@ body:grpc {
 
 docs {
   Who is calling and in which account go in the METADATA, never in the body
-  (ADR-0017, convention 5). The `ctx` field the messages still declare is ignored
+  (ADR-0013, convention 5). The `ctx` field the messages still declare is ignored
   by the server — do not use it: it gives the false impression of scoping the
   call.
 
   It launches a subagent with its own card: purpose, tools, model and a slice of
-  the budget (ADR-0010).
+  the budget (ADR-0007).
 
   The model comes from the menu of the account's agent integrations; the one who
-  chooses is the `ModelRouter` (ADR-0011). Its own thread — no mixed timelines.
+  chooses is the `ModelRouter` (ADR-0008). Its own thread — no mixed timelines.
 }

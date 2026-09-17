@@ -9,11 +9,11 @@
 >
 > **Diagrams:** https://claude.ai/code/artifact/1ec0f828-ac7d-473a-ba5f-7bc0d6503402
 
-The base decisions: [ADR-0016](../../adr/0016-stack-go-core-python-bff.md) (stack and
-boundary), [ADR-0017](../../adr/0017-proto-as-source-of-truth.md) (the contract),
-[ADR-0018](../../adr/0018-postgres-persistence.md) (the database),
-[ADR-0018](../../adr/0018-postgres-persistence.md) (events),
-[ADR-0020](../../adr/0020-firebase-emulators-and-single-owner.md) (local and Terraform),
+The base decisions: [ADR-0012](../../adr/0012-stack-go-core-python-bff.md) (stack and
+boundary), [ADR-0013](../../adr/0013-proto-as-source-of-truth.md) (the contract),
+[ADR-0014](../../adr/0014-postgres-persistence.md) (the database),
+[ADR-0014](../../adr/0014-postgres-persistence.md) (events),
+[ADR-0015](../../adr/0015-firebase-emulators-and-single-owner.md) (local and Terraform),
 [ADR-0001](../../adr/0001-infrastructure-behind-ports.md) (ports).
 
 ## 1. The organizing principle
@@ -48,7 +48,7 @@ One image of the core, four modes through a subcommand: one artifact, one pipeli
 | `knowledge` | Rules · Index · Memory · ContextPackage · semantic search |
 | `cost` | UsageEvent · Budget · RoutingDecision |
 
-ADR-0017's conventions: server-side streaming for everything live (`WatchDemand`,
+ADR-0013's conventions: server-side streaming for everything live (`WatchDemand`,
 `StreamLogs`, `WatchAttention` → SSE in the BFF); a `Ref` instead of a loose id; an
 `idempotency_key` on every write; `buf breaking` in CI.
 
@@ -85,7 +85,7 @@ test breaks the build — that is how the boundary survives time.
 ```
 dop-api/
 ├── app/
-│   ├── main.py                 # the STORAGE_EMULATOR_HOST bridge (ADR-0020 §4)
+│   ├── main.py                 # the STORAGE_EMULATOR_HOST bridge (ADR-0015 §4)
 │   ├── platform/
 │   │   ├── context.py          # ContextVar: request_id · principal · the active account
 │   │   ├── logging/            # config · middleware · decorator
@@ -98,7 +98,7 @@ dop-api/
 └── tests/
 ```
 
-**The BFF opens no connection to Postgres** (ADR-0016). Every write goes through the core.
+**The BFF opens no connection to Postgres** (ADR-0012). Every write goes through the core.
 
 ### 4.1 Cross-cutting concerns through decorators
 
@@ -111,7 +111,7 @@ invisible in the business code.
 | `@log(level=, mask=[])` | entry, exit, error and duration; automatic masking of secrets |
 | `@public` | exempt from authentication (registered by a route sweep at boot) |
 | `@require_role("admin")` | the role in the active account |
-| `@require_grant("use")` | a resource grant (ADR-0013) |
+| `@require_grant("use")` | a resource grant (ADR-0009) |
 | `@account_scoped` | injects the active account and **refuses a request without one** (SP-0's rule) |
 
 The automatic mask covers `password`, `token`, `secret`, `authorization`, `api_key`,
@@ -129,7 +129,7 @@ workspaces(account_id) · projects(workspace_id) · project_resources
 -- flow and demand
 flows(owner_scope, owner_id, version, spec JSONB)       -- the inheritance chain
 demands(project_id, external_key, flow_version_frozen, status)
-demand_stages(demand_id, key, type, status, artifact_path)   -- a path in the root repository (ADR-0028); not in migration 0006 yet
+demand_stages(demand_id, key, type, status, artifact_path)   -- a path in the root repository (ADR-0021); not in migration 0006 yet
 threads(demand_id, kind, agent_card JSONB) · messages · findings
 
 -- the spine
@@ -138,7 +138,7 @@ outbox(event_id, published_at NULL)
 idempotency(key, request_hash, response, expires_at)
 
 -- knowledge
-knowledge_artifacts(project_id, kind, path, commit, meta JSONB)   -- an INDEX over the root repository; the text is in git (ADR-0028)
+knowledge_artifacts(project_id, kind, path, commit, meta JSONB)   -- an INDEX over the root repository; the text is in git (ADR-0021)
 project_repositories(project_id, clone_url, mirror_url, mirror_credential_ref)
 knowledge_embeddings(artifact_id, embedding vector(1536))
 
@@ -166,7 +166,7 @@ dev.sh  →  start · stop · status · logs · reset  (per service)
     └── dop-api
 ```
 
-The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0020.
+The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0015.
 
 ## 7. The implementation order
 
@@ -188,7 +188,7 @@ The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0
 | R-2 | **The BFF getting fat** and becoming a second owner of the domain — the "no database in the BFF" rule is the test; a violation is an architecture bug |
 | R-3 | **The relay's latency** between the commit and the publication — acceptable; `LISTEN/NOTIFY` if it hurts |
 | R-4 | **The event load in the same Postgres** — monthly partitioning, retention and vigilance from the first migration |
-| R-5 | **Resource ownership in Terraform** — a silent loss on `apply`; `dop-infra`'s single-owner table is the mitigation (ADR-0020 §5) |
+| R-5 | **Resource ownership in Terraform** — a silent loss on `apply`; `dop-infra`'s single-owner table is the mitigation (ADR-0015 §5) |
 
 ## 9. The foundation's state (2026-08-31)
 
@@ -197,7 +197,7 @@ The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0
 | | |
 |---|---|
 | Contracts | 10 `.proto`, 9 services, 65 RPCs; `buf lint` clean, Go generated |
-| Ports | `SecretStore` (k8s + memory), `ObjectStore` (real/emulated GCS), `IdentityProvider` (Firebase), `EventBus` (NATS JetStream), `ProjectRepository` (the platform's git server + a local bare-repo adapter — ADR-0028) |
+| Ports | `SecretStore` (k8s + memory), `ObjectStore` (real/emulated GCS), `IdentityProvider` (Firebase), `EventBus` (NATS JetStream), `ProjectRepository` (the platform's git server + a local bare-repo adapter — ADR-0021) |
 | The spine | A transactional outbox + a relay with `FOR UPDATE SKIP LOCKED`; `events` partitioned by month |
 | The schema | 16 tables applied in the local Postgres; the owner invariant as a **trigger** |
 | Cross-cutting | 5 decorators in the BFF; JSON logging with identical canonical fields in both processes |
@@ -216,7 +216,7 @@ The emulators' persistence, the variable bridge and Terraform's ownership: ADR-0
 
 **What the foundation did not have on 2026-08-31, and has since:** the domain services are
 implemented and registered (`internal/app/register.go`), the `AgentRuntime` lives in the core
-with two provider adapters (ADR-0022), and the sandbox launcher has its Kubernetes adapter. The
+with two provider adapters (ADR-0016), and the sandbox launcher has its Kubernetes adapter. The
 sentence that used to stand here — "the servers are a skeleton" — was true for about a day and
 then kept misleading planning; it is corrected rather than deleted, because knowing that the
 foundation shipped faster than the document is itself worth recording.

@@ -26,7 +26,7 @@ docs {
   `identity`, `ensure-user` comes before `list-accounts` because there is no
   account to list before the first sign-in.
 
-  Two surfaces, two protocols (ADR-0016):
+  Two surfaces, two protocols (ADR-0012):
 
   - **dop-api-rest** — the BFF's REST, consumed by the cockpit
   - **dop-api-grpc** — the BFF's gRPC: the SAME use cases, another transport
@@ -44,7 +44,7 @@ docs {
 
   In the **core's gRPC** there is no token: the core trusts the BFF. Who is calling
   and in which account go in the **metadata** — `x-actor-id` and `x-account-id` —
-  and every request in the collection carries that block (ADR-0017, convention 5).
+  and every request in the collection carries that block (ADR-0013, convention 5).
   The messages still declare a `ctx` field, a remnant of an earlier attempt: the
   server **ignores** it, and using it gives the false impression of scoping the
   call.
@@ -58,7 +58,7 @@ docs {
   The requests in `dop-core-grpc/demand/` document a contract that is already
   closed, but `DemandService` is not registered in the server yet: they return
   `Unimplemented`. They are here because the contract is the source of truth
-  (ADR-0017) and the client can be written against it before the server exists.
+  (ADR-0013) and the client can be written against it before the server exists.
 
   ## How to get a token in the local environment
 

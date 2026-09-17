@@ -39,14 +39,14 @@ body:grpc {
 
 docs {
   Who is calling and in which account go in the METADATA, never in the body
-  (ADR-0017, convention 5).
+  (ADR-0013, convention 5).
 
   `external_space_id` is the **provider's space**, never our word "workspace":
   both concepts exist and confusing them is the short path to linking the project
   to the wrong board.
 
   `card_types` comes from the provider and is dynamic — the platform imposes no
-  card vocabulary (ADR-0013).
+  card vocabulary (ADR-0009).
 
   An update is a replacement: sending a null `task_manager` UNLINKS the board.
   Sending the project without the fields you do not want to lose erases what was

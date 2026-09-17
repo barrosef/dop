@@ -19,7 +19,7 @@ account as the unit of ownership).
 Integrations **are not configured inside a project**. They belong to the account, and the
 project only consumes what is already integrated.
 
-> **An integration is a type of resource** (ADR-0013) — the only one with a credential. The
+> **An integration is a type of resource** (ADR-0009) — the only one with a credential. The
 > sharing and grant mechanism described here is the general resource mechanism.
 
 **`Integration`:**
@@ -128,11 +128,11 @@ Google Code Assist** and future ones. The methods: **a personal account's OAuth*
 provider's subscription) or an **API key**, both kept through the `SecretStore` like any
 credential.
 
-- **They are the router's menu**: the models an agent's `card` (ADR-0010) may use are those of
+- **They are the router's menu**: the models an agent's `card` (ADR-0007) may use are those of
   the account's agent integrations, resolved through the `AgentRuntime` port — one adapter per
   provider (ADR-0001, the second family).
 - **Cost:** with the customer's credential (BYO), the model spend lands on their account at the
-  provider; **ADR-0011's measurement does not change** — it measures the same, only who pays
+  provider; **ADR-0008's measurement does not change** — it measures the same, only who pays
   varies.
 - In an organization, the same holder rules of §4 apply: prefer a credential that does not die
   with the person; an organizational API key when the provider offers one.

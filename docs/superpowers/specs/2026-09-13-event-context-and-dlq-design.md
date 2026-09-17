@@ -4,10 +4,10 @@
 **Scope:** `dop-core` only. The BFF has no broker and no database (invariant 2);
 nothing here touches it until a panel exists to read the errors table.
 
-Base decisions: [ADR-0018](../../adr/0018-postgres-persistence.md) (the outbox,
+Base decisions: [ADR-0014](../../adr/0014-postgres-persistence.md) (the outbox,
 at-least-once delivery, idempotent consumers, the DLQ),
-[ADR-0006](../../adr/0006-demand-as-event-log.md) (the event log is the truth),
-[ADR-0025](../../adr/0025-communication-trigger-and-channel.md) (the trigger and
+[ADR-0004](../../adr/0004-demand-as-event-log.md) (the event log is the truth),
+[ADR-0018](../../adr/0018-communication-trigger-and-channel.md) (the trigger and
 the channel are separate), and decisions 6 and 7 of
 [P-29](2026-09-06-event-reaction-as-data-design.md), taken by the owner on
 2026-09-06 and still unbuilt.

@@ -49,7 +49,7 @@ git clone git@github.com:barrosef/dop-cmd.git repos/dop-cmd
 
 - **dop-core** (`repos/dop-core`) — the core in Go: the domain, the state, the transactions and
   the event log. One binary, four modes (`serve`, `worker`, `sched`, `launcher`). It owns the
-  schema and the vault; it is the only source of truth (ADR-0016, ADR-0023).
+  schema and the vault; it is the only source of truth (ADR-0012, ADR-0016).
 - **dop-api** (`repos/dop-api`) — the BFF in Python: REST+SSE for the cockpit, gRPC for the CLI
   and the sandbox. It has no database and no secret — every write goes through the core.
 - **dop-app** (`repos/dop-app`) — the cockpit where the Dev works (the attention box, the tree of
@@ -66,7 +66,7 @@ git clone git@github.com:barrosef/dop-cmd.git repos/dop-cmd
 
 - **The index of everything:** [`docs/ROADMAP.md`](docs/ROADMAP.md) — the subprojects, the
   phasing and the cross-cutting open items.
-- **Architecture decisions:** [`docs/adr/`](docs/adr/) — 26 ADRs in the MADR format.
+- **Architecture decisions:** [`docs/adr/`](docs/adr/) — 23 ADRs in the MADR format, numbered contiguously.
 - **Subsystem specs:** [`docs/superpowers/specs/`](docs/superpowers/specs/).
 - **Vocabulary:** [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
 - **API collections:** [`docs/api/`](docs/api/) — Bruno, the core's gRPC and the BFF's REST/gRPC.

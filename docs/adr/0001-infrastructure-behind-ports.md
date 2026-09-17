@@ -63,7 +63,7 @@ Cases already decided:
 
 ### When an adapter cannot meet a guarantee, the ADAPTER pays — it does not lower the bar
 
-*(absorbed from ADR-0021, 2026-09-04; that number is retired and never reused)*
+*(absorbed from the former ADR 0021 (a number retired by the 2026-09-17 renumbering), 2026-09-04)*
 
 `SecretStore` promises **read-after-write**. The promise was born from the k8s adapter, where
 it is true. The second production adapter — GCP Secret Manager — could not meet it: Google's

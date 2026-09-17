@@ -1,15 +1,15 @@
-# ADR-0024 — A microVM per demand, with a single shared worktree
+# ADR-0017 — A microVM per demand, with a single shared worktree
 
 - **Status:** Accepted, **superseded in part** — the third decision this ADR carried, *"an
   ephemeral pod per verification run"*, was withdrawn (P-27) and then replaced by
-  [ADR-0030](0030-verification-runs-from-source.md). What still holds is the sandbox: one
+  [ADR-0023](0023-verification-runs-from-source.md). What still holds is the sandbox: one
   microVM per demand, one worktree shared by its threads. See §"Superseded in part" below.
 - **Date:** 2026-08-31 · retitled 2026-09-04
 - **Resolves:** P-24 (sandbox provisioning) and the question of isolation between threads
 
 ## Context
 
-A demand has 1 main agent and N subagents (ADR-0010) — one investigating a log, another the
+A demand has 1 main agent and N subagents (ADR-0007) — one investigating a log, another the
 database, another the code, with the main one orchestrating. We had to decide where each of
 those agents runs, and where the application under test runs.
 
@@ -33,7 +33,7 @@ run**.
 The boundary that has to be hard is between **accounts** and between **demands** — and that
 is the one the per-demand sandbox guarantees. (For the WORKSPACE. For KNOWLEDGE the boundary
 is the project, by design: every sandbox of a project shares its root repository —
-[ADR-0028](0028-project-knowledge-as-a-git-repository.md). The workspace stays per demand.) A demand's threads are agents of the same
+[ADR-0021](0021-project-knowledge-as-a-git-repository.md). The workspace stays per demand.) A demand's threads are agents of the same
 account working on the same problem: mutually trusted. Spending a microVM between them would
 be using a security tool to solve a coordination problem.
 
@@ -59,7 +59,7 @@ mandatory, and the refusal says: *"evidence that does not say which code it ran 
 evidence"*.
 
 A test running inside the agent's sandbox runs against the **dirty working tree**, which is no
-commit at all. It cannot produce honest evidence under ADR-0007's rule. A pod built **from a
+commit at all. It cannot produce honest evidence under ADR-0005's rule. A pod built **from a
 commit** does — and it tests exactly what is going to be merged.
 
 The pod lives only during the run and is discarded. Port and route stop being the sandbox's
@@ -107,11 +107,11 @@ one demand for simplicity, and it removes the per-run address `EndpointURL` woul
 The argument for honest evidence stands: a verification still runs from a COMMIT
 (`VerificationRun.Commit`).
 
-**Corrected on 2026-09-04 — see [ADR-0030](0030-verification-runs-from-source.md).**
+**Corrected on 2026-09-04 — see [ADR-0023](0023-verification-runs-from-source.md).**
 The sentence that used to end this paragraph said the verification "just runs in
 the demand's sandbox". That was an error in the write-up, not the owner's
 decision: what was decided was the ADDRESS (one per demand, runs queue), and
 putting the run inside the sandbox contradicted this ADR's own argument by
-returning it to the dirty tree. ADR-0030 keeps the argument and changes the
+returning it to the dirty tree. ADR-0023 keeps the argument and changes the
 mechanism: an ephemeral RUNNER that pulls the commit and builds from source —
 no image of the project is built, pushed or deployed.

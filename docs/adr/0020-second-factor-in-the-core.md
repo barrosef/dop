@@ -1,9 +1,9 @@
-# ADR-0027 — The second factor is the platform's, with three verifiers
+# ADR-0020 — The second factor is the platform's, with three verifiers
 
 - **Status:** Accepted
 - **Date:** 2026-09-02
-- **Refines:** [ADR-0001](0001-infrastructure-behind-ports.md) (it creates the `SMSer` port), [ADR-0025](0025-communication-trigger-and-channel.md) (a channel without the Notifier), [ADR-0022](0022-agent-provider-as-port.md) (the BFF has no secret)
-- **Depends on:** [ADR-0026](0026-invite-without-token.md) (a verified e-mail is already an identity requirement)
+- **Refines:** [ADR-0001](0001-infrastructure-behind-ports.md) (it creates the `SMSer` port), [ADR-0018](0018-communication-trigger-and-channel.md) (a channel without the Notifier), [ADR-0016](0016-agent-provider-as-port.md) (the BFF has no secret)
+- **Depends on:** [ADR-0019](0019-invite-without-token.md) (a verified e-mail is already an identity requirement)
 
 ## Context
 
@@ -34,8 +34,8 @@ does have MFA. Three things make it a bad home here:
    [ADR-0001](0001-infrastructure-behind-ports.md).
 
 **The platform's.** The TOTP seed is a credential; it belongs in the vault,
-which lives in the core (ADR-0022). The Mailer port already exists (ADR-0025).
-The event log already exists (ADR-0006). What is missing is one domain and one
+which lives in the core (ADR-0016). The Mailer port already exists (ADR-0018).
+The event log already exists (ADR-0004). What is missing is one domain and one
 channel.
 
 ## Decision
@@ -63,7 +63,7 @@ returns the code. A factor that is registered without being proven is a lock
 whose key nobody has tested — and it is discovered on the day of the sign-in
 that fails.
 
-**An e-mail factor requires a VERIFIED e-mail** (ADR-0026's guarantee 5). An
+**An e-mail factor requires a VERIFIED e-mail** (ADR-0019's guarantee 5). An
 unverified address as a second factor is not a second factor: it is the same
 unproven address that the first factor already trusted.
 
@@ -72,7 +72,7 @@ unproven address that the first factor already trusted.
 | kind | How it verifies | What it uses |
 |---|---|---|
 | `totp` | RFC 6238, 30 s step, 6 digits, a ±1 window for clock drift | the seed in the vault (`SecretStore`, kind `second_factor_totp`); the `otpauth://` URI is shown ONCE at enrolment |
-| `email` | a numeric code, 6 digits, valid for 10 minutes, single use | the **`Mailer` port** (ADR-0025) |
+| `email` | a numeric code, 6 digits, valid for 10 minutes, single use | the **`Mailer` port** (ADR-0018) |
 | `sms` | the same code, the same validity | the **`SMSer` port** — new, §4 |
 
 **A code is single use and dies on the first correct answer**, including when it
@@ -81,7 +81,7 @@ key.
 
 ### 3. The code is a CHALLENGE, not a notification
 
-This is where ADR-0025's vocabulary earns its keep, applied in reverse: the
+This is where ADR-0018's vocabulary earns its keep, applied in reverse: the
 second factor uses the **channel** (`Mailer`, `SMSer`) and does **not** use the
 **Notifier**.
 
@@ -97,9 +97,9 @@ Putting it in the table would give the person a code fifteen minutes after they
 asked for it, and would leak an authentication secret into a policy designed to
 be replaced by DATA (P-29). The channel is shared; the trigger is not.
 
-### 4. `SMSer`, the port ADR-0025 foresaw
+### 4. `SMSer`, the port ADR-0018 foresaw
 
-ADR-0025 left it written: `Pusher` and `SMSer` come "when there is push and SMS,
+ADR-0018 left it written: `Pusher` and `SMSer` come "when there is push and SMS,
 because channels do not have the same shape". SMS now exists, so the port is
 born — with ADR-0001's discipline: **two adapters and a contract suite from day
 one**. One of them is a real provider (Twilio is the obvious candidate); the
@@ -113,12 +113,12 @@ fulfillable by every adapter stays out.
 
 ### 5. Where the gate is, and what it gates
 
-Verification runs in the **core**, because that is where the vault is (ADR-0022).
+Verification runs in the **core**, because that is where the vault is (ADR-0016).
 The BFF forwards the challenge and the answer; it stores no seed and no code.
 
 **The core records the step-up per (user, session), with an expiry.** The BFF
 sends the session identifier in the metadata, the same way it already sends
-`x-actor-id` and `x-account-id` (ADR-0017, convention 5).
+`x-actor-id` and `x-account-id` (ADR-0013, convention 5).
 
 What requires a fresh step-up, in v1:
 
@@ -172,7 +172,7 @@ boundary of the requirement.
 ### 8. Every attempt is an event
 
 Enrolment, confirmation, success, failure, lockout and recovery-code use are
-events (ADR-0006). Five consecutive failures put the factor in a cool-off. The
+events (ADR-0004). Five consecutive failures put the factor in a cool-off. The
 attention box gains no item for a failure — a failed attempt is not a decision
 for a human — but the timeline shows it, which is what auditing asks for.
 
@@ -218,7 +218,7 @@ use an authenticator app, which in practice means excluding part of the users
 from the very protection.
 
 **A magic link instead of an e-mail code.** A link is a bearer credential
-travelling in an inbox — exactly what ADR-0026 has just taken out of the invite.
+travelling in an inbox — exactly what ADR-0019 has just taken out of the invite.
 A code has to be typed into the session that asked for it.
 
 ## Consequences
