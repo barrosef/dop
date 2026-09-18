@@ -5,6 +5,8 @@
 product (documentation + the local environment's pointer) and aggregates the components as
 independent repositories under `repos/`.
 
+The product's public site — what it is, how it is built, where it stands — is **[dop-t.com](https://dop-t.com)**.
+
 ## Structure
 
 ```
