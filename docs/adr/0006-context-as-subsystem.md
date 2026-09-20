@@ -2,70 +2,52 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-29
-- **Resolves:** F-2 — see `docs/analysis/2026-08-29-platform-critical-review.md`
+- **Relations:** storage defined by ADR-0021 (the project root repository); relied on by ADR-0007, ADR-0008
 
 ## Context
 
-What separates a useful agent from a useless one in 2026 is context: the project's rules,
-the code's map, the memory of what has already been tried. In the requirements this showed
-up as "context created by Claude" and "the workspace's rules" — with no entity, no port, no
-mechanism. The product's directive is explicit: documentation in secure, available and
-permissioned storage, reachable from the microVMs, "so that the agents work in a genuinely
-intelligent way".
-
-The storage is the easy half. The half that generates intelligence is **what** is in there
-and **how** it is assembled per demand.
+An agent's usefulness depends on the project's rules, the code's map and the
+memory of previous demands. Storage is permissioned per account and project
+and reachable from the sandbox; what matters is what is stored and how it is
+assembled per demand.
 
 ## Decision
 
-1. **A knowledge base per project**, versioned, with three layers:
-   - **Rules** — the conventions the agent obeys ("never merge `develop` into the feature");
-   - **The index** — the code's map: what lives where, how to build, how to test. Without
-     it, every demand spends its first 30 minutes rediscovering the repository;
-   - **Memory** — findings and lessons from past demands, ADRs, forensic readings (the
-     artifacts the dossier already promised).
-2. **Access through a port** (`KnowledgeStore`, over `ObjectStore` — ADR-0001), in storage
-   permissioned per account/project, exposed to the sandbox **read-only** during execution.
-3. **A context package per demand**, assembled when the sandbox is provisioned: the demand's
-   spec + the rules + the index of the repositories involved + the relevant memories. It is
-   the agent's carry-on luggage — curated, not dumped.
-4. **A write-back at closing**: the demand's findings (ADR-0007) and lessons go into the
-   memory layer. Context is a cycle, not a file.
-5. **The index updates on a merge event** (ADR-0004/0007), not on a cron: the map follows
-   the real `main`.
+1. **A knowledge base per project**, versioned, in three layers:
+   - **rules** — the conventions the agent obeys;
+   - **index** — one map per repository: what lives where, how to build, how
+     to test;
+   - **memory** — findings and lessons from past demands.
+
+   Text lives in the project's root repository (`rules/`, `index/`,
+   `memory/`, `demand/<id>/` — ADR-0021). Binary artifacts live in the
+   `ObjectStore`, referenced from the repository.
+2. **A context package per demand** is assembled when the sandbox is
+   provisioned: the demand's spec + rules + the index of the repositories
+   involved + the relevant memories. It is serialized deterministically
+   (ADR-0008 §4) and is what enters the prompt.
+3. **The package is curated; the repository is the shelf.** The complete
+   root repository is cloned into the sandbox with a generated `README.md`
+   manifest; the package is paid for per turn, the shelf only when a file is
+   opened.
+4. **Write-back at closing:** a demand's findings and lessons are committed
+   into `memory/`.
+5. **The index is regenerated on a merge event**, not on a schedule.
 
 ## Alternatives considered
 
-**A raw document folder in the sandbox.** Rejected: with no curation and no assembly, the
-agent digs — and digging is what the package exists to eliminate.
-
-> **Revised by [ADR-0021](0021-project-knowledge-as-a-git-repository.md) (2026-09-03).** What
-> was rejected here was a folder AS A REPLACEMENT for the package. ADR-0021 keeps the package
-> exactly as this ADR defines it — the curated, budgeted luggage that goes into the prompt —
-> and ADDS the shelf: the project's root repository, complete, cloned into the sandbox, with
-> a generated `README.md` so the agent does not dig. The package is paid for on every turn;
-> the shelf costs nothing until a file is opened. The "raw" in the rejection was the point,
-> and the manifest is what removes it.
-
-**Everything embedded in the prompt.** Rejected: it blows the context window and grows with
-the project, not with the demand.
-
-**An external RAG service per customer.** Deferred: the port allows plugging one in later;
-starting there is buying infrastructure before having content.
+- **A raw document folder as the only mechanism** — rejected: no curation.
+- **Everything in the prompt** — rejected: grows with the project.
+- **An external RAG service per customer** — deferred; the port allows it.
 
 ## Consequences
 
-- ➕ The agent is born knowing what this working session knows — rules, map, memory.
-- ➕ Today's forensic reading is tomorrow's demand's context.
-- ➖ Curation has a cost: assembling the package and judging a memory's relevance is real
-  work for the orchestrator.
-- ➖ Per-account storage with fine-grained permission — one more surface for the
-  `SecretStore`/`ObjectStore` contract tests to cover.
+- Assembling the package and judging a memory's relevance is the
+  orchestrator's work.
+- Per-account, per-project permissions on the storage are covered by the
+  `ProjectRepository` and `ObjectStore` contract suites.
 
-## Revised on 2026-09-03 — where the text lives
+## Revisions
 
-Decision 2 said "over `ObjectStore`". With [ADR-0021](0021-project-knowledge-as-a-git-repository.md),
-**text lives in the project's root repository (git)** and the `ObjectStore` keeps BYTES —
-diagrams, exports, anything a repository is bad at. The three layers, the port and the
-package are unchanged; only the storage of the text moved, and it moved to gain attribution
-and history, which a bucket does not give.
+- 2026-09-03 — text moved from the `ObjectStore` to the project root
+  repository (ADR-0021); the shelf added alongside the package.

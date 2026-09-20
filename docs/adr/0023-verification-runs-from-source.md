@@ -2,173 +2,59 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-04
-- **Supersedes:** [ADR-0017](0017-sandbox-per-demand.md)'s "an ephemeral pod per verification run" — the argument stands, the mechanism changes
-- **Depends on:** [ADR-0005](0005-no-green-no-pr.md) (evidence names the commit it ran on), [ADR-0001](0001-infrastructure-behind-ports.md) (two adapters and a contract suite), [ADR-0003](0003-organization-credential-human-authorship.md) (the credential that pulls the code)
-- **Refines:** P-27 (one address per demand; runs queue)
+- **Relations:** supersedes ADR-0017's verification clause; relies on ADR-0005 (evidence names a commit), ADR-0001, ADR-0003 (the credential that pulls the code)
 
 ## Context
 
-Three documents disagreed about where a demand's application runs, and the
-disagreement was ours to fix:
-
-- the execution spec says an **internal Docker** brings up the demand's stack
-  inside the sandbox, with `docker compose -p <demand>`;
-- ADR-0017 says a verification runs in an **ephemeral pod** in the cluster,
-  because *"a test running inside the agent's sandbox runs against the dirty
-  working tree, which is no commit at all"*;
-- and P-27's write-up, on 2026-09-03, withdrew the ephemeral pod and said the
-  verification *"just runs in the demand's sandbox"* — which put the run back on
-  the dirty tree the ADR had refused. **That sentence was an error in the
-  write-up**: the owner decided about the ADDRESS (one per demand, runs queue)
-  and said nothing about the location.
-
-Resolving it exposed the real cost of "a pod in the cluster". A pod runs an
-IMAGE, so verification would need: reading the project's compose, translating it
-into manifests, building the application's image from the commit, pushing it to a
-registry, and pulling it back on a node — a builder and a registry that do not
-exist, on the critical path of every run.
+Evidence of a green verification must name the commit it ran on and the
+environment it ran in. Building an image per run requires a builder and a
+registry on every run's critical path.
 
 ## Decision
 
-**The verification environment is a RUNNER: an ephemeral environment that pulls
-the commit, builds from source and starts the application. No image of the
-project is ever built, pushed or deployed.**
-
-### 1. Why building from source is the cheap path
-
-The slow sequence is not the build — it is `build → push → pull → start`, three
-network hops around a registry that only exists to move bytes between two places
-in the same cluster. Cutting it leaves `pull the code → build → start`, which is
-what every CI runner in the world does, and what a developer does on their own
-machine.
-
-It also removes the compose question entirely: there is no stack to translate,
-because there is no stack description to read. There is a repository, a
-commit, and a command that starts the application.
-
-### 2. The runner's IMAGE is ours, and it is built once
-
-The toolchains — Node, Go, Python, the JVM — live in an image WE publish and the
-node caches. It is a fat image, and that is the deliberate trade: one big image
-cached everywhere beats a small image built per demand.
-
-This is the cost of the decision, stated plainly: that image has to carry the
-versions our customers use, and version drift is a maintenance burden we take on
-rather than push onto the client. It is the same burden every CI provider
-carries, and it is smaller than a builder plus a registry.
-
-### 3. It is SEPARATE from the sandbox, and that is the point
-
-The sandbox holds the agent, the dirty tree and everything installed along the
-way. The runner starts from nothing, on a commit, so:
-
-- **the evidence is honest about the environment**, not only about the code —
-  which is what ADR-0017 bought with the ephemeral pod, and what a `git worktree`
-  inside the sandbox would NOT have bought;
-- **the test does not compete with the agent** for memory or CPU;
-- and a runner that dies takes nothing of the demand's work with it.
-
-It is created when the verification stage starts and destroyed when the run ends.
-It is not kept waiting: an environment idling for a push that may not come today
-is money burning quietly.
-
-### 4. Third-party dependencies are pulled, never built
-
-A database, a cache, a broker: those are published images (`postgres:16`), and
-pulling one costs a cached layer. **Nothing of a third party is ever built.** What
-the project declares is small — which dependencies, which versions — and it is a
-few lines, not a translation of its compose file.
-
-The application itself is the only thing built, and it is built from source.
-
-### 5. The cache is what makes the second run fast
-
-The account's cache volume — already in the execution spec, per account and never
-global, because a shared cache is a side channel — is mounted into the runner.
-`node_modules`, the Go build cache, the Maven repository: the first run of a
-project pays, the rest do not.
-
-Without this the decision does not hold: building from source on a cold cache
-every time would be slower than the registry sequence it replaces.
-
-### 6. The address, and the queue
-
-The runner takes the demand's address (`<service>--<demand>.<domain>`) while it
-runs — the P-27 decision, unchanged: **one address per demand, and parallel runs
-queue**. Since they queue, there is one holder at a time.
-
-A run that dies leaves the address pointing at nothing, and something has to
-notice: reconciling the address is part of the runner's lifecycle, not an
-afterthought.
-
-### 7. It is a PORT, with two adapters
-
-"Run this commit and give me a URL" is a port, and each executor answers it
-natively: pods on Kubernetes, containers on the host daemon under Docker. That is
-what keeps the two executors from diverging on the very thing that produces
-evidence — the mistake this ADR nearly made by thinking of verification as
-hand-written Kubernetes manifests.
+1. **The verification environment is a runner:** ephemeral, it pulls the
+   commit, builds the application from source and starts it. No image of
+   the project is built, pushed or deployed.
+2. **The runner's image is the platform's**, published once with the
+   toolchains (Node, Go, Python, JVM, …) and cached on the nodes.
+3. **Third-party dependencies are pulled as published images** (a
+   database, a cache, a broker), declared by the project in
+   `.dop/verification.yml`; nothing of a third party is built.
+4. **The account's cache volume is mounted into the runner** (`node_modules`,
+   the Go build cache, Maven, …); the cache is per account, never shared.
+5. **The runner is separate from the sandbox**, created when a run starts
+   and destroyed when it ends; it is never kept idle.
+6. **Address:** the runner holds the demand's address
+   `<service>--<demand>.<domain>` while it runs; parallel runs of one demand
+   queue; the address is reconciled when a run dies.
+7. **Port:** `VerificationRunner` — pull, build, start, expose, tear down —
+   with Kubernetes and Docker adapters and one contract suite.
+8. **Triggers:** (a) the end of development, automatically, once the
+   reaction-as-data process exists to decide it (`ROADMAP.md` P-29);
+   (b) the developer asking (*test*), in which case the run holds the
+   environment after the checks for the developer to use. A run holds when
+   asked to, not because it has no checks.
+9. **The demand keeps no running application** outside a verification or a
+   held run.
 
 ## Alternatives considered
 
-**Compose inside the sandbox** (the execution spec's original). Cheapest to
-build and it keeps the project's own file. Rejected as the VERIFICATION path: the
-environment is the agent's, with whatever the agent installed in it, and evidence
-from there speaks about that environment and not about a clean one. It remains
-the candidate for the developer's own bench — a separate question, still open.
-
-**An ephemeral pod from a built image** (ADR-0017's mechanism). Honest
-environment, and it costs a builder, a registry and three network hops per run.
-Rejected for the cost, not for the argument — the argument is what this ADR
-keeps.
-
-**Translating the project's compose into manifests.** It works for the simple
-case and lies for the rest: `build:`, `healthcheck`, `depends_on`, volumes and
-profiles have no clean equivalent, and the developer ends up debugging a manifest
-they never wrote.
-
-**A runner kept warm, waiting for a push.** Faster to start and it burns money
-while nothing happens. Revisit with a measured start latency, not before.
+- **Compose inside the sandbox** — rejected for verification: the agent's
+  environment is not a clean one; remains a candidate for a developer bench.
+- **An ephemeral pod from a built image** — rejected: builder, registry,
+  three network hops per run.
+- **Translating the project's compose into manifests** — rejected: no
+  faithful mapping.
+- **A warm runner** — rejected until start latency is measured.
 
 ## Consequences
 
-- **A new port and two adapters**, with a contract suite: pull, build, start,
-  expose, tear down.
-- **A runner image is a product artifact of ours** — versions, size, and a
-  release cadence. It is the maintenance we accepted in §2.
-- **The project declares its dependencies**, in a few lines. It is a tax, and it
-  is the smallest of the ones available.
-- **What TRIGGERS a run (added 2026-09-05, closing P-26).** Two triggers, and
-  only two:
+- The runner image is a product artifact with a release cadence.
+- Projects declare their dependencies in a few lines.
+- The port's guarantees and the change list are in
+  `superpowers/specs/verification-runner.md`; the runner is not built yet.
 
-  1. **The end of development, automatically** — when a defined process says so.
-     That process does not exist yet: it is P-29's (reaction to an event as
-     data), and until it lands this trigger has nowhere to live. Recording it now
-     is what keeps somebody from hard-coding it into a consumer meanwhile.
-  2. **The developer asking** — they click *test*: the environment comes up, the
-     e2e run, and **the developer keeps the preview**.
+## Revisions
 
-  Trigger 2 is the one that costs an implementation change. This ADR's §4 split
-  "a verification" and "a dev session" into two windows, and the port that was
-  built follows it: a run with checks finishes and exits, a run without them
-  holds. But "test it and leave it up for me" is ONE request, not two — so
-  holding has to become something a run is ASKED for, not something derived from
-  the absence of checks. The guarantee changes from *"a run with no checks
-  holds"* to *"a run holds when it was asked to"*.
-
-  Nothing decides trigger 1 today and nothing launches a run at all — that is
-  P-38's remaining half, and it is where both triggers will meet.
-
-- **The demand keeps no running application** — decided 2026-09-04, closing the
-  question this ADR opened. It exists only during a verification, or while a
-  developer asked to look at it (a *dev session*: the same runner, no checks,
-  held to a deadline). The bench is where code is written, not where it runs.
-  It is the cheaper and poorer option, chosen knowingly: seeing the application
-  now costs a build, and the account's cache is what keeps that bearable.
-- **P-38's verification runner stops being undefined** — it now has a shape,
-  written up in [`verification-runner.md`](../superpowers/specs/verification-runner.md):
-  the port's nine guarantees, `.dop/verification.yml`, and the code the change
-  touches. It is still not built.
-- **The execution spec's "internal Docker" line no longer describes the
-  verification path** — corrected, along with the acceptance section of
-  [`verification-and-delivery.md`](../superpowers/specs/verification-and-delivery.md).
+- 2026-09-04 — decision 9.
+- 2026-09-05 — decision 8 (the two triggers).

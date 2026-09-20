@@ -3,24 +3,39 @@
 A record of the structuring decisions, in the MADR format: context, decision, alternatives
 considered and consequences.
 
-## Before writing one, ask which ADR it belongs to
+## What an ADR is here
 
-This index went from 15 documents to 30 in seven days, because the rule used to be *"an ADR
-does not change once accepted — it is replaced"*: every refinement needed a new file. The rule
-below replaces it. **One subject, one ADR.**
+An ADR **fixes a decision and describes the resulting architecture
+technically**. It does not tell how the decision was reached, what was found
+along the way, or what earlier drafts said — that story is published on the
+site (`dop-t.com/decisions`) and kept in git history. Every ADR has the same
+shape:
+
+| section | holds |
+|---|---|
+| header | status, date, and **relations** to other ADRs (refines, refined by, relies on, supersedes, superseded by) |
+| Context | the requirement or constraint, in a few lines |
+| Decision | numbered statements with exact names, values and shapes (types, tables, env vars, limits) |
+| Alternatives considered | one line each: the option, and why it is not the decision |
+| Consequences | what the decision costs or obliges, technically |
+| Revisions | one dated line per change to the decision text — no narrative |
+
+**One subject, one ADR.**
 
 | The decision… | goes where |
 |---|---|
-| **refines, corrects or extends** one that exists | a **dated amendment inside it** — `**Where an artefact lives (added 2026-09-03):** …`. No new number |
-| **changes** a decision other documents cite | a new number, and the old one says so **in its header**, with the link — not buried in the body |
+| **refines, corrects or extends** one that exists | the ADR's text is updated to state the current decision, and a dated line is added to its **Revisions** |
+| **changes** a decision other documents cite | a new number; the old ADR's header says *superseded by* and the clause is removed or marked |
 | **opens a subject no ADR covers** | a new number |
 
-A decision becomes an ADR at all when it is cited by more than one spec, when a real
-alternative was rejected, or when somebody six months from now is going to ask "why like
-this?". Everything narrower belongs where it is used: a port's guarantee in the port, an
-operational recipe in the `dop-infra` spec.
+A decision becomes an ADR when it is cited by more than one spec, when a real
+alternative was rejected, or when somebody six months from now will ask "why
+like this?". Everything narrower belongs where it is used: a port's guarantee
+in the port, an operational recipe in the `dop-infra` spec.
 
-If two ADRs describe the same subject, one of them is an amendment to the other.
+**Section numbers are referenced from specs and code** (`ADR-0010 §4`,
+`ADR-0008 §5`). A revision keeps existing numbers; new material goes into the
+section it refines or at the end.
 
 ## The decisions, by subject
 
@@ -29,7 +44,7 @@ If two ADRs describe the same subject, one of them is an amendment to the other.
 | # | Title |
 |---|---|
 | [0001](0001-infrastructure-behind-ports.md) | Infrastructure behind ports with pluggable adapters — and, when an adapter cannot meet a guarantee, **the adapter pays** |
-| [0012](0012-stack-go-core-python-bff.md) | A core in Go, a BFF in Python, and the boundary between them: **the BFF has no database** |
+| [0012](0012-stack-go-core-python-bff.md) | A core in Go, a BFF in Python, and the boundary between them: **the BFF has no database and no secret** |
 | [0013](0013-proto-as-source-of-truth.md) | The `.proto` is the contract's source of truth |
 
 ### Accounts, identity and access
@@ -76,7 +91,7 @@ If two ADRs describe the same subject, one of them is an amendment to the other.
 | # | Title |
 |---|---|
 | [0010](0010-dynamic-workflow.md) | A dynamic, typed and inheritable workflow |
-| [0017](0017-sandbox-per-demand.md) | A microVM per demand, with a single shared worktree *(partly superseded — see its header)* |
+| [0017](0017-sandbox-per-demand.md) | A microVM per demand, with a single shared worktree *(verification clause superseded by 0023)* |
 | [0023](0023-verification-runs-from-source.md) | Verification builds from source in a runner, not from an image |
 | [0005](0005-no-green-no-pr.md) | No green, no PR: native verification, and a merge queue per repository |
 
@@ -144,3 +159,24 @@ one in git history before that date:
 
 **The rule from here on:** a folded ADR's number is not left as a hole; the sequence is
 renumbered, this table grows, and the references are rewritten in the same change.
+
+## Consistency review — 2026-09-20
+
+All twenty-three ADRs were rewritten into the shape above, without changing
+any decision. The review across them resolved these divergences:
+
+| subject | was | now |
+|---|---|---|
+| where the agent runtime runs | ADR-0012 said the BFF (struck through); ADR-0016 said the core | ADR-0012 states the core and references ADR-0016; the BFF's rule reads "no database and no secret" in one place |
+| where verification runs | ADR-0017 "an ephemeral pod per run" (superseded in prose); ADR-0023 a runner from source; a P-27 write-up said "in the sandbox" | ADR-0017 §4 states the runner and the per-demand address; ADR-0023 owns the mechanism; the sandbox is never the verification environment |
+| the dead-letter queue | ADR-0014 described a DLQ as existing; the mechanism was in a spec amendment | ADR-0014 §3 states the built design: `dlq.event`, `DeadLetter`, `MaxDeliver 5`, backoff `1s/5s/15s/1min`, 3 retries from the DLQ, classification, `event_errors` |
+| the event envelope | ADR-0004 listed six fields; the code carries twelve | ADR-0004 §2 lists the fields of `ports.Event` |
+| where knowledge text lives | ADR-0006 "over `ObjectStore`", revised in a trailing note; ADR-0021 git | ADR-0006 §1 states git for text and `ObjectStore` for bytes; ADR-0021 owns the repository |
+| transport authentication | ADR-0022 a NetworkPolicy, with a Cloud Run IAM amendment | ADR-0022 §6: Cloud Run IAM on the managed deployment, a NetworkPolicy on clusters, both additional to the signature |
+| the session identifier the step-up trusts | ADR-0020 flagged the BFF's metadata as unverified (P-18) | ADR-0020 §5 references ADR-0022: the session id is in the verified metadata |
+| the idempotency key's namespace | ADR-0013 described it as a lesson | ADR-0013 §4 states the rule: scoped to the owning account; platform rows under a nil-uuid namespace |
+| the notification link | ADR-0019 described `Rule.LinkPath` | ADR-0018 §8 owns link paths as data; ADR-0019 §3 references it |
+| the `Mailer` adapters | ADR-0018 listed SendGrid and SMTP, OneSignal as "future" | ADR-0018 §4 lists the three built adapters |
+| "two adapters and a contract suite" | restated in most ADRs | stated in ADR-0001 §4; others reference it |
+| commit attribution | ADR-0003 and ADR-0021 | ADR-0003 only; ADR-0021 references it |
+| absorbed numbers | header sentences about retired numbers in five ADRs | a dated Revisions line; the mapping lives in this index |

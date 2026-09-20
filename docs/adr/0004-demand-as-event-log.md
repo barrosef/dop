@@ -2,44 +2,49 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-29
-- **Resolves:** F-8 (trace/replay), F-7 (telemetry), P-1 (auditing) — see `docs/analysis/2026-08-29-platform-critical-review.md`
+- **Relations:** realized by ADR-0014 (persistence and the outbox); relied on by ADR-0007, ADR-0008, ADR-0011, ADR-0018, ADR-0021, ADR-0022
 
 ## Context
 
-Five distinct needs each ask for a record of what happened on a demand:
-
-1. **Debugging** — reproducing, step by step, a demand that went wrong.
-2. **Auditing** — in an organization, answering "who authorized this push, with which
-   credential?" (it chains with ADR-0003).
-3. **The dossier** — the requirements already ask for it to be "generated at runtime, stage
-   by stage", not assembled at the end.
-4. **Security** — forensics and detection when malicious content tries to divert the agent.
-5. **Metrics** — human interventions, rework, time-to-green.
-
-Building five mechanisms is writing the same data five times and watching them diverge.
+Debugging, auditing, the dossier, security forensics and metrics each need a
+record of what happened on a demand. One record serves all five.
 
 ## Decision
 
-**Every action on a demand emits an immutable event**, in an append-only log per demand:
-`{when, actor (human | agent | subagent), action, credential used (ref), summarized input,
-result}`. The log is the demand's spine; **the dossier, the timeline, auditing, replay and
-metrics are projections** of it — reads, never writes of their own.
+1. **Every write in the core emits an immutable event** into an append-only
+   log, in the same transaction as the state change (ADR-0014).
+2. **The event envelope** (`ports.Event`):
 
-A consequence for SP-3: the event log is a first-class citizen of persistence; the document
-store serves projections, it does not replace it (closes F-16).
+   | field | content |
+   |---|---|
+   | `id` | the event's UUID; also the broker message id |
+   | `account_id` | the owning account |
+   | `aggregate`, `aggregate_id` | the entity the event belongs to |
+   | `aggregate_key` | a human-readable key of the aggregate (`account-created`, `pr-delivered`) |
+   | `type` | the event type, e.g. `dop.identity.invite.created` |
+   | `payload` | JSON, type-specific |
+   | `occurred_at` | timestamp |
+   | `actor_kind`, `actor_id` | `user` / `agent` / `platform`, and who |
+   | `request_id`, `session_id`, `caller` | the call's context |
+
+3. **The dossier, the timeline, auditing, replay, metrics and the attention
+   box are projections** of the log: reads, never writes of their own.
+4. **An action with no event is a defect.**
 
 ## Alternatives considered
 
-**One store per consumer** (a dossier table + an audit trail + a metrics pipeline).
-Rejected: a triple write, guaranteed divergence, and replay never arrives.
-
-**An unstructured textual log.** Rejected: it is neither queryable nor projectable; auditing
-in a multi-tenant system needs fields, not grep.
+- **One store per consumer** (dossier table, audit trail, metrics pipeline) —
+  rejected: multiple writes, divergence, no replay.
+- **An unstructured text log** — rejected: not queryable per tenant.
 
 ## Consequences
 
-- ➕ One investment, five returns; P-1 leaves the pending list.
-- ➕ The subagents' "findings" (ADR-0007) and the metering (ADR-0008) are just two more event
-  types — no new mechanism.
-- ➖ The discipline of emitting everywhere: an action with no event is a bug, not a detail.
-- ➖ Volume: the log grows with the fleet; retention and compaction are an SP-3 decision.
+- Findings (ADR-0007), cost metering (ADR-0008) and notifications
+  (ADR-0018) are event types, not mechanisms.
+- The log's volume is the persistence layer's concern: partitioning and
+  retention (ADR-0014).
+
+## Revisions
+
+- 2026-09-13 — the envelope gained `aggregate_key`, `actor_kind`, `actor_id`,
+  `request_id`, `session_id`, `caller`.

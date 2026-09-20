@@ -1,60 +1,46 @@
 # ADR-0007 — Multi-agent per demand: addressable threads and published findings
 
-- **Status:** Accepted (definitive, by product decision)
+- **Status:** Accepted
 - **Date:** 2026-08-29
+- **Relations:** relies on ADR-0004 (findings are events), ADR-0006 (findings feed memory), ADR-0008 (the card's model and budget), ADR-0017 (one sandbox per demand)
 
 ## Context
 
-A real demand may require specialists at the same time. A concrete case from the product:
-SUOPT-1315 — the main agent implements; one subagent does a forensic reading of the database
-through the MySQL MCP; another combs the server's logs. The dev needs to talk to all three
-**without mixing the timelines**, and all three need to use each other's conversations as
-knowledge.
-
-Two axes that are not to be confused: **between demands** (1 demand = 1 microVM, a hard
-boundary) and **inside the demand** (N agents in the same sandbox, collaborating). This ADR
-is about the second. In the market, a subagent is a black box: you dispatch it and you wait.
-An addressable subagent, with a thread of its own and interrogable in flight, does not exist
-in today's tools.
+A demand may need several agents at once (implementation, a forensic read
+of a database, a log investigation). Between demands the boundary is the
+sandbox (ADR-0017); inside a demand, N agents cooperate in the same sandbox.
 
 ## Decision
 
-1. **The demand's conversation is a set of threads**, not a timeline: `#main` plus one
-   thread per subagent. Each with its own history; the dev enters and talks to that agent,
-   in isolation.
-2. **Every subagent is born with a card**: purpose, tools granted (e.g. the workspace's
-   MySQL MCP — R1.14 gains its real use), model (the router's decision, ADR-0008) and a
-   slice of the demand's budget.
-3. **Cross-knowledge by query, not by dump.** Threads are readable by their siblings as a
-   tool (`read_thread`, `ask`); dumping whole timelines into every agent's context does not
-   scale and widens the injection surface.
-4. **A conclusion becomes a published finding**: a structured result on the demand's common
-   board ("a deadlock on table X, 14:02–14:07, caused by migration Y"). Findings go
-   automatically into the siblings' context, are events (ADR-0004) and feed the project's
-   memory (ADR-0006).
-5. **Who launches subagents: the human and the main agent.** The human, through the chat;
-   the main agent, on its own initiative when it judges it necessary — the thread shows up
-   immediately for the dev to follow or step into.
-   > **A recorded assumption:** the main agent's own initiative was adopted for coherence
-   > with the philosophy of autonomy; the product may restrict it on review.
-6. **The security boundary is still the demand.** Subagents share the microVM, the
-   workspace, the credential and the quota — they are collaborators, not strangers.
+1. **A demand's conversation is a set of threads:** `#main` plus one thread
+   per subagent, each with its own history. The developer addresses one
+   thread at a time.
+2. **Every subagent has a card:** purpose, tools granted, model (chosen by
+   the router, ADR-0008), and a slice of the demand's budget.
+3. **Cross-thread knowledge is by query, not by dump:** threads are readable
+   by siblings through tools (`read_thread`, `ask`). No thread's timeline is
+   copied into another's context.
+4. **A conclusion is a published finding:** a structured result on the
+   demand's board. Findings enter the siblings' context, are events
+   (ADR-0004) and are written to the project's memory (ADR-0006).
+5. **Subagents are launched by the human (chat) or by the main agent** on
+   its own initiative; the thread is visible to the developer immediately.
+   *Assumption:* the main agent's initiative may be restricted by the
+   product.
+6. **The security boundary is the demand.** Subagents share the sandbox, the
+   workspace, the credential and the quota.
 
 ## Alternatives considered
 
-**A single sequential agent.** Rejected: it loses specialization and parallelizes nothing.
-
-**One sandbox per subagent.** Rejected: it breaks the shared workspace (the forensic agent
-needs the same database the main agent brings up), multiplies cost and buys no isolation
-that matters — the agents cooperate.
-
-**A single shared timeline.** Rejected: it is the problem the requirement came to solve.
+- **A single sequential agent** — rejected: no specialization, no
+  parallelism.
+- **One sandbox per subagent** — rejected: breaks the shared workspace;
+  buys no isolation between cooperating agents.
+- **One shared timeline** — rejected: the requirement is separate timelines.
 
 ## Consequences
 
-- ➕ A genuinely new UX in the market — the dev-as-manager talks to each member of the team.
-- ➕ Threads, findings and cards are events and entities the dossier and the memory were
-  already expecting.
-- ➖ The `AgentRuntime` port has to support N sessions per sandbox.
-- ➖ More threads = more points of attention; the attention box stops being optional (F-5)
-  and becomes a prerequisite for scale.
+- The agent runtime supports N sessions per sandbox.
+- The attention box is a prerequisite for scale, not an option.
+- Raw tool output stays in the specialist's thread; the main agent receives
+  findings (ADR-0008 §5).

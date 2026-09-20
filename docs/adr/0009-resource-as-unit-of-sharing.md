@@ -2,65 +2,49 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
+- **Relations:** refines ADR-0002; refined by ADR-0010 (the workflow resource; access defaults per kind), ADR-0016 (agent providers)
 
 ## Context
 
-The sharing model existed for one thing only: integrations, with `use`/`manage` grants
-composed in the invite. Other things an account owns and wants to share under authorization
-appeared:
-
-- **Skills** — the agents' reusable capabilities;
-- **Human↔agent workflows** — how a dev and the agents collaborate on a demand;
-- **Git flows** — branch governance as an artifact: a taxonomy per card type, base and
-  direction (forward/reverse), release composition, hotfix back-merge, policies. The concept
-  comes from real governance in production — e.g. a trunk + release model in which the
-  card's type determines the branch's prefix, base and flow, with an epic integration branch
-  and a hotfix in reverse flow;
-- And integrations themselves gained a third category: **agent providers** (Claude, Codex,
-  Google Code Assist…).
-
-Creating a sharing mechanism per type would repeat the mistake ADR-0002 avoided on accounts:
-N implementations of the same policy, diverging.
+Integrations, skills, human↔agent workflows and git flows are all owned by
+an account and shared under authorization. One sharing mechanism serves all
+of them.
 
 ## Decision
 
-1. **`Resource` is the unit of ownership and sharing**: `{id, accountId, kind, name, config,
-   credentialRef?}`. The initial types:
+1. **`Resource` is the unit of ownership and sharing:**
+   `{id, account_id, kind, name, config, credential_ref?}`.
 
-   | `kind` | Content | Credential |
+   | `kind` | content | credential |
    |---|---|---|
-   | `integration` | the `git`, `task_manager` and **`agent`** categories | yes |
-   | `skill` | an agent's reusable capability | no |
-   | `workflow` | a human↔agent workflow | no |
-   | `git_flow` | declarative git governance (taxonomy, promotion, policies) | no |
+   | `integration` | categories `git`, `task_manager`, `agent` | yes |
+   | `skill` | a reusable agent capability | no |
+   | `workflow` | a human↔agent workflow (ADR-0010) | no |
+   | `git_flow` | declarative branch governance: taxonomy per card type, base and direction, release composition, hotfix back-merge, policies | no |
 
-2. **The grant is now per resource** — `use`/`manage`, per user, composed in the invite and
-   editable at any time. The existing rules do not change, they generalize: a personal
-   account's resource is private; only an organization account's resource is shareable;
-   `owner`/`admin` have an implicit `manage`; revoking `use` does not tear down what is
-   already configured.
-3. **The platform (level 0) offers global resources** — a catalogue of providers, skills and
-   default flows — which an account **adopts** (a copy or a versioned reference) and then
-   governs as its own.
-4. **A project consumes the resources of the account that owns the workspace** — the
-   integrations rule, unchanged, now holds for everything: the git flow attached to the
-   project parameterizes the merge queue (ADR-0005) and the verification; the skills and the
-   workflow attached parameterize the agents (their cards, ADR-0007).
+2. **Grants are per resource:** `use` / `manage`, per user, composed in the
+   invite and editable at any time. A personal account's resource is
+   private; only an organization's resource is shareable; `owner` and
+   `admin` hold an implicit `manage`; revoking `use` does not tear down what
+   is already configured. The grants table is `resource_grants`.
+3. **The platform (level 0) publishes global resources** — providers,
+   skills, default flows — which an account adopts (a copy or a versioned
+   reference, decided per kind in the resources spec) and then governs as
+   its own.
+4. **A project consumes the resources of the account that owns its
+   workspace:** the attached `git_flow` parameterizes the merge queue and
+   verification (ADR-0005); the attached `skill`s and `workflow`
+   parameterize the agents' cards (ADR-0007).
 
 ## Alternatives considered
 
-**One sharing mechanism per type.** Rejected: it is the same policy written four times, with
-four screens and four bugs.
-
-**Everything as an "integration".** Rejected: a skill and a flow have no credential, they
-have a version and they have content — forcing them into the wrong entity would charge for
-it on every evolution.
+- **One sharing mechanism per kind** — rejected: one policy written four
+  times.
+- **Everything as an integration** — rejected: skills and flows have content
+  and versions, not credentials.
 
 ## Consequences
 
-- ➕ A new resource type touches neither the sharing mechanism nor the invite.
-- ➕ The git flow becomes a governed and versioned artifact — auditable, shareable between
-  projects and accounts, and readable by the agents as a rule.
-- ➖ SP-0's grants table generalizes (`resource_grants`); the schema is born that way.
-- ➖ Adopting a global resource requires a versioning decision (copy × reference) per type —
-  recorded in the resources spec.
+- A new resource kind touches neither the sharing mechanism nor the invite.
+- The git flow is a versioned, auditable artifact readable by agents.
+- Access defaults differ per kind (ADR-0010 §6).
