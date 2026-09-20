@@ -1,7 +1,7 @@
 # Profile onboarding — the wizard after sign-up
 
 - **Date:** 2026-09-06
-- **Status:** decisions approved by the owner, section by section
+- **Status:** **superseded on 2026-09-20** by [the onboarding journey](2026-09-20-onboarding-journey-design.md). The phone step lives on in the security screen; tools, social networks and referral are retired; plans are absorbed by the journey. Kept for the record.
 - **Depends on:** `2026-09-06-account-signup-design.md` (this begins where that
   ends), [ADR-0020](../../adr/0020-second-factor-in-the-core.md) (the second
   factor, whose SMS machinery this reuses), [ADR-0001](../../adr/0001-infrastructure-behind-ports.md)
