@@ -119,14 +119,16 @@ whichever `ports.SMSer` adapter the environment wires; the OneSignal account
 is pending on the owner's side and, when it lands, is a third adapter behind
 the same port, not a change here.
 
-**D-8. What is not verified is remembered in the attention box — by a
-reaction, not by a screen.** An unverified phone raises an attention item
-(*confirm your phone*) that closes itself when the number is confirmed. The
-mechanism is ADR-0010's: a `reaction_rules` row per reminder, with the
-`open_attention` and `close_attention` actions the registry already has,
-reacting to `user.phone.added` and `secondfactor.confirmed`. They come alive
-with P-29's dispatcher; until then the use case opens and closes the item
-synchronously, on the same events, so the person sees the same thing.
+**D-8. What is not verified is remembered in the attention box — by the box's
+own rules, not by a screen.** The attention box is a projection of the event
+log: an item is born from an event and dies from one, never from an RPC. An
+unverified phone raises an item of kind `contact_phone_unverified` on
+`dop.identity.user.phone_added` and closes it on
+`dop.identity.user.phone_verified`; both events are written by the identity
+adapter in the same transaction as the row, with the person's personal account
+as the event's account, so the item lands in the box the person sees. No
+`reaction_rules` row and no dispatcher are involved: the mechanism that already
+serves gates, PRs and budgets serves this too.
 
 The **e-mail is different, and stays at the door.** The sign-up spec's D-5
 refuses a password credential whose e-mail is not verified — in the core, with
@@ -229,17 +231,17 @@ provider_catalog
                key PK, category (git|task_manager), name, credential_kind,
                permissions text[], needs_base_url bool, operated bool,
                docs_url, brand_color, sort, active
-reaction_rules + the two platform rows of D-8 (open on user.phone.added,
-                 close on secondfactor.confirmed)
 ```
 
 `phone_verified_at` is written by the second-factor confirmation of a factor
 whose destination equals `users.phone`; it is the only writer. `phone` is
 written by `PATCH /me` and cleared when the person removes it.
 
-Both catalogues are seeded from `repos/dop-core/seed/catalog.yml` by
-`make seed-catalog` — an upsert by key, so editing a tagline is a re-run, not
-a migration. Removing an entry sets `active=false`.
+Both catalogues are seeded **inside the migration**, as upserts by key, the
+way `0005_workflow.sql` seeds the platform flow: no seed file, no extra
+command, nothing to run on an environment beyond the migrations it already
+runs. Editing a tagline is a new migration with the same upsert. Removing an
+entry sets `active=false`.
 
 Initial provider rows: `github`, `gitlab`, `gitlab_self_hosted` (needs base
 URL), `bitbucket`, `azure_devops` in `git`; `jira`, `clickup` in
@@ -259,7 +261,7 @@ URL), `bitbucket`, `azure_devops` in `git`; `jira`, `clickup` in
 | connection | `POST /resources` · `PUT /resources/{id}/credential` | exist today |
 | test | `POST /resources/{id}/check` | github/gitlab call the provider (`whoami`); others answer `{operated:false}` with a message |
 | plans | `GET /catalog/plans` · `PUT /accounts/current/plan` body `{plan_key}` | Enterprise is a valid choice; the contact is a link |
-| reminder | the attention box, as today | the item kind `contact.phone.unverified`, opened and closed by D-8 |
+| reminder | the attention box, as today | the item kind `contact_phone_unverified`, opened and closed by D-8 |
 
 `MeResponse` gains `avatar_url`, `locale`, `timezone`, `phone`,
 `phone_verified`, `onboarded`. `AccountSummary` gains `plan_key`.
@@ -276,7 +278,7 @@ workspace (D-3); `identity` gains profile update and onboarding state;
 destination is the user's phone; `resource` gains `Check` (the `gitprovider`
 port already has what `whoami` needs for GitHub and GitLab); `catalog` is a
 small new domain (read-only over two tables); `attention` gains the item kind
-of D-8 and the two rules. Domain tests for D-3's idempotence, the step
+of D-8 and its two rule lines. Domain tests for D-3's idempotence, the step
 validation, `complete` refusing undone required steps, `Check` on a
 non-operated provider, and the reminder opening and closing.
 
