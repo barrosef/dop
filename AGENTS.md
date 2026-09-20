@@ -69,7 +69,7 @@ human and probably an ADR — not something to work around.
   scope.
 - **Documentation, code and comments are in English.** Only commit subjects and
   the specs written for humans are in Portuguese.
-- ADRs follow MADR and live in `docs/adr/`. Twenty-three of them exist, numbered 0001–0023; they are the
+- ADRs follow MADR and live in `docs/adr/`. Twenty-four of them exist, numbered 0001–0024; they are the
   reason behind most of what looks arbitrary.
 
 ## Where to look before asking

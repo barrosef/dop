@@ -45,6 +45,7 @@ section it refines or at the end.
 |---|---|
 | [0001](0001-infrastructure-behind-ports.md) | Infrastructure behind ports with pluggable adapters — and, when an adapter cannot meet a guarantee, **the adapter pays** |
 | [0012](0012-stack-go-core-python-bff.md) | A core in Go, a BFF in Python, and the boundary between them: **the BFF has no database and no secret** |
+| [0024](0024-libraries-behind-ports-migrations-seeds-observability.md) | Infrastructure libraries behind ports, not an application framework; migrations, seeds and observability are three of them |
 | [0013](0013-proto-as-source-of-truth.md) | The `.proto` is the contract's source of truth |
 
 ### Accounts, identity and access
@@ -109,7 +110,7 @@ section it refines or at the end.
 
 ## The renumbering of 2026-09-17
 
-The numbers are **contiguous**: 0001 to 0023, one file each, in the order the decisions were
+The numbers are **contiguous**: 0001 to 0024, one file each, in the order the decisions were
 taken. They were not always — seven documents were folded into the ADR that already owned
 their subject on 2026-09-04, and their numbers stayed retired until the owner decided that a
 sequence with holes in it reads as a sequence with mistakes in it. On 2026-09-17 every ADR was
