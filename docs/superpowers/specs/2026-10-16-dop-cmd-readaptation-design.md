@@ -89,7 +89,6 @@ state_dir = ".dop"                    # lock, pid files and process logs; gitign
 default_environment = "local"         # the only one today; the table is plural so a later GCP verb adds a row, not a migration
 
 [environments.local]
-dir = "repos/dop-infra"
 kubeconfig = "k3d kubeconfig write dop-local"      # stdout = path; every make/kubectl runs with KUBECONFIG=<path>
 namespace = "dop-local"
 cluster_exists = "k3d cluster list dop-local"      # exit 0 = exists
@@ -394,6 +393,25 @@ proportionate; a fork of the architect is not.
    live behaviour is proved only by S1 and the QA run. Building a fake-cluster
    layer is its own demand (`quality.md` §1).
 
+Found by S1's live run (2026-10-16):
+
+10. **`dop-core` cannot migrate an empty database** (image 0.1.0-22): `$$`
+    functions in migrations 0001, 0005, 0009, 0010 lack goose's
+    `StatementBegin/End`; the local database had been hand-migrated and
+    baselined at 27, so the path was never exercised. `dop reset` exposed it and
+    left serve/worker in CrashLoopBackOff. Card **wdu0h6hdxk** (urgent), branches
+    `fix/wdu0h6hdxk-*` in `dop-core` and `dop-infra` (tag 0.1.0-23). §3.6's
+    premise ("the worker re-migrates at boot") holds only after that fix.
+11. `dop-core`'s contract suite is red against the shared environment's NATS
+    (the running worker consumes the test events; sandbox docker cases time out
+    or hit `/etc/dop/git-token: Permission denied`). Row 2's contract half runs
+    the forwards and the first command, then stops on that red — a `dop-core`
+    test-design demand, recorded on card wdu0h6hdxk.
+12. `k3s/services/dop-core/configmap.yaml` pins `COLLECTOR_IMAGE` to
+    `dop-core:0.1.0-13` while the deployments run 0.1.0-22. Owner's call.
+13. The cli test row needs `uv run --no-project …`; without it `uv` writes a
+    `uv.lock` and a `.venv` into `repos/dop-cli` (fixed in `dop.toml`).
+
 ## 9. Acceptance rows (refined from the brief §4)
 
 1. `dop up`, `dop down`, `dop status`, `dop reset` work against the environment
@@ -450,3 +468,51 @@ list. It raised 16 objections; all changed the spec:
 | 16 | spec asked the reviewer to bless the root `dop.toml` instead of recording the record's gap | §2 states the reading; §8.6 for the owner |
 
 Overruled: none in substance; #15's `--env` flag deferred, reason above.
+
+### 10.1 After the QA run (2026-10-16, report `foreman/qa/reports/2026-10-16-wdu0h6hdvw/`)
+
+The QA lead read **FAIL on five defects**, all in `dop-cmd`'s edge paths, none in
+live behaviour; all eight rows proved. Architect's decision: fix before the pull
+request, in one slice (S6), and re-attack with the same lead. What S6 fixes, and
+the contract changes it brings into §2–§3:
+
+| # | finding | decision |
+|---|---|---|
+| D1 | config path that is a directory / unreadable / not UTF-8 → traceback, exit 1 | every load error is `ConfigError`, exit 2, one sentence |
+| D2 | `wait_timeout = nan|inf` accepted → waits forever | durations must be finite and > 0 |
+| D3 | `--dry-run up|reset` creates `state_dir` | dry-run writes nothing, creates no directory |
+| D4 | relative executable tool-checked against dop's cwd | tool check resolves relative paths against the command's cwd (`repo`) |
+| D5 | `repo` that does not exist passes the loader → traceback at run time | `repo` must exist and be a directory at load (exit 2) |
+| W1 | a `process` that never became ready is left running; the next `up` says "already running" and never probes | **§3.1**: on not-ready or process-exited, `dop` stops the group and removes the pid file, so the retry starts again; "already running" re-probes `ready` and reports `not ready` (failed) when it does not answer |
+| W3 | a pid is trusted on its number alone (reuse after reboot → a stranger's group killed) | the pid file records the command line's first word and the start time; `alive()` also checks `ps -o args=` matches, else the file is stale |
+| W4 | `logs app` after `down` follows a dead log forever | **§3.4**: `process` not alive → prints the last 20 lines, says "not running", exit 3 |
+| W5 | dry-run `up` of a running process prints `WOULD RUN` setup/run | dry-run consults `alive()` and prints "already running" |
+| W6 | keys contradicting the `kind` are accepted; `[environments].dir` unused; `up`/`down` not required | **§2**: kind-specific keys are validated (`none` admits only `repo`, `kind`, `needs`, `setup`, `test`; `process` forbids `workloads`/`logs`; `cluster` forbids `run`/`env`); `workloads` entries must be `kind/name`; duplicate `needs` rejected; `dir` dropped from the model; `kubeconfig`, `namespace`, `up`, `down`, `cluster_exists`, `cluster_running`, `cluster_up`, `cluster_start`, `cluster_stop` required |
+| — | `dop … \| head` → BrokenPipeError traceback | handled, exit 0 |
+| — | a command containing `os.environ` refused as "Security violation", exit 1 | the guard stays for captured *output*; a configured *command* is not guarded (a project's own command is not a secret dump) |
+| — | `--config ""` / `DOP_CONFIG=""` treated as unset | empty path is a usage error, exit 2 |
+
+**Second pass** (same report, section "Second pass"): FAIL on R1, a regression of
+the W3 fix — identity inferred from the text of `run` (`./start.sh`, `exec …`)
+never matches `ps -o args=` after the exec, so the process is judged a stranger
+the instant it starts and is orphaned — and R2, `workloads` regex with `$`
+accepting a trailing newline. Decision (S7): **identity is `pid` + start time
+only** (`ps -o lstart=`, stable through `exec`; a reused pid has a different
+start time), the executable name is recorded for display and never checked;
+`fullmatch` on the regex; the tool check skips every shell builtin and keyword
+(`trap`, `set`, `eval`, `exec`, `exit`, `if`, `for`, `while`, `case`, `{`, `(`,
+`!`, `true`, `false`, `test`, `[`, `echo`, `printf`, `read`, `wait`, `kill`,
+`type`, `command`, `source`, `.`, `cd`, `export`, `unset`, `umask`, `ulimit`),
+checking the first non-builtin word of the first segment when there is one;
+the "already running, not ready" message names `dop down` as the way out.
+
+Recorded, not fixed (W2, W7, W8, W9 and the beyond-plan notes; plus from the
+second pass: no upper bound on `wait_timeout`; a `ps` failure trusts the pid;
+`make up` reports secrets and statefulsets `configured` on every apply): `status` could
+say "port answers but not ours"; only the first word of a command is tool-checked
+and commands are echoed verbatim (never put a credential in `dop.toml`);
+port-forward logs have no rotation and forwards would leak if `dop` itself were
+SIGKILLed mid-`test`; `app.log` ends with pnpm's exit-143 noise after `down`;
+`make up` reports `secret/dop-core configured` on every apply (dop-infra); root
+`README.md` still describes `dop-cmd` v0.7.1 and a `pip install` (owner's edit,
+§8.8).

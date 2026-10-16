@@ -1,0 +1,64 @@
+[project]
+name = "dop"
+state_dir = ".dop"                    # lock, pid files and process logs; gitignored at the root
+default_environment = "local"         # the only one today; the table is plural so a later GCP verb adds a row, not a migration
+
+[environments.local]
+kubeconfig = "k3d kubeconfig write dop-local"      # stdout = path; every make/kubectl runs with KUBECONFIG=<path>
+namespace = "dop-local"
+cluster_exists = "k3d cluster list dop-local"      # exit 0 = exists
+cluster_running = "k3d cluster list dop-local -o json"   # dop reads serversRunning > 0
+cluster_up = "make -C repos/dop-infra cluster-up"
+cluster_start = "k3d cluster start dop-local"
+cluster_stop = "make -C repos/dop-infra cluster-stop"
+prepare = ["make -C repos/dop-infra images", "make -C repos/dop-infra image-runner"]   # after cluster_up only
+up = "make -C repos/dop-infra up"
+down = "make -C repos/dop-infra down"              # used by reset only (deletes the namespace and its data)
+status = "make -C repos/dop-infra status"          # appended verbatim under -v
+workloads = ["sts/postgres", "sts/nats", "sts/firebase", "deploy/secretmanager"]   # the environment's own readiness
+wait_timeout = "240s"
+addresses = ["http://api.localtest.me:8080", "http://auth.localtest.me:8080", "http://traces.localtest.me:8080"]
+
+[components.app]
+repo = "repos/dop-app"
+kind = "process"
+needs = ["bff"]
+setup = "pnpm install --frozen-lockfile"
+run = "pnpm -C artifacts/dop dev"
+env = { PORT = "5173", BASE_PATH = "/", VITE_API_BASE_URL = "http://api.localtest.me:8080", VITE_FIREBASE_AUTH_EMULATOR_URL = "http://auth.localtest.me:8080", VITE_FIREBASE_PROJECT_ID = "dop-local", VITE_FIREBASE_API_KEY = "fake-api-key" }
+ready = "http://localhost:5173"
+address = "http://localhost:5173"
+[components.app.test]
+unit = ["pnpm typecheck", "pnpm -C artifacts/dop test"]
+
+[components.bff]
+repo = "repos/dop-api"
+kind = "cluster"
+needs = ["core"]
+workloads = ["deploy/dop-api"]
+logs = "make -C repos/dop-infra logs C=dop-api"
+ready = "http://api.localtest.me:8080/healthz"
+address = "http://api.localtest.me:8080"
+setup = "uv sync"
+[components.bff.test]
+unit = ["make test"]
+
+[components.core]
+repo = "repos/dop-core"
+kind = "cluster"
+workloads = ["deploy/dop-core-serve", "deploy/dop-core-worker", "deploy/dop-core-sched"]
+logs = "make -C repos/dop-infra logs C=dop-core"
+[components.core.test]
+unit = ["make test"]
+[components.core.test.integration]
+forwards = ["svc/postgres 5432:5432", "svc/nats 4222:4222"]
+commands = ["make test-integration"]
+[components.core.test.contract]
+forwards = ["svc/nats 4222:4222", "svc/firebase 9199:9199", "svc/secretmanager 8085:9090"]
+commands = ["make test-contract-integration", "make proto-breaking"]
+
+[components.cli]
+repo = "repos/dop-cli"
+kind = "none"
+[components.cli.test]
+unit = ["uv run --no-project --with pytest --with-editable . python -m pytest tests -p no:playwright -q"]

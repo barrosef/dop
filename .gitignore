@@ -14,3 +14,4 @@ cockpit-real.png
 #   git clone git@github.com:barrosef/dop-cmd.git repos/dop-cmd
 repos/dop-cmd/
 .superpowers/
+.dop/
